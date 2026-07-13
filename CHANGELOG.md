@@ -1,3 +1,9 @@
+## v1.42.2 — PDF-Beweis in der Vorbuchhaltung: OCR-Felder werden gegen das PDF verifiziert
+
+**Verbesserungen**
+- **PDF-Text-Beweis beim Einlesen:** Bevor ein Beleg in die Buchungs-Queue einsortiert wird, prüft Bruno deterministisch, ob Betrag und Rechnungsnummer aus der Texterkennung WIRKLICH so im PDF stehen und ob netto + Steuer = brutto aufgeht. Lesefehler (Zahlendreher, Login-Codes als Betrag) werden sofort markiert — nichts Falsches erreicht mehr die Buchhaltungs-App. Mahnungen/Proforma werden schon hier als „kein Beleg" getypt.
+- Font-Verwechslungen der Texterkennung (1/I, 0/O) lösen keinen Fehlalarm aus. Getestet: 5/5 Fehler-Szenarien gefangen, 0 Fehlalarme auf 80 echten Belegen.
+
 ## v1.42.1 — §14-Gate: Vorsteuer nur mit vollständiger Rechnung
 
 **Verbesserungen**

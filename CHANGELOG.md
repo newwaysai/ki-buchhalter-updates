@@ -1,3 +1,9 @@
+## v1.42.3 — Angebote und Kostenvoranschläge sind keine Belege
+
+**Verbesserungen**
+- Der PDF-Beweis und das Buchungs-Gate erkennen jetzt auch **Angebote/Kostenvoranschläge** (eindeutige Marker wie „Angebotsnummer") und halten sie aus der Buchhaltung heraus — realer Fund: zwei Angebote über 4.506 € waren als Rechnungs-Entwürfe gelandet.
+- Voll-Audit über den gesamten Bestand (940 Belege): der GEBUCHTE Bestand ist zu 100 % sauber; 18 Auffälligkeiten in der ungebuchten Queue wurden markiert.
+
 ## v1.42.2 — PDF-Beweis in der Vorbuchhaltung: OCR-Felder werden gegen das PDF verifiziert
 
 **Verbesserungen**

@@ -1,3 +1,43 @@
+## v1.34.0 — Modus 17: Kontoauszüge importieren (PDF oder CSV) — schließt die 90-Tage-Lücke
+
+**Neue Funktionen**
+- **Modus 17 „Kontoauszüge importieren":** Alte oder aufgelöste Konten, Zeiträume älter als die ~90 Tage der Bankverbindung — Bruno liest PDF-Kontoauszüge (oder Bank-CSV) ein und importiert sie als eigenes Konto in dein Buchhaltungssystem. Deterministisch: kein Sprachmodell liest je einen Auszug, jeder Auszug muss den Saldo-Beweis auf den Cent bestehen, jeder Import wird feldgenau zurückgelesen.
+- **Onboarding fragt jetzt aktiv nach Alt-Konten** — damit kein Konto (und keine Einnahme!) unentdeckt bleibt.
+
+**Wissensbasis**
+- Bank-Adapter: Qonto + FYRST/Postbank (beide live-verifiziert). Weitere Banken baut Bruno nach dokumentiertem Muster selbst — der Saldo-Beweis bleibt Pflicht.
+
+## v1.38.0 — Ziel: fertig GEBUCHT, nicht nur zugeordnet
+
+**Verbesserungen**
+- **Durchbuchen-Regel:** Wenn ein Beleg alle Sicherheits-Prüfungen besteht (vollständig, korrekt gelesen, Betrag/Datum/Anbieter passen mehrfach geprüft zur Kontobewegung), bucht Bruno ihn jetzt konsequent bis zum Ende durch — statt auf halber Strecke ("zugeordnet") stehen zu bleiben. Ist er unsicher, macht er bewusst GAR nichts (auch keine halbe Zuordnung) und legt den Fall in die Prüfliste. Nur echte Teilzahlungen warten sichtbar mit Begründung.
+- **Klarere Berichte:** Fehlende Belege erscheinen als To-do (📥), nicht mehr wie ein Fehler (🔴) — Rot ist ab jetzt echten Fehlern und dringenden Fristen vorbehalten. Die Konfidenz-Angabe zeigt zusätzlich eine grüne Zeile: was nachweislich sauber ist.
+
+## v1.37.1 — Prüfer erkennt eigene Ausgangsrechnungen korrekt
+
+**Verbesserungen**
+- Der Health-Check hatte eine korrekt gebuchte eigene Ausgangsrechnung (Einnahme vom Kunden) fälschlich als Richtungsfehler gemeldet. Der Prüfer kennt diese Buchungs-Klasse jetzt — echte Fehlbuchungen werden weiterhin geflaggt.
+
+## v1.37.0 — Kein Berechtigungs-Gefrickel mehr: Bruno bringt seine Erlaubnis mit
+
+**Neue Funktionen**
+- **Mitgelieferte Claude-Code-Berechtigung:** Der Bruno-Ordner enthält jetzt eine fertige Einstellungs-Datei (`.claude/settings.json`), die Brunos Buchhaltungs-Werkzeuge automatisch erlaubt. Du musst nichts einrichten und keinen Modus verstehen — Ordner öffnen, loslegen. (Falls Claude Code doch einmal fragt: einfach „Immer erlauben" klicken, steht auch in der LIESMICH.)
+
+## v1.33.0 — Kontoauszüge von FYRST/Postbank: PDF wird zu sauberen Daten
+
+**Neue Funktionen**
+- **FYRST-Adapter** im Kontoauszug-Leser: PDF-Kontoauszüge von FYRST (Postbank/DSL) werden deterministisch in CSV/JSON umgewandelt — ohne KI, ohne Ratespiel. Jeder Auszug muss den **Saldo-Beweis** bestehen (Anfangssaldo + alle Umsätze = Endsaldo, auf den Cent), sonst gibt es keine Ausgabe. Perfekt für alte/gekündigte Konten, wo nur noch PDFs existieren.
+
+## v1.36.0 — Schutzregel: Auch Einzelbuchungen laufen durch alle Prüfungen
+
+**Verbesserungen**
+- **Kein Prüfungs-Bypass mehr:** Bisher konnten manuell angestoßene Einzelbuchungen an den automatischen Schutzprüfungen vorbeilaufen. Jetzt gilt: JEDE Buchung — auch die einzelne — wird vorher gegen die Fremdbetriebs-Sperrliste, den Rechnungs-Empfänger und den Bank-Anker geprüft (gibt es überhaupt eine passende Zahlung auf deinem Konto?). Genau so wurde ein Beleg entdeckt, der an ein altes, abgemeldetes Gewerbe adressiert und privat bezahlt war — er wäre fälschlich in der Firmen-Buchhaltung gelandet.
+
+## v1.35.1 — Portal-Rechnungen sehen jetzt aus wie im Browser
+
+**Verbesserungen**
+- Wenn Bruno eine Rechnungsseite ohne PDF-Download als PDF sichert, wird sie ab jetzt originalgetreu gedruckt (mit Logo und Layout, wie du sie im Browser siehst) — statt als nackter Text-Ausdruck. Am steuerlichen Inhalt ändert sich nichts, bestehende Belege bleiben gültig.
+
 ## v1.32.0 — Einnahmen-Check: Bruno findet deine selbst verschickten Rechnungen
 
 **Neue Funktionen**

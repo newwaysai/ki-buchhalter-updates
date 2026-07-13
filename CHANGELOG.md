@@ -1,11 +1,29 @@
-## v1.34.0 — Modus 17: Kontoauszüge importieren (PDF oder CSV) — schließt die 90-Tage-Lücke
+## v1.40.0 — Sammel-Release: alle Verbesserungen dieses Wochenendes in einem Paket
 
-**Neue Funktionen**
-- **Modus 17 „Kontoauszüge importieren":** Alte oder aufgelöste Konten, Zeiträume älter als die ~90 Tage der Bankverbindung — Bruno liest PDF-Kontoauszüge (oder Bank-CSV) ein und importiert sie als eigenes Konto in dein Buchhaltungssystem. Deterministisch: kein Sprachmodell liest je einen Auszug, jeder Auszug muss den Saldo-Beweis auf den Cent bestehen, jeder Import wird feldgenau zurückgelesen.
-- **Onboarding fragt jetzt aktiv nach Alt-Konten** — damit kein Konto (und keine Einnahme!) unentdeckt bleibt.
+**Hinweis:** Dieses Release bündelt v1.33–v1.39 (zwei parallele Arbeitsstränge). Details in den Einträgen darunter — Highlights: Modus 17 (Kontoauszüge PDF/CSV), Link-Rechnungen automatisch holen, Postausgang-Scan (Gmail + IMAP), FYRST-Bank-Adapter, DATEV-Wegweiser, Prüfer-Härtungen.
 
-**Wissensbasis**
-- Bank-Adapter: Qonto + FYRST/Postbank (beide live-verifiziert). Weitere Banken baut Bruno nach dokumentiertem Muster selbst — der Saldo-Beweis bleibt Pflicht.
+## v1.39.0 — DATEV-Übergabe an den Steuerberater: klarer Wegweiser
+
+**Neues Wissen**
+- **Welchen Export dein Steuerberater bekommt, ist jetzt sauber dokumentiert:** In sevDesk gibt es zwei Export-Arten — „Buchungsdaten + Belegbilder" (deine fertige Buchhaltung als DATEV-Buchungsstapel) und „Rechnungsdaten + Belegbilder" (nur Belege, der Steuerberater bucht selbst). Bruno empfiehlt für sein Setup immer die erste — deine Buchungsarbeit soll beim Steuerberater ankommen, nicht neu gemacht werden. Und: Belegbilder-Häkchen immer an, sonst bekommt die Kanzlei Buchungen ohne Nachweise.
+- **Direktübertragung zu DATEV (Buchungsdatenservice) verstanden:** Statt Datei-Versand kann sevDesk direkt ins DATEV-Rechenzentrum übertragen. Die Einrichtung ist Sache der Steuerberater-Kanzlei (Bestellung + Registrierung) — Bruno sagt dir jetzt genau, was du deine Kanzlei fragen musst.
+
+**Schutz vor einem teuren Klick**
+- Im Export-Dialog gibt es einen Regler „Dokumente festschreiben" — festgeschriebene Buchungen sind unumkehrbar. Bruno warnt jetzt ausdrücklich: beim ersten Export AUS lassen, erst festschreiben wenn dein Steuerberater das Format abgenommen hat. (Festschreiben bleibt IMMER deine Entscheidung, nie Brunos.)
+
+## v1.38.2 — Präzisere Fehlermeldung bei Dollar-Belegen
+
+**Verbesserungen**
+- Ein Dollar-Beleg ohne lesbares Datum meldete bisher irreführend "Wechselkurs fehlt". Jetzt sagt Bruno die echte Ursache ("Beleg ohne Datum") und nennt direkt das Reparatur-Werkzeug — spart unnötige Wiederholungs-Läufe.
+
+## v1.38.1 — Klarere Zahlen im Bericht + präzisere Update-Zusage
+
+**Verbesserungen**
+- **Eigenüberträge immer getrennt:** Berichte weisen Überweisungen zwischen deinen eigenen Konten jetzt immer gesplittet aus — Entnahmen (Geld ging raus) getrennt von Einlagen (Geld kam rein) — und mischen sie nie mit echten Ausgaben in einer Summe.
+- **Wechselkurse rückwirkend:** Bruno kennt jetzt auch EZB-Kurse ab Oktober 2024 — für alte Dollar-Belege, die erst später bezahlt wurden.
+
+**Klarstellung (Lizenz/FAQ)**
+- Präzisiert: Deine Update-Zusage gilt für dein gekauftes Paket. Eigenständige Zusatzprodukte (falls es sie künftig gibt) sind getrennte Angebote. Für Early-Bird-Käufer bleibt ausdrücklich alles wie versprochen (Lifetime-Updates aufs Paket).
 
 ## v1.38.0 — Ziel: fertig GEBUCHT, nicht nur zugeordnet
 
@@ -23,11 +41,6 @@
 **Neue Funktionen**
 - **Mitgelieferte Claude-Code-Berechtigung:** Der Bruno-Ordner enthält jetzt eine fertige Einstellungs-Datei (`.claude/settings.json`), die Brunos Buchhaltungs-Werkzeuge automatisch erlaubt. Du musst nichts einrichten und keinen Modus verstehen — Ordner öffnen, loslegen. (Falls Claude Code doch einmal fragt: einfach „Immer erlauben" klicken, steht auch in der LIESMICH.)
 
-## v1.33.0 — Kontoauszüge von FYRST/Postbank: PDF wird zu sauberen Daten
-
-**Neue Funktionen**
-- **FYRST-Adapter** im Kontoauszug-Leser: PDF-Kontoauszüge von FYRST (Postbank/DSL) werden deterministisch in CSV/JSON umgewandelt — ohne KI, ohne Ratespiel. Jeder Auszug muss den **Saldo-Beweis** bestehen (Anfangssaldo + alle Umsätze = Endsaldo, auf den Cent), sonst gibt es keine Ausgabe. Perfekt für alte/gekündigte Konten, wo nur noch PDFs existieren.
-
 ## v1.36.0 — Schutzregel: Auch Einzelbuchungen laufen durch alle Prüfungen
 
 **Verbesserungen**
@@ -38,17 +51,27 @@
 **Verbesserungen**
 - Wenn Bruno eine Rechnungsseite ohne PDF-Download als PDF sichert, wird sie ab jetzt originalgetreu gedruckt (mit Logo und Layout, wie du sie im Browser siehst) — statt als nackter Text-Ausdruck. Am steuerlichen Inhalt ändert sich nichts, bestehende Belege bleiben gültig.
 
-## v1.32.0 — Einnahmen-Check: Bruno findet deine selbst verschickten Rechnungen
+## v1.35.0 — Kein Beleg entgeht mehr: Link-Rechnungen + Postausgang per IMAP
 
 **Neue Funktionen**
-- **Postausgang-Scan** (`scan-ausgang.mjs`): Bruno durchsucht deinen Gesendet-Ordner (Gmail + jedes IMAP-Postfach) nach selbst verschickten Rechnungen — und deckt damit unverbuchte Einnahmen und Lücken im Rechnungs-Nummernkreis auf. Fehlende Einnahmen sind fürs Finanzamt kritischer als fehlende Ausgaben-Belege.
-- Weiterleitungen („Fwd:/WG:") werden automatisch aussortiert — das sind Eingangs-Belege, keine eigenen Rechnungen.
+- **Link-Rechnungen automatisch holen** (`--fetch-links`, Opt-in): Mails wie „Rechnung ansehen" ohne Anhang — Bruno lädt den Beleg hinter dem Link (PDF direkt oder geprüfte Rechnungs-Seite, lokal gerendert). Deterministisch, mit Sicherheits-Gattern (nur echte Rechnungs-Seiten, Größen-/Zeit-Limits, interne Adressen blockiert).
+- **Postausgang-Scan jetzt auch für IMAP-Postfächer** (`--imap`): findet deine selbst verschickten Rechnungen in GMX, iCloud & Co. — der Gesendet-Ordner wird automatisch erkannt, egal wie er bei deinem Anbieter heißt.
+- **Mehrere Postfächer:** zweites Konto als `IMAP2_USER`/`IMAP2_PASSWORD` in der `.env`, Aufruf mit `--imap-account=2`. (Noch ohne Live-Test — Rückmeldungen willkommen.)
 
 ## v1.35.0 — Private Zahlungen räumen sich aus der offenen Liste
 
 **Neue Funktionen**
 - **Privat markieren per API:** Vom Nutzer als privat erklärte Abbuchungen (z.B. Apple-Abos) markiert Bruno jetzt direkt in sevDesk als "Privat" — sie stehen nicht mehr ewig als offen da, und es ist sofort klar: dafür wird kein Beleg gebraucht. Jederzeit rückgängig machbar, jede Änderung wird protokolliert, nur unzugeordnete Umsätze werden angefasst.
 - **Eingebaute Schutzgrenzen:** Zahlungsdienstleister-Auszahlungen (Stripe/PayPal) und Geldtransit lassen sich damit bewusst NICHT markieren — die sind nicht privat, sondern gehören sauber verrechnet. Und Geld-Eingänge prüft Bruno immer erst als mögliche Einnahme.
+
+## v1.34.0 — Modus 17: Kontoauszüge importieren (PDF oder CSV) — schließt die 90-Tage-Lücke
+
+**Neue Funktionen**
+- **Modus 17 „Kontoauszüge importieren":** Alte oder aufgelöste Konten, Zeiträume älter als die ~90 Tage der Bankverbindung — Bruno liest PDF-Kontoauszüge (oder Bank-CSV) ein und importiert sie als eigenes Konto in dein Buchhaltungssystem. Deterministisch: kein Sprachmodell liest je einen Auszug, jeder Auszug muss den Saldo-Beweis auf den Cent bestehen, jeder Import wird feldgenau zurückgelesen.
+- **Onboarding fragt jetzt aktiv nach Alt-Konten** — damit kein Konto (und keine Einnahme!) unentdeckt bleibt.
+
+**Wissensbasis**
+- Bank-Adapter: Qonto + FYRST/Postbank (beide live-verifiziert). Weitere Banken baut Bruno nach dokumentiertem Muster selbst — der Saldo-Beweis bleibt Pflicht.
 
 ## v1.34.0 — Weniger unnötige Rückfragen: der Kontoumsatz entscheidet, was auf deine Liste kommt
 
@@ -60,11 +83,22 @@
 - **Sofort-Scan bei Portal-Beschaffung:** Jeder aus einem Portal geladene Beleg wird SOFORT gelesen und geprüft (Betrag/Datum/Anbieter müssen zur Bank-Zahlung passen, für die er geholt wurde) — solange du noch eingeloggt bist. Kaputte Downloads (abgeschnittene Seiten, Fehlerseiten) werden sofort neu geladen statt Tage später aufzufallen, wenn ein neuer Login nötig wäre.
 - **Klare Format-Regel:** Echtes Anbieter-PDF zuerst; gibt es keins, druckt Bruno die Rechnungsseite sauber als PDF (mehrseitig, mit Prüfung auf Vollständigkeit). Screenshots zählen NIE als Beleg.
 
+## v1.33.0 — Kontoauszüge von FYRST/Postbank: PDF wird zu sauberen Daten
+
+**Neue Funktionen**
+- **FYRST-Adapter** im Kontoauszug-Leser: PDF-Kontoauszüge von FYRST (Postbank/DSL) werden deterministisch in CSV/JSON umgewandelt — ohne KI, ohne Ratespiel. Jeder Auszug muss den **Saldo-Beweis** bestehen (Anfangssaldo + alle Umsätze = Endsaldo, auf den Cent), sonst gibt es keine Ausgabe. Perfekt für alte/gekündigte Konten, wo nur noch PDFs existieren.
+
 ## v1.33.0 — Fehlende Belege jetzt auch direkt aus Anbieter-Portalen holen
 
 **Neue Funktionen**
 - **Portal-Beschaffung (Modus 6b):** Sag einfach "hol die Belege von <Anbieter>" — Bruno öffnet die Rechnungsseite des Portals in deinem Browser, DU loggst dich ein (Bruno tippt nie Passwörter oder Codes), Bruno lädt dann die fehlenden Rechnungs-PDFs herunter und verarbeitet sie automatisch. Er lädt nur herunter und klickt nichts, was etwas verändert. Voraussetzung: Browser-Steuerung in der Session (VSCode mit verbundenem Chrome); ohne sie bekommst du stattdessen eine Klick-Anleitung pro Portal.
 - Bruno holt dabei gezielt nur, was laut Bank-Abgleich wirklich fehlt — keine Sammel-Downloads.
+
+## v1.32.0 — Einnahmen-Check: Bruno findet deine selbst verschickten Rechnungen
+
+**Neue Funktionen**
+- **Postausgang-Scan** (`scan-ausgang.mjs`): Bruno durchsucht deinen Gesendet-Ordner (Gmail + jedes IMAP-Postfach) nach selbst verschickten Rechnungen — und deckt damit unverbuchte Einnahmen und Lücken im Rechnungs-Nummernkreis auf. Fehlende Einnahmen sind fürs Finanzamt kritischer als fehlende Ausgaben-Belege.
+- Weiterleitungen („Fwd:/WG:") werden automatisch aussortiert — das sind Eingangs-Belege, keine eigenen Rechnungen.
 
 ## v1.32.0 — Transparentes Selbst-Verbessern + Steuerwissen für EÜR und USt-Jahreserklärung
 
@@ -135,12 +169,6 @@
 - **Multi-Signal-Zuordnung (Regel #12):** Ob ein Beleg wirklich zu DEINEM Unternehmen gehört (und nicht zu einem früheren Betrieb, einer GbR oder privat), entscheidet Bruno nie an einem einzelnen Merkmal — er gleicht Rechnungsempfänger, Leistungstext, Datum, Betrag, den Bank-Verwendungszweck UND deine Betriebs-Historie ab. Widersprechen sich die Signale, fragt er dich.
 - Betriebs-Historie als eigene private Datei: welche Betriebe wann existierten und was das für die Buchung bedeutet (reist NICHT mit dem Produkt, ist Instanz-Wissen).
 
-## v1.25.2 — Beleg-Prüfung schaut jetzt auch auf den Rechnungsempfänger
-
-**Verbesserungen**
-- **Empfänger-Prüfung:** Unter einem Anbieter-Namen (z.B. deiner Steuerkanzlei) können Rechnungen an DICH, an eine andere Firma oder privat liegen. Brunos Evidenz-Werkzeug zeigt jetzt zu jedem Beleg den Rechnungsempfänger aus dem PDF — gebucht wird nur, was an dein Unternehmen adressiert ist. (Real gefangen: 24 fremde/private Steuerberater-Rechnungen wären sonst als Betriebsausgabe gelandet — alle vor Freigabe entfernt, Prüfer bestätigt 0 Fehler.)
-- Benachrichtigungs-Erkennung erweitert (Newsletter/Sharing/Werbe-Mails mit Schein-Beträgen wandern automatisch in den Müll-Ordner, Einnahme-Hinweise nie).
-
 ## v1.26.0 — Cent-genaue Buchungs-Härtung + Bruno repariert unlesbare Beleg-Felder selbst
 
 **Fehlerbehebung (wichtig)**
@@ -148,6 +176,12 @@
 
 **Neue Funktionen**
 - Neues Werkzeug `repariere-queue-felder`: fehlende Rechnungsnummern/-daten in der Buchungs-Warteschlange werden lokal aus dem PDF nachgelesen (deterministisch, kein KI-Upload) — erster Lauf reparierte 17 Felder und machte 3 Belege buchbar.
+
+## v1.25.2 — Beleg-Prüfung schaut jetzt auch auf den Rechnungsempfänger
+
+**Verbesserungen**
+- **Empfänger-Prüfung:** Unter einem Anbieter-Namen (z.B. deiner Steuerkanzlei) können Rechnungen an DICH, an eine andere Firma oder privat liegen. Brunos Evidenz-Werkzeug zeigt jetzt zu jedem Beleg den Rechnungsempfänger aus dem PDF — gebucht wird nur, was an dein Unternehmen adressiert ist. (Real gefangen: 24 fremde/private Steuerberater-Rechnungen wären sonst als Betriebsausgabe gelandet — alle vor Freigabe entfernt, Prüfer bestätigt 0 Fehler.)
+- Benachrichtigungs-Erkennung erweitert (Newsletter/Sharing/Werbe-Mails mit Schein-Beträgen wandern automatisch in den Müll-Ordner, Einnahme-Hinweise nie).
 
 ## v1.25.1 — Ankündigungs-Mails können sich nicht mehr als Rechnung tarnen
 

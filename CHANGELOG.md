@@ -1,6 +1,24 @@
+## v1.41.0 — Sammel-Release (Konsolidierung zweier paralleler Arbeitsstränge)
+
+**Hinweis:** bündelt alles bis v1.40.1 (u.a. Mahnungs-Gate) und v1.39.0 (Noise-Gate-Muster). Details darunter.
+
+## v1.40.1 — Schutz: Mahnungen werden nie als Rechnung gebucht
+
+**Verbesserungen**
+- **Mahnungs-Gate:** Mahnungen und Zahlungserinnerungen tragen oft Rechnungsnummer + Betrag und sehen für die Texterkennung wie Rechnungen aus — sind aber keine (Pflichtangaben fehlen, kein Vorsteuerabzug). Bruno prüft jetzt jedes Dokument vor dem Buchen deterministisch auf Mahnungs-Signale: Treffer → Prüfliste mit dem Hinweis „Original-Rechnung beim Anbieter anfordern", nie gebucht. Getestet: Beispiel-Mahnung abgefangen, 80 echte gebuchte Rechnungen ohne Fehlalarm.
+
 ## v1.40.0 — Sammel-Release: alle Verbesserungen dieses Wochenendes in einem Paket
 
 **Hinweis:** Dieses Release bündelt v1.33–v1.39 (zwei parallele Arbeitsstränge). Details in den Einträgen darunter — Highlights: Modus 17 (Kontoauszüge PDF/CSV), Link-Rechnungen automatisch holen, Postausgang-Scan (Gmail + IMAP), FYRST-Bank-Adapter, DATEV-Wegweiser, Prüfer-Härtungen.
+
+## v1.39.0 — Weniger Fehlalarme, sauberere Eingangs-Queue
+
+**Verbesserungen**
+- **Mehr Nicht-Belege werden automatisch erkannt:** Testzeitraum-Erinnerungen, Sicherheitswarnungen und "Zahlungsdaten prüfen"-Mails landen nicht mehr als vermeintliche Belege in der Buchungs-Warteschlange (15 solcher Dateien wurden direkt mit aussortiert — reversibel).
+- **Schlauere Selbstkontrolle:** Der unabhängige Kontroll-Blick nach jedem Buchungslauf bekommt jetzt automatisch die Aufschlüsselung mit, WARUM Umsätze noch offen sind — bekannte Warte-Fälle lösen keinen Fehlalarm mehr aus, echte Auffälligkeiten schon.
+
+**Unter der Haube**
+- Diagnose abgeschlossen, warum manche voll bezahlten Belege als "teilweise bezahlt" angezeigt werden (ein Vorzeichen in der internen Buchungssumme) — die automatische Heilung kommt im nächsten Update.
 
 ## v1.39.0 — DATEV-Übergabe an den Steuerberater: klarer Wegweiser
 

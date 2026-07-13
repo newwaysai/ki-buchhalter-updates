@@ -1,3 +1,42 @@
+## v1.32.0 — Einnahmen-Check: Bruno findet deine selbst verschickten Rechnungen
+
+**Neue Funktionen**
+- **Postausgang-Scan** (`scan-ausgang.mjs`): Bruno durchsucht deinen Gesendet-Ordner (Gmail + jedes IMAP-Postfach) nach selbst verschickten Rechnungen — und deckt damit unverbuchte Einnahmen und Lücken im Rechnungs-Nummernkreis auf. Fehlende Einnahmen sind fürs Finanzamt kritischer als fehlende Ausgaben-Belege.
+- Weiterleitungen („Fwd:/WG:") werden automatisch aussortiert — das sind Eingangs-Belege, keine eigenen Rechnungen.
+
+## v1.35.0 — Private Zahlungen räumen sich aus der offenen Liste
+
+**Neue Funktionen**
+- **Privat markieren per API:** Vom Nutzer als privat erklärte Abbuchungen (z.B. Apple-Abos) markiert Bruno jetzt direkt in sevDesk als "Privat" — sie stehen nicht mehr ewig als offen da, und es ist sofort klar: dafür wird kein Beleg gebraucht. Jederzeit rückgängig machbar, jede Änderung wird protokolliert, nur unzugeordnete Umsätze werden angefasst.
+- **Eingebaute Schutzgrenzen:** Zahlungsdienstleister-Auszahlungen (Stripe/PayPal) und Geldtransit lassen sich damit bewusst NICHT markieren — die sind nicht privat, sondern gehören sauber verrechnet. Und Geld-Eingänge prüft Bruno immer erst als mögliche Einnahme.
+
+## v1.34.0 — Weniger unnötige Rückfragen: der Kontoumsatz entscheidet, was auf deine Liste kommt
+
+**Verbesserungen**
+- **Bank-Anker-Regel:** Wenn dein Betrieb unbar arbeitet (der Normalfall), landet ein Dokument ohne jedes Zahlungs-Signal nicht mehr auf deiner Entscheidungsliste: Fremde Dokumente ohne Konto-Bezug (z.B. ein versehentlich mitgescanntes Angebot an jemand anderen) sortiert Bruno automatisch aus. Eigene Rechnungen, deren Abbuchung noch aussteht, warten geduldig. Wichtig: Einbehaltene Gebühren (Stripe/PayPal ziehen direkt vom Auszahlungsbetrag ab) erkennt Bruno weiterhin als echte Betriebsausgabe — die haben nie einen eigenen Kontoumsatz.
+## v1.33.1 — Portal-Belege werden sofort geprüft, nicht erst später
+
+**Verbesserungen**
+- **Sofort-Scan bei Portal-Beschaffung:** Jeder aus einem Portal geladene Beleg wird SOFORT gelesen und geprüft (Betrag/Datum/Anbieter müssen zur Bank-Zahlung passen, für die er geholt wurde) — solange du noch eingeloggt bist. Kaputte Downloads (abgeschnittene Seiten, Fehlerseiten) werden sofort neu geladen statt Tage später aufzufallen, wenn ein neuer Login nötig wäre.
+- **Klare Format-Regel:** Echtes Anbieter-PDF zuerst; gibt es keins, druckt Bruno die Rechnungsseite sauber als PDF (mehrseitig, mit Prüfung auf Vollständigkeit). Screenshots zählen NIE als Beleg.
+
+## v1.33.0 — Fehlende Belege jetzt auch direkt aus Anbieter-Portalen holen
+
+**Neue Funktionen**
+- **Portal-Beschaffung (Modus 6b):** Sag einfach "hol die Belege von <Anbieter>" — Bruno öffnet die Rechnungsseite des Portals in deinem Browser, DU loggst dich ein (Bruno tippt nie Passwörter oder Codes), Bruno lädt dann die fehlenden Rechnungs-PDFs herunter und verarbeitet sie automatisch. Er lädt nur herunter und klickt nichts, was etwas verändert. Voraussetzung: Browser-Steuerung in der Session (VSCode mit verbundenem Chrome); ohne sie bekommst du stattdessen eine Klick-Anleitung pro Portal.
+- Bruno holt dabei gezielt nur, was laut Bank-Abgleich wirklich fehlt — keine Sammel-Downloads.
+
+## v1.32.0 — Transparentes Selbst-Verbessern + Steuerwissen für EÜR und USt-Jahreserklärung
+
+**Neue Funktionen**
+- **Klare Kennzeichnung im Auto-Review:** Nach jeder Aufgabe zeigt Bruno jetzt sichtbar getrennt, was er ✅ wirklich selbst korrigiert/verbessert hat (immer mit Ein-Satz-Begründung: welcher Vorteil, und warum ohne Risiko — z.B. reversibel oder nur Prüfregel schärfer), was 💡 nur ein Vorschlag ist (du entscheidest) und was 📝 nur notiert wurde. Gab es nichts zu verbessern, steht auch das explizit da. So siehst du auf einen Blick, was sich geändert hat — nichts passiert mehr "still".
+
+**Wissensstand**
+- **Anlage EÜR 2025 komplett kartiert:** Jede Zeile und Kennziffer des amtlichen Formulars (BMF-Muster vom 29.08.2025, byte-treu archiviert) ist jetzt den SKR03- und SKR04-Konten zugeordnet. Bruno kann damit die Einnahmenüberschussrechnung aus deinen Buchungsdaten vorbereiten.
+- **USt-Jahreserklärung 2025 komplett kartiert:** Alle Kennzahlen des Formulars USt 2 A (BMF-Muster vom 09.12.2024) inklusive der neuen Kleinunternehmer-Regeln ab 2025 und der Reverse-Charge-Fälle (§13b) — mit eingebauter Plausibilitäts-Prüfregel.
+- **Anlagenverzeichnis-Konzept:** sevDesk bietet keine Anlagen-Schnittstelle — Bruno hat ein Konzept, wie er dein Anlagenverzeichnis (AVEÜR) selbst aus deinen Kaufbelegen führt, inklusive der gesetzlichen Grenzen für Sofortabschreibung (800 €) und Sammelposten (250–1.000 €), direkt aus dem Gesetzestext verifiziert.
+- Wichtig: Bruno bereitet vor und rechnet — abgegeben wird weiterhin nur von dir bzw. deinem Steuerberater.
+
 ## v1.31.0 — „Bruno, update dich": Updates lädt Bruno jetzt selbst
 
 **Neue Funktionen**

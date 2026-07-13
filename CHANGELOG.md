@@ -1,3 +1,22 @@
+## v1.42.1 — §14-Gate: Vorsteuer nur mit vollständiger Rechnung
+
+**Verbesserungen**
+- **§14-Gate:** Wo Vorsteuer gezogen werden soll (Steuersatz > 0, Betrag > 250 €), prüft Bruno vor dem Buchen, ob die Rechnung eine Steuernummer/USt-ID des Ausstellers trägt (§14 Abs. 4 UStG) — fehlt sie, geht der Beleg in die Prüfliste („vollständige Rechnung anfordern") statt gebucht zu werden. Auslands-/Reverse-Charge-/Kleinbetragsrechnungen bleiben unberührt. Getestet mit Beispiel-Rechnungen, 0 Fehlalarme am Bestand.
+- Mahnungs-Gate kennt jetzt auch Proforma-Rechnungen.
+- Release-Kanal verweigert technisch Rückwärts-Versionen (Schutz bei parallelen Arbeitssträngen).
+
+## v1.42.0 — Belege laufen jetzt bis „Gebucht" durch (Heilung + Ursache behoben)
+
+**Neue Funktionen**
+- **Automatische Heilung „teilweise bezahlt"-Hänger:** Manche voll bezahlten Belege blieben in sevDesk auf „teilweise bezahlt" stehen, obwohl die Zahlung komplett verknüpft war. Bruno hat die Ursache gefunden (ein bestimmter Buchungs-Typ der sevDesk-API schließt den Beleg nicht sauber ab) und ein Heil-Werkzeug gebaut: es erkennt alle Hänger, bucht sie sauber neu durch und prüft jeden einzelnen danach nach (Status „Gebucht", Bankumsatz „gebucht", interne Summen korrekt). Echte Teilzahlungen werden dabei NICHT angefasst — die warten zu Recht auf die Restzahlung und stehen jetzt mit Grund auf einer Warteliste.
+
+**Verbesserungen**
+- **Neue Verknüpfungen entstehen ab sofort direkt richtig:** Die Bank-Zuordnung nutzt jetzt immer den funktionierenden Buchungs-Typ — neue Belege landen direkt auf „Gebucht" statt auf halber Strecke.
+- **Neue Selbstkontrolle:** Der Buchhaltungs-Check kennt den Fall jetzt als eigene Prüfung — sollte der Hänger je wieder auftauchen, schlägt Bruno sofort Alarm (und echte Teilzahlungen werden als normale Warteklasse grün angezeigt).
+
+**Unter der Haube**
+- bookAmount `type:'O'` statt `FULL_PAYMENT` in match-vouchers/match-clusters (empirisch: FULL_PAYMENT lässt Status 750 + falsches Accounting-Vorzeichen zurück) · neues Tool `durchbucher.mjs` (Dry-Run-Standard, Readback je Beleg, Audit-Log, Rollback dokumentiert) · Health-Check-Dimension 13 · API-Wissen in CAPABILITIES korrigiert.
+
 ## v1.41.0 — Sammel-Release (Konsolidierung zweier paralleler Arbeitsstränge)
 
 **Hinweis:** bündelt alles bis v1.40.1 (u.a. Mahnungs-Gate) und v1.39.0 (Noise-Gate-Muster). Details darunter.

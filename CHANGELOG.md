@@ -1,3 +1,604 @@
+## v1.66.2 — Aufgeräumte Testdaten + neues Reparatur-Werkzeug für lückenhafte Belege
+
+**Verbesserungen**
+- Die internen Selbsttests (Kanarien) nutzen jetzt durchgehend neutrale Muster-Bankdaten
+  (Max Mustermann, offizielle Beispiel-IBANs). Für dich ändert sich nichts — alle Tests
+  laufen unverändert grün.
+
+**Neue Funktion (unter der Haube)**
+- Neues Werkzeug `fill-canonical-from-text.mjs`: füllt fehlende Beleg-Felder (Rechnungsnummer,
+  Betrag, Währung, Steuersatz) direkt aus dem PDF-Text nach — ohne KI, rein deterministisch,
+  und nur bei eindeutigen Treffern. Bestehende Werte werden nie überschrieben. Damit werden
+  Belege, die der Health-Check bisher nicht prüfen konnte, wieder prüfbar.
+
+## v1.66.1 — Stripe-Auszahlungen: manuelle Auszahlungen brechen den Lauf nicht mehr ab
+
+**Was war**
+Wenn du eine Auszahlung in Stripe von Hand auslöst (statt sie automatisch laufen zu lassen), verrät
+Stripes Schnittstelle nicht, welche Kundenzahlungen darin stecken — das geht nur bei automatischen
+Auszahlungen. Bruno brach an dieser Stelle komplett ab, wodurch auch alle anderen (automatischen)
+Auszahlungen nicht mehr verarbeitet wurden.
+
+**Was jetzt passiert**
+- Manuelle Auszahlungen werden sauber übersprungen und mit Betrag und Datum auf die Klärliste
+  gesetzt — nichts verschwindet still, der Rest läuft normal durch.
+- Du bekommst den konkreten Weg genannt: entweder im Stripe-Dashboard nachsehen, welche Zahlungen
+  enthalten sind, oder in Stripe auf automatische Auszahlungen umstellen.
+
+## v1.66.0 — Durchgeleitete Zahlungen: wenn auf dem Kontoauszug der falsche Name steht
+
+**Das Problem, das wir gelöst haben**
+Auf deinem Kontoauszug steht bei einer Zahlung nicht immer der, mit dem du wirklich Geschäfte gemacht
+hast. Beispiel aus der Praxis: zwei Zahlungseingänge waren als "STRIPE" ausgewiesen — im
+Verwendungszweck stand aber "SHOPIFY AUSZAHLUNG". Es waren also Shop-Erlöse, die nur über den
+Zahlungsdienstleister geflossen sind. Wer nur auf den Empfängernamen schaut, ordnet sie dem
+Falschen zu. Bei uns waren das über 5.000 Euro.
+
+**Was jetzt passiert**
+- **Bruno erkennt durchgeleitete Zahlungen.** Steht als Empfänger ein Zahlungsdienstleister
+  (Stripe, PayPal, Klarna, Mollie, Adyen, SumUp …), im Verwendungszweck aber ein Händler oder eine
+  Plattform (Shopify, Amazon, Etsy, Digistore, elopage …), dann gilt: die Zahlung gehört
+  wirtschaftlich dem Händler. Der Zahlungsdienstleister ist nur der Weg, nicht der Partner.
+- **Falsche Zuordnung wird verhindert.** Eine Rechnung des Zahlungsdienstleisters kann sich so eine
+  durchgeleitete Händler-Zahlung nicht mehr "schnappen". Nur ein Beleg des echten Händlers passt dazu.
+- **Neue Prüfung im Health-Check** meldet jede solche Zahlung im Klartext: "nennt als Empfänger X,
+  gehört laut Verwendungszweck aber Y". Noch nicht zugeordnete Fälle werden als Hinweis markiert,
+  bereits zugeordnete nur zur Kontrolle angezeigt.
+
+**Was du davon hast**
+Erlöse aus einem Shop oder Marktplatz landen nicht mehr versehentlich beim Zahlungsdienstleister —
+gerade wichtig, wenn du mehrere Geschäftsbereiche hast oder einen Shop betreibst.
+
+## v1.65.0 — Schärfere Fehler-Erkennung: Tippfehler-Dubletten, Betrags-Gegenprüfung, fehlende Kontoauszüge
+
+**Neue Funktionen**
+- **Tippfehler-Dubletten werden jetzt erkannt.** Wenn die Texterkennung eine Rechnungsnummer minimal
+  verliest (z.B. den Buchstaben I als Ziffer 1 oder O als 0), erkennt Bruno beim Buchen, dass es sich
+  wahrscheinlich um dieselbe Rechnung handelt, die schon gebucht wurde — und legt sie zur Prüfung
+  zurück statt sie doppelt zu buchen. Das verhindert genau die Art von Doppelbuchung, die sonst nur
+  mühsam von Hand zu finden ist.
+- **Betrags-Gegenprüfung gegen das Original-PDF (neue Health-Check-Prüfung).** Bruno vergleicht jetzt
+  jeden gebuchten Betrag noch einmal direkt mit dem Text im Original-PDF — mit einer anderen Methode
+  als die Texterkennung, die den Betrag ursprünglich gelesen hat. So fallen zwei Fehlerklassen auf:
+  ein falsch übernommener Betrag und eine als Euro gebuchte Fremdwährungs-Rechnung (Dollar-Rechnung).
+- **Fehlende Kontoauszüge fallen jetzt auf (neue Health-Check-Prüfung).** Findet Bruno bei einem
+  Bankkonto einen ganzen Monat ohne einen einzigen Umsatz, meldet er das — meist heißt das, ein
+  Kontoauszug wurde noch nicht eingelesen. So bleibt keine Lücke im Zahlungsnachweis unbemerkt.
+- **Anbieter-Namen werden zusammengeführt.** Auf dem Kontoauszug steht oft ein anderer Name als auf
+  der Rechnung (z.B. "FACEBK*..." statt "Meta", "P.SKOOL.COM/..." statt "Skool"). Bruno erkennt jetzt,
+  dass das derselbe Anbieter ist, und findet die passende Bankbuchung zuverlässiger.
+
+**Verbesserungen**
+- Der Posteingang wird sauberer: Bruno erkennt jetzt anhand des Inhalts (nicht nur des Betreffs),
+  wenn eine eingelesene Datei gar keine Rechnung ist (Ankündigung, Passwort-Mail, Warenkorb-Erinnerung),
+  und legt sie beiseite — Zahlungseingänge werden dabei geschützt und nie aussortiert.
+- Der Import-Prüfbericht meldet keinen Fehlalarm mehr, wenn bewusst bereinigte Doppelbuchungen fehlen.
+  Bewusst gelöschte Dubletten werden jetzt dauerhaft protokolliert und als "kein Verlust" ausgewiesen.
+- Klarere Info, wie du eigene Erkenntnisse (anonym) mit der Community teilen kannst — freiwillig,
+  nichts verlässt automatisch deinen Rechner.
+
+**Wissensstand**
+- Stripe-Gebühren: direkt aus Stripes eigenen Daten bestätigt, dass Stripe keine Umsatzsteuer auf die
+  Gebühr berechnet — für dich als Regelbesteuerer ist die steuerliche Behandlung damit ohne Zahllast-Effekt.
+
+## v1.64.2 — Festschreiben per API funktioniert jetzt nachweisbar (+ Schutz-Lücke geschlossen)
+
+**Was passiert ist**
+- Beim ersten Festschreib-Lauf (18 Belege, mit deiner ausdrücklichen Freigabe) meldete Bruno zunächst
+  "fehlgeschlagen" — dabei hatte alles funktioniert. Grund: sevDesk bestätigt das Festschreiben nicht
+  in der Antwort, und Bruno prüfte danach ein Feld, das es gar nicht gibt (`enshrineDate` statt des
+  echten Feldes `enshrined`). Die Kontrolle las also ins Leere.
+- Beim Beheben fiel auf: **zwei Reparatur-Werkzeuge nutzten dasselbe falsche Feld als Schutz** — ihr
+  eingebauter "festgeschriebene Belege nie anfassen"-Riegel war dadurch wirkungslos. Bisher folgenlos
+  (es war noch nie etwas festgeschrieben), ab jetzt wäre es riskant gewesen.
+
+**Was sich für dich ändert**
+- Festschreiben über Bruno funktioniert jetzt mit echter Erfolgskontrolle (das richtige Feld wird
+  gelesen). Es bleibt dabei: Bruno schreibt NIE ohne deine ausdrückliche Freigabe pro Liste fest.
+- Die Schutz-Riegel in den Reparatur-Werkzeugen greifen jetzt wirklich: festgeschriebene Belege
+  werden übersprungen, nie verändert.
+
+**Unter der Haube**
+- `durchbucher.mjs` + `durchbucher-a2.mjs`: Guard `enshrineDate` → `enshrined` korrigiert.
+- `CAPABILITIES.md`: enshrine-Endpoint-Verhalten live-dokumentiert (leerer Response-Body, Readback
+  über `enshrined`-Feld Pflicht).
+- Kanarien-Test grün (7/7).
+
+## v1.64.1 — Drei Funktionen standen nicht in deiner Anleitung (obwohl du sie hast)
+
+**Was schiefgelaufen war**
+- Die Anleitung (`SETUP-GUIDE.md`) listete 13 Modi und sprach von "den 14 Modi". Tatsächlich sind es
+  **17**. Drei davon fehlten in der Tabelle komplett — du hattest sie die ganze Zeit, konntest sie aus
+  der Anleitung aber nicht kennen:
+  - **Modus 14 (Update)** — Bruno prüft und spielt neue Versionen selbst ein, deine Daten bleiben unangetastet.
+  - **Modus 15 (Rechnung/Angebot schreiben)** — Ausgangsrechnungen und Angebote erstellen, prüfen, versenden.
+  - **Modus 17 (Kontoauszüge importieren)** — alte Auszüge als PDF oder CSV nachträglich einlesen.
+    Das ist der Modus, der die 90-Tage-Lücke schließt: Banken geben über die automatische Verbindung
+    meist nur die letzten 90 Tage heraus — ältere Umsätze holst du damit trotzdem sauber rein.
+- Der Tiefen-Check wurde mit "12 Prüfungen" angegeben. Es sind **17** — die drei neuesten prüfen
+  doppelt importierte Kontoumsätze, deine Konto-Stammdaten (IBAN) und ob eine Prüfung mangels Daten
+  ins Leere läuft.
+
+**Was sich für dich ändert**
+- Anleitung, FAQ und Werkzeug-Übersicht nennen jetzt alle dieselben, am Code geprüften Zahlen.
+- An deiner Buchhaltung ändert sich **nichts** — es war reine Dokumentation. Die Funktionen liefen die
+  ganze Zeit, sie standen nur nicht in deiner Anleitung.
+
+**Unter der Haube**
+- Neue Regel (`system/HARD-RULES.md` #18b): Zahlenangaben in der Doku (Modi, Prüf-Dimensionen) werden
+  vor dem Schreiben am Code gezählt, nie aus dem Gedächtnis oder aus einer anderen Doku-Datei
+  übernommen — sonst pflanzt sich ein alter Stand fort. Mit Prüfbefehlen hinterlegt.
+- Korrigiert außerdem: ein falscher interner Verweis in `TOOLS.md` (Modus 1 ruft am Ende den
+  Health-Check auf, Nummer 16 — dort stand noch die alte 14), die Dimensions-Zahl in Brunos eigener
+  Arbeitsanweisung, und eine letzte veraltete Zeile in der internen Architektur-Notiz, die den
+  Mail-Import fälschlich als "nur Gmail" beschrieb (IMAP für gängige Anbieter ist seit v1.11 gebaut).
+
+**Wissensstand:** unverändert (2026-07-12) — reine Dokumentations-Korrektur, keine Auswirkung auf Buchungen oder Steuerlogik.
+
+---
+
+## v1.64.0 — Neues Report-Design für alle Berichte
+
+**Neue Funktionen**
+- Deine Berichte (Lauf-Report, Buchhaltungs-Report, Health-Check) haben ein neues, klareres Design
+  bekommen. Ganz oben steht jetzt auf einen Blick, was Bruno erledigt hat und was noch DEINE Aktion
+  braucht — mit einem Sprungmenü direkt zu den wichtigen Stellen.
+- Neu oben im Bericht: ein farbiger "Auf einen Blick"-Bereich (grün/gelb/rot), ein Verifiziert-Ring
+  (wie viel Prozent der Buchungen rückgeprüft sind) und eine kurze Kennzahlen-Reihe. Falls etwas von
+  dir zu tun ist, klebt oben eine Hinweis-Leiste mit Sprung direkt zur Aufgabe.
+
+**Verbesserungen**
+- Angenehmer zu lesen: neue Schrift (Manrope für Text, Monospace-Ziffern für Zahlen), mehr Ruhe im
+  Layout, klare Ampel-Farben statt bunt. Zahlen tragen weiterhin ihre Einheit, jede Kennzahl ihre
+  Erklärung — nichts muss geraten werden.
+- Druck/PDF sauber: A4-Layout, die Hinweis-Leiste und das Sprungmenü werden beim Drucken automatisch
+  ausgeblendet.
+- Der Bericht ist eine einzelne HTML-Datei ohne Internet-Abhängigkeit — öffnet offline und lässt sich
+  ohne Zusatzsoftware speichern oder drucken.
+
+**Unter der Haube**
+- `system/_lib/report-html.mjs` (der Report-Baustein für ALLE Modi) auf das abgenommene Design aus dem
+  Design-System umgestellt. Bestehende Berichte funktionieren unverändert weiter — die neuen Elemente
+  (Hinweis-Leiste, Sprungmenü, Verifiziert-Ring) sind optional und erscheinen nur, wo sinnvoll.
+- Das Ursprungs-Design liegt als Referenz in `system/_design-ref/` (nur Quelle, nicht Teil der
+  ausgelieferten Berichte — diese bleiben eigenständige HTML-Dateien).
+
+**Wissensstand:** unverändert (2026-07-12) — reine Design-Änderung, keine Auswirkung auf Buchungen oder Steuerlogik.
+
+---
+
+## v1.63.0 — Health-Check zeigte falsche Alarme + ein Status bleibt technisch bei "teilweise"
+
+**Teil 1 — falsche Alarme bei Belegen mit zwei Dokumenten**
+- Manche Anbieter schicken zu einem Kauf ZWEI PDFs mit derselben Rechnungsnummer: die Rechnung und
+  eine separate Zahlungsbestätigung. Bei zwei dieser Belege hatte die automatische Texterkennung die
+  Zahlungsbestätigung fälschlich als "Rechnung" eingestuft — einmal mit dem Betrag VOR einem Rabatt
+  statt danach, einmal mit einem erfundenen Steuersatz auf einem Screenshot. Der Health-Check nahm
+  diese falschen Werte als Vergleichsbasis und meldete drei Alarme, die es nicht gab.
+- **Deine Buchungen selbst waren die ganze Zeit korrekt** — betroffen war nur die Anzeige im Prüfbericht.
+
+**Was sich für dich ändert**
+- Erscheinen künftig zwei Dokumente zu derselben Rechnungsnummer, prüft Bruno jetzt zusätzlich: zuerst,
+  ob eines davon nur ein Bildschirmfoto ist (dann gewinnt das echte PDF), dann, welches zum tatsächlich
+  gebuchten Betrag passt. Bleibt es trotzdem uneindeutig, wird nichts mehr geraten: der Beleg gilt dann
+  als "nicht geprüft" statt einen falschen Alarm zu erzeugen.
+- Insgesamt sind dadurch 8 falsche Alarme aus dem Prüfbericht verschwunden.
+
+**Teil 2 — Status "750" bei manchen Abo-Rechnungen ist kein Fehler**
+- 10 Qonto-Monatsrechnungen aus 2025 zeigten "Status 750 trotz Vollzahlung" als kritischen Alarm. Nach
+  genauer Prüfung: Das ist bei Rechnungen, die durch VIELE kleine Einzelbuchungen beglichen werden
+  (nicht durch eine einzige Zahlung), eine technische Grenze deines Buchhaltungssystems — der Status
+  "vollständig gebucht" lässt sich dort nicht erreichen, obwohl bewiesen ist, dass exakt der richtige
+  Betrag verbucht wurde. Ein Korrekturversuch (an einem Einzelfall live getestet) bestätigte das, ohne
+  etwas zu beschädigen.
+- Der Prüfbericht sagt das jetzt auch so: bei diesen Fällen steht "kosmetisch, kein Handlungsbedarf"
+  statt eines falschen "das lässt sich reparieren".
+
+**Unter der Haube**
+- `system/_lib/health-check.mjs`: Canonical-Auswahl bei mehreren gleich-eingestuften Dokumenten pro
+  Rechnungsnummer wählt jetzt zweistufig (echte PDF-Datei vor Bildschirmfoto, dann Betrag) statt
+  "erster/letzter gewinnt". Empfehlungstext bei "Status 750" unterscheidet jetzt zwischen echt
+  heilbaren und technisch nicht heilbaren Fällen.
+- Zwei betroffene Beleg-Dateien selbst korrigiert (Betrag/Steuersatz gegen das Original-PDF berichtigt,
+  Backups angelegt). Neues Diagnose-Werkzeug `durchbucher-a2.mjs` für künftige Fälle dieser Art.
+- Kanarien-Test nach jeder Änderung grün (7/7) — bestehende Prüflogik nicht angefasst, nur die
+  Mehrdeutigkeits-Auflösung gehärtet und ein Empfehlungstext präzisiert.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.62.1 — Nachtrag: zwei weitere Stellen, die den Postfach-Import verschwiegen
+
+**Was noch fehlte**
+- Die Korrektur aus v1.62.0 hatte zwei Dateien übersehen: die **FAQ** („Der automatische Mail-Import braucht aktuell Gmail") und eine interne Wissensdatei („Bruno kann heute nur Gmail"). Beide stammten aus der Zeit vor dem Einbau.
+- **Warum sie durchrutschten:** Gesucht wurde nach Stichwörtern wie „IMAP" oder „Gmail-only" — beide Sätze enthalten keins davon. Sie sagen dasselbe in normaler Sprache.
+
+**Behoben**
+- **FAQ:** „Ich habe kein Gmail — geht das?" wird jetzt richtig beantwortet, samt Anbieterliste, Hinweis auf den Verbindungstest und der Zusicherung, dass Bruno im Postfach ausschließlich liest.
+- **Wissensdatei:** Der Rechercheteil vom 7. Juli bleibt unverändert erhalten (die Server-Adressen und Klickwege sind weiterhin gültig), bekommt aber oben einen klaren Aktualitäts-Hinweis. Recherche wird nicht umgeschrieben, sondern datiert.
+
+**Damit das nicht wieder passiert**
+- Die interne Prüfregel sucht ab jetzt nach der **Aussage** statt nach dem Stichwort — also nach Formulierungen wie „braucht", „nur", „ohne", „setzt voraus". Zusätzlich wird jede Kundendatei einzeln geöffnet: Dort steht so etwas in Alltagssprache, und genau dort richtet es Schaden an.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.62.0 — Kein Gmail? Bruno konnte dein Postfach die ganze Zeit lesen
+
+**Was passiert ist**
+- Bruno liest seit Version 1.11 nicht nur Gmail, sondern auch **GMX, WEB.DE, T-Online, iCloud, Posteo, mailbox.org, IONOS, Strato, freenet, Arcor und Yahoo** direkt aus dem Postfach. Das ist gebaut, getestet und an einem echten Postfach verifiziert.
+- **Nur: die Einrichtung hat es verschwiegen.** Wer beim Onboarding "ich habe kein Gmail" sagte, bekam die Antwort, es gebe keinen automatischen Postfach-Import, und wurde zum manuellen Ordner geschickt. Auch die Einrichtungs-FAQ sagte das. Ein Fehler in der Anleitung, nicht in der Software.
+- Ursache: Ein alter, verworfener Anlauf hatte einen Hinweis hinterlassen, der nach dem Neubau nie korrigiert wurde.
+
+**Was sich für dich ändert**
+- **Beim Einrichten wird der Postfach-Zugang jetzt angeboten**, samt genauem Klickweg für deinen Anbieter (bei den meisten einmalig freischalten, bei iCloud und Yahoo ein App-Passwort erzeugen) und einem Verbindungstest vorab.
+- **Bruno liest dabei ausschließlich.** Er markiert nichts, verschiebt nichts und löscht nichts in deinem Postfach — das ist technisch abgesichert, nicht nur zugesagt.
+- **Mehrere Postfächer** gehen ebenfalls, auch bei verschiedenen Anbietern.
+- Bei **Outlook/Microsoft 365** bleibt es ehrlich: Manche Konten sperren den Zugriff serverseitig. Bruno testet das, bevor du etwas einrichtest, statt es zu versprechen.
+- Der Ordner zum Reinlegen von PDFs und Fotos bleibt zusätzlich nutzbar — als Ergänzung, nicht als Notlösung.
+
+**Damit so etwas nicht wieder passiert**
+- Neue interne Regel: Wird eine Funktion entfernt **oder neu gebaut**, gilt die Arbeit erst als fertig, wenn alle Stellen dasselbe sagen — die interne Beschreibung, der gesprochene Einrichtungstext, die FAQ und der Changelog. Widersprechen sich zwei Stellen, entscheidet der Code, nicht die ältere Notiz.
+- Ehrlichkeits-Grenze festgeschrieben: Aussagen, die ein Kunde am eigenen System widerlegen kann, kommen nicht in die Unterlagen. Deshalb heißt es "Gmail plus alle gängigen Anbieter" und nicht "jedes Postfach".
+
+**Unter der Haube**
+- `CLAUDE.md`: Falschaussage ersetzt, Historie als Hinweis erhalten (damit der Punkt nicht erneut "aufgelöst" wird) · `SKILL.md` Onboarding 2.2: IMAP-Weg mit Klickweg, Health-Check und Read-only-Zusage statt Absage · `SETUP-GUIDE.md` FAQ korrigiert · neue HARD-RULE #18.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.61.0 — Rechnungen mit mehreren Steuersätzen werden jetzt richtig aufgeteilt
+
+**Warum das wichtig ist**
+- Eine Hotelrechnung trägt zwei Steuersätze: 7 % auf die Übernachtung, 19 % auf Frühstück und Parkplatz. Dasselbe bei Catering, bei Druck plus Porto, bei vielen Restaurantrechnungen. Bruno hat solche Belege bisher mit **einem einzigen Steuersatz auf alles** gebucht.
+- Was das kostet, am echten Beispiel (Hotelrechnung über 385,29 €): Mit 7 % auf alles hättest du **15,39 € Vorsteuer zu wenig** gezogen. Mit 19 % auf alles **12,60 € zu viel gemeldet** — und zu viel gemeldete Vorsteuer ist die unangenehmere Richtung, das ist eine unrichtige Voranmeldung.
+- Richtig sind 18,90 € aus dem 7-%-Teil plus 15,39 € aus dem 19-%-Teil, zusammen **34,29 €**. Genau das bucht Bruno ab jetzt.
+
+**Neue Funktionen**
+- **Bruno erkennt beim Lesen einer Rechnung, welche Position welchen Steuersatz trägt**, und legt im Buchhaltungssystem pro Steuersatz eine eigene Buchungszeile an. Getestet mit einer Rechnung, die alle drei Sätze gleichzeitig trägt: 12,50 € Porto (0 %), 180 € Druck (7 %), 620 € Grafik (19 %) — alle drei landen sauber getrennt, Vorsteuer 130,40 €, Summe auf den Cent.
+- **Es wird nichts geraten.** Steht der Steuersatz nicht an jeder Position, oder ist die Aufteilung unklar, bucht Bruno wie bisher mit einem Satz und meldet den Beleg zur Prüfung — statt sich eine Aufteilung auszudenken. Im Test wurde das an vier normalen Ein-Satz-Rechnungen gegengeprüft: keine erfundene Aufteilung.
+- **Der Gesundheits-Check prüft solche Belege mit.** Er rechnet nach, ob die Summe aller Positionen zum Rechnungsbetrag passt, und fragt nach, wenn eine 0-%-Position neben normal besteuerten steht (steuerfrei oder Auslandsleistung? — das ist eine echte Steuerfrage, die dein Steuerberater entscheiden sollte).
+
+**Ein Angebot wird nicht mehr versehentlich als Rechnung gebucht**
+- Angebote tragen oft den Satz „Dies ist ein Angebot, keine Rechnung." Ausgerechnet das Wort „Rechnung" in dieser Verneinung hat Brunos Angebots-Erkennung ausgehebelt — **der Beleg, der am deutlichsten sagt, dass er keiner ist, rutschte durch.** Im Test kam ein Angebot über 5.355 € als ganz normale, buchbare Rechnung an.
+- Ab jetzt zählt ein verneintes „keine Rechnung" nicht mehr als Rechnungs-Nachweis, und eine Angebotsnummer ohne jede Rechnungsnummer gilt immer als Angebot. An 120 echten Belegen gegengeprüft: keine einzige Änderung am bisherigen Verhalten, nur das Angebot wird zusätzlich abgefangen.
+
+**Verbesserungen**
+- **Die Vorschau vor dem Buchen zeigt jetzt den richtigen Betrag.** Bei der Hotelrechnung stand dort „288,90" — das war nur die erste Position, nicht die 385,29 € des Belegs. Gebucht und geprüft wurde immer korrekt, aber eine Vorschau, die einen falschen Betrag nennt, verleitet dazu, etwas freizugeben, das man nicht gesehen hat. Jetzt steht dort der Gesamtbetrag samt Aufschlüsselung.
+
+**Wie das geprüft wurde**
+- An acht eigens dafür gebauten Testrechnungen, echt durch die komplette Kette: lesen, einordnen, ins Buchhaltungssystem buchen, zurücklesen, wieder löschen. Die beiden Testbuchungen wurden anschließend restlos entfernt (Nachweis: Abruf liefert „nicht gefunden"), die Testeinträge in den Anbieterlisten zurückgenommen und per Prüfsumme bestätigt, dass der Ausgangszustand exakt wiederhergestellt ist.
+
+**Unter der Haube**
+- Zwei Stellen verwarfen das Positions-Feld still: `normalize()` in `ocr/index.mjs` (baut ein neues Objekt aus fester Feldliste) und `toCanonical()` in `sort.mjs`. Der komplette Mehrsatz-Pfad im Mapper, im Buchungs-Gate und im Readback existierte bereits — er wurde nie erreicht. Beweis vor dem Fix: 0 von 1.587 gespeicherten Belegen trugen das Feld. Positions-Filterung ist rein deterministisch (nur 0/7/19, mindestens zwei verschiedene Sätze, sonst `null`).
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.60.0 — Der Betrugsschutz ist jetzt aktiv (und deine Kontonummer korrigiert)
+
+**Neue Funktionen**
+- **Der Betrugsschutz aus der letzten Version läuft ab sofort automatisch mit.** Er war gebaut und getestet, hing aber noch nicht im Buchungsweg — also wirkungslos. Jetzt wird jeder Beleg vor dem Buchen geprüft.
+- **Ein Verdacht blockiert unabhängig von den Buchungsregeln.** Das ist der Kern: Eine untergeschobene Rechnung ist buchungstechnisch völlig unauffällig — richtiger Betrag, richtige Steuer, richtige Richtung. Nur die Bankverbindung stimmt nicht. Im Test wurde genau so ein Beleg blockiert, obwohl alle Buchungsprüfungen grün waren.
+- **Auch ein „trotzdem buchen" hebt den Betrugsverdacht nicht auf.** Wer eine Buchungsregel bewusst übergeht, meint die Buchungslogik — nicht „ich habe die Echtheit geprüft".
+
+**Verbesserungen**
+- **Deine Qonto-Kontonummer ist korrigiert** — und zwar automatisch. Bruno hatte zuvor behauptet, das ginge nur von Hand. Beim Nachtesten stellte sich heraus: Die Einschränkung gilt für Firmen-Stammdaten, nicht für Konten. Zwei Stellen fehlten, jetzt stimmt sie.
+- **Der Schutz kennt jetzt deine Anbieter-Historie** (rund 1.500 Vergleichsbelege aus deinem Archiv). Ohne sie könnte die wichtigste Prüfung — „dieser Lieferant hatte immer eine andere Bankverbindung" — gar nicht anschlagen.
+- **Fehlt die Historie, sagt Bruno es laut.** Beim ersten Einhängen fand er null Vergleichsbelege und hätte still weitergeprüft, ohne etwas finden zu können. Jetzt erscheint eine deutliche Warnung statt einer falschen Entwarnung.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.59.0 — Bruno sagt dir am Ende, was als Nächstes dran ist
+
+**Warum das wichtig ist**
+- Bisher endete jeder Lauf mit einer Liste offener Punkte. Die sagt, was **offen** ist — nicht, was **zuerst** dran ist und warum. Bei zehn offenen Punkten war das Sortieren deine Arbeit, nicht deine Entscheidung.
+
+**Neue Funktionen**
+- **Jeder Bericht endet jetzt mit einer Empfehlung.** Höchstens drei Schritte, priorisiert, jeder mit einem Satz „warum jetzt" und einer Risiko-Einschätzung in normaler Sprache: umkehrbar? braucht es deine Freigabe? kann etwas verloren gehen? Dazu ausdrücklich, was **bewusst warten kann**.
+- **„Nichts tun" ist eine gültige Empfehlung** — wenn der Zustand stabil ist, sagt Bruno das, statt Arbeit zu erfinden.
+- Was Bruno selbst erledigen könnte, bietet er an („sag Bescheid, dann mache ich das") statt es dir als Aufgabe zu geben.
+
+**Verbesserungen — zwei Regeln, die es zwar gab, die aber nicht griffen**
+- **Erkenntnisse landen jetzt sofort in den Regeldateien.** Die Pflicht stand schon da, aber nur als Nebensatz — und wurde prompt einmal übersehen: vier von fünf Erkenntnissen wurden eingetragen, die fünfte blieb im Chat und wäre verloren gewesen. Jede Lehre nennt ab sofort die Datei, in der sie steht; fehlt die Angabe, gilt der Punkt als unfertig.
+- **Vor dem endgültigen Löschen wird jetzt geprüft, ob eine Sicherung existiert.** Auch diese Regel stand bereits, war aber unbelegt: Das neue Aufräum-Werkzeug hatte keinen Rückweg — die Sicherung war reiner Zufall. Jetzt bricht das Werkzeug ab, wenn keine vollständige Sicherung vorliegt.
+
+**Die dahinterliegende Einsicht**
+- **Eine Regel, die nur im Fließtext steht, wird in langen Läufen übersehen** — nicht aus Nachlässigkeit, sondern weil nichts sie abfragt. Neue Regeln bekommen deshalb einen eigenen Auslöser („nach jedem X", „bevor Y läuft") und möglichst eine sichtbare Spur, an der man später prüfen kann, ob sie eingehalten wurde.
+- Beide Erkenntnisse gelten nicht nur für Bruno und stehen deshalb zusätzlich in den übergreifenden Grundregeln.
+
+**Unter der Haube**
+- `CLAUDE.md`: Report-Block 12 (🧭 Empfehlung) + Eintragungs-Pflicht mit Fundstelle und Selbstprüfung · `docs/GRUNDREGELN.md` Cluster 6 (Learning ohne Fundstelle = unfertig · Nebensatz-Warnung) + Cluster 8 (Empfehlung auch nach Arbeits-Läufen, bisher nur nach Analysen) · `SKILL.md` auf 12 Blöcke · `dubletten-bereinigen.mjs`: Sicherungs-Gate vor Phase 2/3 + ehrliche Rollback-Lage im Kopf · `state.md` auf aktuellen Stand.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.58.1 — Schutz vor untergeschobenen Rechnungen
+
+**Warum das wichtig ist**
+- Wenn Bruno dein Postfach nach Rechnungen durchsucht, findet er alles, was dort ankommt — auch das, was jemand dir absichtlich geschickt hat. Firmenname, Logo und eine echt aussehende Bankverbindung lassen sich besorgen. Landet so eine Rechnung unbemerkt in der Buchhaltung, sieht sie dort **vertrauenswürdig aus** (sie kommt ja aus deinem eigenen System) — und wird später bezahlt.
+
+**Zuerst die Entwarnung**
+- **Bruno überweist nichts.** Es gibt in seinem gesamten Code keine Funktion, die Geld bewegt. Der bekannteste Angriff — „Rechnung mit getauschter Kontonummer, Software zahlt automatisch" — ist hier nicht möglich, nicht weil eine Regel es verbietet, sondern weil die Fähigkeit fehlt.
+- Der echte Schaden wäre indirekt: eine erfundene Rechnung, die **du** später in gutem Glauben bezahlst, plus falsch gezogene Vorsteuer.
+
+**Neue Funktionen**
+- **Prüfungen vor dem Buchen.** Die wichtigste: **Bekannter Lieferant, aber plötzlich eine andere Bankverbindung** → wird nie automatisch gebucht. Das ist das häufigste Muster bei manipulierten Rechnungen.
+- Dazu: ungewöhnlich hoher Betrag für diesen Anbieter · Formulierungen, die zur schnellen Zahlung drängen · Absender-Domain passt nicht zum Anbieter · brandneuer Anbieter mit sofort hoher Summe.
+- Bei Verdacht sagt Bruno auch, **wie** du prüfst: beim Anbieter über eine Nummer aus einem alten Beleg zurückrufen — niemals über die Kontaktdaten aus der verdächtigen Mail.
+
+**Was ausdrücklich KEIN Verdacht ist**
+- **Eine noch nicht bezahlte Rechnung.** Das war zwischenzeitlich als Warnsignal eingebaut und wurde auf Marcels Einwand wieder entfernt. „Beleg da, Zahlung noch nicht" ist völlig normal: Das Zahlungsziel läuft noch, man hat es schlicht noch nicht überwiesen, die Lastschrift kommt später, oder die Bankdaten reichen nicht weit genug zurück.
+- Der Zustand lässt sich von einer echten offenen Rechnung nicht unterscheiden. **Ein Kriterium, das bei vielen korrekten Belegen anschlägt, ist kein Kriterium** — und ein Schutz, der ständig grundlos warnt, wird abgeschaltet und schützt danach gar nichts mehr.
+
+**Für Betriebe, in denen die Buchhaltung nicht selbst bestellt**
+- Neue Einstellung `beleg_freigabe`. Wer alles selbst beauftragt, erkennt eine erfundene Rechnung am Inhalt — dort meldet Bruno nur echte Auffälligkeiten.
+- Wo aber jemand Belege verbucht, die **andere** beauftragt haben (angestellte oder externe Buchhaltung), fehlt der stärkste Schutz überhaupt: der Mensch, der sagt „das habe ich nie bestellt". Dann meldet Bruno eine Stufe früher und empfiehlt bei **jedem neuen Lieferanten** eine Bestätigung durch die bestellende Person.
+
+**Kein Fehlalarm-Automat**
+- Von 21 Tests sind acht bewusst **Gegenproben**: normale Preisschwankungen, Rechnungsdienstleister wie Paddle, ein neuer kleiner Anbieter, eine noch offene Rechnung — nichts davon darf Alarm auslösen. Ein Schutz, der ständig grundlos warnt, wird abgeschaltet und schützt dann gar nichts.
+- Danach wurde jede Prüfung einzeln außer Kraft gesetzt, um nachzuweisen, dass sie wirklich greift.
+
+**Dabei zwei eigene Fehler gefunden**
+- Die Kontonummer-Erkennung las bei Nummern mit Leerzeichen das folgende Wort mit — der Vergleich hätte **nie** angeschlagen, die Kernprüfung wäre wirkungslos gewesen.
+- Die Ausnahmeliste für Rechnungsversender enthielt das Wort „billing" — ein Angreifer hätte nur eine Domain mit „billing" registrieren müssen, um die Prüfung abzuschalten. Beides behoben.
+
+**Unter der Haube**
+- Neu `system/_lib/betrug-gate.mjs` (Signale S1–S5 + S7; S6 = wirkungslose Kontext-Notiz) · neu `tools/sevdesk-connector/canary-betrug.mjs` (21 Kanarien, sabotage-verifiziert) · HARD-RULE #17 dokumentiert · `PROFIL.md → beleg_freigabe`.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.57.0 — „Grün" heißt jetzt wirklich geprüft, nicht nur „nichts gefunden"
+
+**Warum das wichtig ist**
+- Eine Prüfung braucht Werte. Fehlt der Betrag oder die Rechnungsnummer auf einem Beleg, konnte Bruno bisher nichts vergleichen — und meldete stillschweigend nichts. **Für dich sah das aus wie „alles in Ordnung".** In Wahrheit hieß es nur: „hier konnte ich gar nicht hinsehen."
+- Der unangenehme Teil: Genau bei schlecht erkannten Belegen fehlen diese Felder am häufigsten. Die Prüfung war also ausgerechnet dort blind, wo sie am nötigsten gewesen wäre.
+
+**Neue Funktionen**
+- **Datenlücken werden jetzt gemeldet.** Bruno sagt dir, bei wie vielen Belegen ein prüfrelevantes Feld fehlt und welche Prüfung dadurch ausfällt — im Klartext: „Sie sind nicht geprüft-und-sauber, sondern ungeprüft."
+- **An deinem Bestand gefunden** (1.321 Belege): Rechnungsnummer fehlt bei 34 %, Steuersatz bei 23 %, Bruttobetrag bei 12 %. Diese Belege liefen bisher unbemerkt durch.
+- Gemeldet wird die **Quote**, nicht jeder einzelne Beleg — sonst wäre der Report unlesbar. Ab 20 % als Warnung, ab 5 % als Hinweis.
+- Es ist ausdrücklich **kein Buchungsfehler**, sondern eine Frage der Beleg-Erkennung. Der Vorschlag lautet entsprechend: Stichprobe lesen, bei systematischem Ausfall die Texterkennung wechseln.
+
+**Woher der Hinweis kam**
+- Aus einem Befund in Marcels Buchhaltungs-App: Dort übersprang eine Prüfung Belege ohne Steuerwert — ein Beleg mit **„2026 €" als Nettobetrag** (in Wahrheit die Jahreszahl aus dem PDF) lief durch achtzehn Prüfungen, ohne dass etwas auffiel. Marcel fragte, ob daraus für Bruno etwas folgt. Es folgte.
+- **Der Gedanke dahinter gilt überall:** Ein fehlender Wert ist kein „nichts zu prüfen", sondern ein „ich kann nicht prüfen".
+
+**Verbesserungen**
+- Eine Prüfung („Mixed-Tax") hatte bisher gar keinen hinterlegten Lösungsweg — beim Bauen aufgefallen und nachgetragen.
+
+**Unter der Haube**
+- Neu Dim 17 „Datenlücken" in `system/_lib/health-check.mjs` (Quoten-Meldung je Feld, Schwellen 5 %/20 %, Reparatur-Art `beleg`) · Muster übernommen vom bestehenden Blindfleck-Wächter aus Dim 12, der seit 2026-07-13 existierte, aber nie auf die übrigen Felder angewandt wurde · Reparatur-Weg für Dim 16 nachgetragen.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.56.0 — Der Health-Check sagt dir jetzt auch, wie du es behebst
+
+**Warum das wichtig ist**
+- Bisher endete jeder Befund bei „hier ist ein Problem". Was man dagegen tun kann, stand nirgends — obwohl Bruno für fast jeden Fall längst ein Werkzeug hatte. Konkret: **neun Reparatur-Werkzeuge existierten, in vierzig Befunden wurde genau eines erwähnt.**
+- Für dich hieß das: Du liest „6 Belege mit falscher Steuerregel" und weißt nicht, ob das zehn Minuten oder zwei Tage Arbeit sind, ob Bruno das kann oder du ranmusst.
+
+**Neue Funktionen**
+- **Jeder Befund sagt jetzt, wer ihn beheben kann.** Am Ende des Health-Checks stehen drei Gruppen:
+  - 🔧 **Bruno kann das beheben** — mit dem Hinweis, dass immer erst ein Trockenlauf läuft
+  - 👤 **Nur du kannst das** — etwa eine Kontonummer, die das Buchhaltungssystem nur per Hand ändern lässt
+  - 📄 **Beleg fehlt** — kein Softwareproblem, die Rechnung muss beschafft werden
+- **Endgültige Schritte sind als solche gekennzeichnet.** Wo etwas gelöscht wird, steht sichtbar „ENDGÜLTIG — nur nach ausdrücklicher Freigabe" dabei. Umkehrbares ist ebenfalls als umkehrbar markiert, damit du weißt, wo du gefahrlos zustimmen kannst.
+- **Am echten Bestand:** 21 Befunde könnte Bruno selbst beheben, 19 brauchen dich, 2 brauchen eine Rechnung — und **kein einziger** blieb ohne bekannten Weg.
+
+**Warum es kein eigener Menüpunkt geworden ist**
+- Der erste Vorschlag war ein zusätzlicher Modus „Reparatur". **Marcels Einwand hat ihn verworfen:** Reparatur ist immer die Folge einer Prüfung, kein eigener Einstieg. Ein separater Menüpunkt hätte das Problem nur verlagert — wer einen Befund liest und keinen Hinweis auf eine Lösung sieht, findet auch nie in einen Reparatur-Modus.
+- Deshalb hängt die Lösung jetzt direkt am Befund, wo du sie ohnehin liest.
+
+**Verbesserungen**
+- Der Health-Check bleibt wie bisher **rein lesend**. Er sagt, was möglich wäre — ausgeführt wird nur über die gewohnten Freigaben.
+- **Neue Regel intern:** Eine neue Prüfung gilt erst als fertig, wenn ihr Reparaturweg hinterlegt ist. Sonst entstehen wieder Befunde ohne Ausweg.
+
+**Unter der Haube**
+- Neu `system/_lib/reparaturen.mjs` (Zuordnung Befund → Werkzeug, mit `art` automatisch/nutzer/beleg und `umkehrbar` ja/teilweise/nein; feine Fälle über `kind` statt `dim`) · `health-check.mjs` hängt sie an jedes Finding (`f.reparatur`) und zählt sie in `summary.reparierbar` · Chat-Report um die Sektion „Was sich davon beheben lässt" ergänzt.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.55.0 — Bruno kann jetzt sehen, welcher Beleg an welcher Kontobewegung hängt
+
+**Warum das wichtig ist**
+- Wenn eine Rechnung mit einer Kontobewegung verknüpft ist, war diese Verbindung für Bruno bisher unsichtbar. Er konnte sie herstellen, aber nicht nachlesen. Das klingt harmlos, ist es aber nicht: Sobald man eine solche Verbindung löst — etwa beim Aufräumen doppelter Kontobewegungen — war sie **unwiederbringlich weg**. Man hätte anschließend raten müssen, welche Rechnung zu welcher Zahlung gehört.
+- Am konkreten Fall: Von 127 verknüpften Kontobewegungen wären nur 37 sicher wiederherstellbar gewesen. Die übrigen 90 hättest du von Hand zuordnen müssen — bei gleichen Abo-Beträgen und Dollar-Rechnungen eine mühsame Rätselei.
+
+**Neue Funktionen**
+- **Bruno liest bestehende Verknüpfungen jetzt zuverlässig aus.** Ergebnis im Praxistest: **127 von 127** exakt aufgelöst, keine einzige Lücke, kein Raten über Beträge. Damit lassen sich Verknüpfungen gefahrlos lösen und danach wieder korrekt setzen.
+- **Pflicht vor jedem Lösen:** Bruno sichert die bestehenden Verbindungen erst in eine Datei, bevor er eine davon anfasst. Selbst wenn zwischendrin etwas schiefgeht, ist die Zuordnung dokumentiert.
+
+**Wie das gefunden wurde**
+- Ehrlich gesagt: Bruno hatte vorher behauptet, es ginge nicht. Zehn verschiedene Wege ausprobiert, alle erfolglos, und daraus geschlossen, dass die Schnittstelle das nicht kann.
+- Die Wahrheit stand seit fünf Tagen in Brunos eigener Dokumentation — er hatte nur eine von fünf Dateien durchsucht. **Marcels Nachfrage „hast du schon in der API-Dokumentation geschaut?" hat es aufgedeckt.**
+- Der entscheidende Hinweis kam dann aus einer ganz normalen Suche im Buchhaltungsprogramm: Die Oberfläche benutzte die ganze Zeit den Weg, den Bruno für nicht existent erklärt hatte.
+- **Regel daraus, fest eingebaut:** „Steht nicht in der Spezifikation" heißt nicht „geht nicht". Bevor Bruno künftig etwas für unmöglich erklärt, prüft er alle eigenen Unterlagen und sieht nach, welchen Weg die Oberfläche selbst nimmt.
+
+**Verbesserungen**
+- **Zwei Fehlalarme im eigenen Prüfvorgehen abgestellt.** Das Buchhaltungssystem meldet „erfolgreich" auch dann, wenn es eine Änderung stillschweigend verworfen hat. Bruno prüft deshalb ab jetzt nach jeder Änderung frisch nach, statt der Erfolgsmeldung zu glauben. Ebenso bei Filtern: Ein Filter, der zufällig plausibel aussieht, wird mit einem zweiten Wert gegengeprüft — genau so fiel auf, dass einer gar nicht funktioniert.
+
+**Unter der Haube**
+- `GET /CheckAccountTransaction?embed=log,log.object` liefert `log[].object` = der verknüpfte Voucher (undokumentiert, aus UI-Traffic; Readback bleibt Pflicht) · `system/connectors/sevdesk/CAPABILITIES.md` mit der vollständigen Negativ-Tabelle (10 getestete Wege) plus dem Nachtrag, der sie überholt · Sicherung `_probe-out/BACKUP-links-127-2026-07-18.json`.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.54.0 — Der Health-Check findet doppelte Kontoumsätze und falsche Kontonummern
+
+**Warum das wichtig ist**
+- Die Vorprüfung aus v1.53.0 schützt ab jetzt vor doppelten Importen — aber nur bei NEUEN Importen. Was schon in den Büchern liegt, findet sie nicht. Und eine falsch hinterlegte Kontonummer fiel bisher überhaupt nirgends auf. Beides prüft der Health-Check (Modus 16) jetzt bei jedem Durchlauf mit.
+
+**Neue Funktionen**
+- **Doppelte Kontoumsätze werden gefunden.** Der Health-Check sucht denselben Umsatz in zwei verschiedenen Konten. Entscheidend ist dabei nicht die Menge, sondern die **Zeitgrenze**: Ein versehentlich doppelt eingelesener Zeitraum hört abrupt auf — echtes Geld, das zwischen deinen eigenen Konten hin und her fließt, ist über die Zeit verteilt. Nur der erste Fall wird als Fehler gemeldet, der zweite als harmlos eingestuft.
+  - Derselbe Umsatz **mehrfach im selben Konto** gilt bewusst nur als Hinweis, nie als Fehler: Sechs identische Kleinbeträge am selben Tag sind bei manchen Anbietern völlig normal. Bruno sagt dir, wo du nachsehen kannst, statt Alarm zu schlagen.
+  - Am Praxistest sofort gefunden: 548 doppelte Umsätze (Σ 44.881 €) im Zeitraum Januar bis Dezember 2025.
+- **Kontonummern werden geprüft.** Für jedes Konto: Ist eine Kontonummer hinterlegt? Ist sie gültig (Prüfziffer)? Tragen zwei Konten versehentlich dieselbe? Gibt es Konten ganz ohne Umsätze? Ein Konto ohne Kontonummer ist dabei nur ein Hinweis — bei einer Kasse ist das normal.
+  - Am Praxistest sofort gefunden: die zwei Stellen zu kurze Qonto-Kontonummer. Solange die falsch ist, kann jede Prüfung, die über sie läuft, gar nichts finden — ein blinder Fleck, der nirgends sichtbar wurde.
+
+**Verbesserungen**
+- **Der Health-Check wird nicht mehr stillschweigend blind.** Bisher hat er höchstens 2.000 Belege und 2.000 Kontoumsätze geladen — darüber hinaus hätte er den Rest einfach nicht geprüft und trotzdem grün gemeldet. Jetzt lädt er alles, seitenweise, und sagt es dir, falls doch je eine Grenze greift. Ein Prüfer, der blind wird, ohne es zu sagen, ist schlimmer als gar keiner.
+- **Beim Einlesen von Kontoauszügen (Modus 17) erklärt Bruno vorab in einem Satz**, was er prüft, bevor er etwas schreibt. Keine zusätzliche Rückfrage — nur damit du weißt, was passiert.
+
+**Sicherheit**
+- 12 neue automatische Tests. Danach wurde jede der vier Prüfungen einzeln absichtlich außer Kraft gesetzt, um nachzuweisen, dass genau der zuständige Test das meldet und kein anderer.
+- Dabei fiel auf, dass einer der Tests zunächst aus dem **falschen Grund** grün war: Der Fall scheiterte schon an einer früheren Bedingung und erreichte die eigentlich zu prüfende Stelle nie. Der Test wurde umgebaut, bis wirklich nur noch die Zeitgrenze über das Ergebnis entscheidet. Ein grüner Test, der nichts beweist, ist gefährlicher als gar keiner.
+- Der Health-Check bleibt wie bisher **rein lesend** — er schlägt vor, er ändert nichts.
+
+**Unter der Haube**
+- `system/_lib/health-check.mjs`: neue Dimensionen 14 (`pruefeDoppelteUmsaetze`, Inhalts-Schlüssel Datum|Betrag|Partner, Trennschärfe über Zeitgrenze + Anteil ≥50 % + ≥20 Treffer) und 15 (`pruefeKontenStammdaten`); `ibanGueltig` wird aus `import-preflight.mjs` importiert statt dupliziert (eine Quelle für beide Prüfungen) · `tools/sevdesk-connector/health-check.mjs`: `getPaged()` ersetzt die harten 2000er-Limits bei Belegen und Kontoumsätzen, `GET /CheckAccount` neu (fällt bei fehlender Berechtigung lautlos weg, statt falsch zu entwarnen) · neu `tools/sevdesk-connector/canary-health-konten.mjs` (12 Kanarien) · SKILL Modus 16 auf 15 Dimensionen aktualisiert (war auf 11 stehengeblieben), Modus 17 um den Transparenz-Satz ergänzt.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.53.0 — Kontoumsätze können nicht mehr doppelt oder ins falsche Konto importiert werden
+
+**Warum das wichtig ist**
+- Bei Marcel waren **555 Kontoumsätze aus 2025 doppelt** in der Buchhaltung (Σ 44.907 €). Ursache: eine Bank-Datei wurde in das falsche Konto eingelesen und Tage später nochmal in das richtige. Beide Konten sahen für sich plausibel aus, deshalb fiel es wochenlang nicht auf — es verfälschte aber Kontostand, Belegquote und Steuer-Vorschau. Diese Version macht genau das unmöglich.
+
+**Neue Funktionen**
+- **Vorprüfung vor jedem Einlesen von Kontoumsätzen.** Bevor auch nur eine Zeile geschrieben wird, beantwortet Bruno vier Fragen und bricht bei Bedarf ab:
+  - **Gehört die Datei überhaupt zu diesem Konto?** Viele Bank-Exporte nennen die eigene Kontonummer in der Datei. Passt sie nicht zum gewählten Konto, ist Schluss. Das ist der einzige Schutz, der schon beim allerersten Einlesen greift.
+  - **Wurde diese Datei schon einmal eingelesen?** Sind alle Zeilen bereits vorhanden, wird abgebrochen statt verdoppelt.
+  - **Liegen diese Umsätze schon in einem anderen Konto?** Genau der Fall, der die 44.907 € verursacht hat.
+  - **Holt die Bank diesen Zeitraum ohnehin selbst?** Bei verbundenen Konten liefert die Bank die letzten 90 Tage automatisch. Reicht deine Datei in dieses Fenster, warnt Bruno und nennt das passende Enddatum.
+- **Dein Szenario ist abgedeckt:** erst 2025 exportieren, dann versehentlich 2025+2026 und beides einlesen. Der bereits vorhandene Teil wird erkannt und übersprungen, der neue Teil geht durch — mit Hinweis, ohne Abbruch.
+- **Dubletten-Suche (`dubletten-report.mjs`).** Findet Kontoumsätze, die in zwei Konten doppelt liegen, und prüft selbst mit, ob es wirklich ein Fehl-Import war oder womöglich eine echte Doppelzahlung — im Zweifel rät es ab. Rein lesend; gelöscht wird nichts.
+
+**Verbesserungen**
+- **Qonto-Dateien lassen sich jetzt direkt einlesen**, ohne Umweg über eine vereinfachte Zwischendatei. Der Umweg hatte die Spalte mit der eigenen Kontonummer verworfen — also genau den Beweis, der den Fehl-Import verraten hätte.
+- **Zwei stille Fehlerquellen beim Einlesen behoben:** Der Status „Abgerechnet" (Qonto) wurde bisher nicht als abgeschlossen erkannt, wodurch **jede** Zeile verworfen worden wäre — gemeldet als harmloses „0 neu". Und Datumsangaben mit Bindestrich und Uhrzeit (`11-02-2026 21:54:30`) wurden gar nicht gelesen. Beides ist zu, inklusive Schutz davor, `11-02` als 2. November statt 11. Februar zu verstehen.
+- **Kontonummern werden auf Gültigkeit geprüft** (Prüfziffer). Dabei kam heraus, dass die Qonto-Kontonummer im Buchhaltungssystem zwei Stellen zu kurz hinterlegt ist — ein Fehler, der den Kontoabgleich an dieser Stelle dauerhaft blind gemacht hätte.
+
+**Sicherheit**
+- 16 automatische Tests, jede der fünf Schranken zusätzlich absichtlich außer Kraft gesetzt, um nachzuweisen, dass der zugehörige Test das auch meldet. Zum Schluss der Praxistest: die **echte** Datei von damals gegen das falsche Konto — Import gestoppt, keine Zeile geschrieben. Gegen das richtige Konto läuft dieselbe Datei sauber durch.
+- Wenn du sicher bist, dass die Vorprüfung sich irrt, gibt es einen bewusst umständlichen Notausgang (`--trotzdem-importieren`). Versehentlich tippt den niemand.
+
+**Unter der Haube**
+- Neu `system/_lib/import-preflight.mjs` (Tore T1/T1a IBAN + Prüfziffer nach ISO 7064 mod-97 · T2 Ziel-Dublette · T3 Fremdkonto-Dublette · T4 API-Fenster; offline testbar) · neu `tools/sevdesk-connector/canary-import-preflight.mjs` (16 Kanarien, jedes Tor sabotage-verifiziert) · neu `tools/sevdesk-connector/dubletten-report.mjs` (read-only, Trennschärfe-Prüfung + JSON-Export) · `import-transactions.mjs`: Vorprüfung vor dem ersten Write, Qonto-Rohformat-Erkennung, eigene Konto-IBAN aus dem Dateikopf (nur wenn alle Zeilen dasselbe Konto nennen), Status-Synonyme, Datums-Parser für Bindestrich+Uhrzeit · PROFIL.md: Qonto-IBAN auf die prüfziffer-gültige 22-stellige Fassung korrigiert.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.52.0 — Eigene Umbuchungen sicher erkennen (mit fünf Schutzschranken)
+
+**Neue Funktionen**
+- **Geld, das du zwischen deinen eigenen Konten hin und her schiebst, erkennt Bruno jetzt automatisch — und lässt es dich nicht mehr als „fehlenden Beleg" verfolgen.** Als Einzelunternehmer ist eine Umbuchung Geschäfts- ↔ Privatkonto eine Privatentnahme bzw. -einlage: dafür gibt es keine Rechnung und es braucht auch keine. Solche Bewegungen werden als „privat" gekennzeichnet (jederzeit rückgängig zu machen) und verschwinden aus deiner Liste offener Punkte. Deine Zahl „so viele Belege fehlen noch" wird damit endlich ehrlich.
+- **Bruno findet dein Privatkonto selbst.** Statt dich nach der IBAN zu fragen, leitet er sie aus deinen eigenen Kontobewegungen ab und prüft sie sechsfach gegen: Bankleitzahl, Kontoinhaber-Name, Geldfluss in beide Richtungen, Verwendungszweck, Häufigkeit und Abgleich mit deinen Geschäftskonten. Erst wenn alle sechs passen, gilt das Konto als bestätigt.
+
+**Verbesserungen (Sicherheit)**
+- **Fünf Schutzschranken verhindern, dass je eine echte Betriebsausgabe versehentlich als „privat" verschwindet:**
+  - **Rechtsform:** Bei GmbH/UG/AG ist die Automatik komplett gesperrt. Dort ist Geld zwischen Firma und Gesellschafter ein Darlehen bzw. eine verdeckte Gewinnausschüttung — das braucht einen Vertrag, keine schnelle Markierung.
+  - **Namensgleichheit:** Der Name muss **exakt** stimmen. Heißt du „Thomas Müller" und ein Lieferant „Thomas Müller Bedachungen GmbH", bleibt dessen Rechnung unangetastet. (Vorher hätte eine Teil-Übereinstimmung genügt — genau diese Lücke ist jetzt zu.)
+  - **Darlehen:** Steht im Verwendungszweck ein Hinweis auf Darlehen, Tilgung oder Gesellschafter, entscheidest du — nie die Automatik.
+  - **Zahlungsdienstleister:** Auszahlungen von Stripe, PayPal, Mollie & Co. werden nie als privat behandelt; sie gehören in die Verrechnung deiner Verkäufe.
+  - **Zwei-Signale-Regel:** Ein passender Name allein reicht nicht. Ohne zusätzliche Bestätigung durch die Kontonummer gibt es nur einen Vorschlag zum Ansehen, keine stille Buchung.
+- **Bewiesen statt behauptet:** 19 automatische Sicherheitstests prüfen diese Schranken. Zusätzlich wurde jede Schranke absichtlich außer Kraft gesetzt, um nachzuweisen, dass der zugehörige Test das auch wirklich meldet. Dabei fielen zwei echte Schwächen auf, die vorher niemandem aufgefallen wären: ein Test, der auch bei kaputter Schranke „grün" gemeldet hätte, und eine zu breite Sperre, die 72 korrekt markierte Umbuchungen (34.341 €) blockiert hätte. Beides ist behoben.
+
+**Unter der Haube**
+- Neu `system/_lib/privat-gate.mjs` (Gates G0 Status · G1 Rechtsform · G2 Identität exakt/IBAN · G3 Darlehen · G4 PSP; offline testbar ohne API) · neu `tools/sevdesk-connector/canary-privat.mjs` (19 Kanarien, Sabotage-verifiziert) · `mark-tx-privat.mjs`: `--payee` ist nur noch Vorauswahl, das Urteil fällt das Gate; Notausgang `--ich-habe-jede-tx-selbst-geprueft` hebt ausschließlich das Identitäts-Gate auf, Rechtsform- und PSP-Sperre bleiben scharf · PROFIL.md neu: `privat_konten`, `privat_kontoinhaber`, `eigene_geschaeftskonten` (Geschäfts-IBANs selbst aus `GET /CheckAccount` gelesen) · PROFIL-Parser: Klammer-Kommentare werden vor dem `|`-Split entfernt (erzeugten sonst Pseudo-IBANs), Platzhalter `[ leer … ]` zählen als nicht gesetzt.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.51.0 — Bild-Belege direkt beim Einlesen als PDF + noch robusterer Zahlungs-Schutz
+
+**Verbesserungen**
+- **Screenshot-/Foto-Belege werden jetzt schon beim Einlesen in ein PDF umgewandelt** — nicht erst als Reparatur beim Buchen. Ein abfotografierter oder gescreenshotteter Beleg (PNG/JPG) landet direkt als sauberes PDF in deiner Ablage, mit korrektem Namen. Damit ist der Buch-Lauf von vornherein abgesichert; die Zwischenlösung aus v1.50.0 wird gar nicht mehr gebraucht.
+- **Der Schutz vor doppelt verknüpften Zahlungen greift jetzt auch bei bereits begonnenen Teilzahlungen.** Bisher erkannte Bruno eine Teilzahlungs-Kette (viele kleine Abbuchungen für eine Rechnung) nur, solange sie komplett offen war. War eine Kette schon halb bezahlt, konnte eine der übrigen Abbuchungen fälschlich einer anderen Rechnung zugeordnet werden. Das ist jetzt zu: Bruno erkennt auch angefangene Ketten und hält die restlichen Abbuchungen für die richtige Rechnung frei. Gegen den realen Fehlerfall geprüft — er würde jetzt verhindert, ohne eine einzige korrekte Zuordnung zu blockieren.
+
+**Unter der Haube**
+- `sort.mjs writeBeleg`: Bild-Belege (png/jpg/jpeg/tiff/webp) → PDF via `sips` beim Ablegen (Fallback: Bild bleibt bei sips-Fehler erhalten), `belegBasename` strippt jetzt Bild-Endungen (kein `.png.png`-Doppelsuffix mehr) · `match-vouchers.mjs findSplitReservedTx`: neuer Teil-Split-Zweig (status 750 oder 0<paid<gross) neben dem Voll-Split-Zweig, konservativ (reserviert nur, blockt nie), Unit-getestet gegen den 17.07.-Vorfall + 0 Über-Reservierung im Live-Dry.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.50.0 — Screenshot-Belege werden sauber verarbeitet + bessere Kontoauszug-Erkennung
+
+**Verbesserungen**
+- **Screenshot-Belege (z. B. abfotografierte Abo-Rechnungen als PNG) werden jetzt zuverlässig gebucht:** Bisher konnte ein Bild-Beleg dazu führen, dass ein Buch-Lauf mittendrin abbrach, weil die passende PDF-Datei fehlte. Bruno wandelt Bild-Belege jetzt in ein PDF um, bevor er bucht — der Lauf läuft sauber durch. (Ein Sicherheits-Wächter hatte den Abbruch korrekt erkannt und gestoppt, bevor etwas Falsches passieren konnte.)
+- **Mehr Kontoauszüge werden automatisch als solche erkannt:** Auszüge im Fyrst-/Postbank-Stil („Alter Saldo / Neuer Saldo") landen jetzt zuverlässig im Kontoauszug-Archiv statt in der „unklar"-Ablage. Geprüft: echte Rechnungen werden dadurch nicht fälschlich als Auszug einsortiert.
+- **Besserer Dubletten-Schutz beim Buchen:** Manche Anbieter stellen pro Monat zwei Rechnungen aus (z. B. Qonto: eine Grundgebühr und eine Gesamtrechnung, in der die Grundgebühr schon enthalten ist) oder nummerieren identische Belege mal mit, mal ohne „#"-Präfix. Bruno erkennt solche Doppelerfassungen jetzt beim Gesundheits-Check und entfernt die Dublette (reversibel, mit Nachweis) — so zählt keine Ausgabe doppelt in Report und Umsatzsteuer.
+
+**Unter der Haube**
+- PNG→PDF-Konvertierung vor dem Upload (`sips`, GoBD-tauglich) · `statement-detect.mjs` Salden-Marker um „alter/neuer Saldo" + „Saldovortrag" erweitert (additiv, diff-getestet) · Health-Check Dim 6 fängt jetzt auch `#`-Präfix-Rechnungsnummern und inhaltsgleiche sha256-Dubletten über verschiedene Rechnungsnummern.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.49.0 — Kontoauszüge landen automatisch im Archiv + Schutz vor doppelt verknüpften Zahlungen
+
+**Neue Funktionen**
+- **Kontoauszüge werden jetzt automatisch archiviert:** Bisher hat Bruno aus deinen Kontoauszügen zwar die Umsätze eingelesen, das PDF selbst blieb aber liegen — obwohl Kontoauszüge 10 Jahre aufbewahrt und bei einer Betriebsprüfung vorgelegt werden müssen (§147 AO). Neu wandert jeder Auszug an einen festen Platz: **Belegarchiv → `<Jahr>` → `Kontoauszüge`**. Alle Konten eines Jahres liegen zusammen in EINEM Ordner, getrennt von den Rechnungen — im Quartalsordner stehen die Belege (*was* wurde gekauft), im Kontoauszüge-Ordner der Zahlungsnachweis (*dass* gezahlt wurde). Bei einer Prüfung hast du beides sofort zur Hand.
+- Der Ordner erkennt Dubletten am Inhalt, nicht am Dateinamen: derselbe Auszug wird nie doppelt abgelegt, auch wenn er anders heißt. Abgeschlossene Jahre (laut deinem Profil) bleiben unangetastet.
+
+**Verbesserungen**
+- **Schutz vor doppelt verknüpften Zahlungen:** Manche Anbieter (z. B. Qonto) begleichen eine Monatsrechnung nicht mit einer Abbuchung, sondern mit vielen kleinen — in Summe ergeben sie den Rechnungsbetrag. Solange so eine Kette noch unvollständig war, konnte der normale Bankabgleich eine dieser Teilzahlungen fälschlich einer *anderen* Rechnung zuordnen. Bruno erkennt solche Ketten jetzt und lässt die Finger davon (dafür ist ein eigener Abgleich zuständig). Der Schutz wurde gegen echte Daten geprüft: er hätte den realen Fehlerfall verhindert und blockiert dabei keine einzige korrekte Zuordnung.
+- **Ehrliche Laufzeit statt Schätzung:** Bruno misst die Dauer eines Laufs jetzt, statt sie im Bericht zu schätzen.
+- **Schneller bei gleicher Sorgfalt:** unabhängige Prüfschritte (z. B. mehrere Lieferanten-Rechnungen fachlich einordnen) laufen jetzt parallel statt nacheinander. Geprüft: identisches Ergebnis. Das eigentliche Buchen bleibt bewusst Schritt für Schritt — dort wäre Parallelbetrieb ein Risiko für Doppelbuchungen.
+
+**Unter der Haube**
+- Neu `tools/bank-statement-parser/archive-statements.mjs` (Inhalts-Erkennung statt Dateiname, sha256-Dedup, `buchungsjahre`-Guard, Dry-Run-Default, Idempotenz bewiesen) · Split-Guard `findSplitReservedTx` in `match-vouchers.mjs` (beide Kandidaten-Pfade, HARD-RULE #7f) · Speed-Standards + Nicht-Parallelisieren-Begründung in CLAUDE.md verankert.
+
+**Wissensstand:** unverändert 2026-07-12.
+
+## v1.48.2 — Export-Härtung (intern)
+
+**Unter der Haube**
+- `export.sh` schloss zwei neue Marcel-interne Dateien noch nicht aus (`tools/pennylane-connector/` mit echten Lieferanten-Adressen einer Testfirma, `AUFGABEN-FUER-DICH.md` als gitignorte, aber von rsync trotzdem kopierte private To-do-Liste) — beide jetzt explizit ausgeschlossen, Re-Export verifiziert sauber.
+
+## v1.48.0 — Fehler-Logs werden automatisch zu Marketing-/Webinar-Stories
+
+**Neue Funktionen**
+- **Auto-Marketing-Extraktor:** Bruno protokolliert jeden Live-Lauf inkl. gefundener Fehler und ihrer Behebung ohnehin (`LIVE-RUNS.md`). Neu zieht ein Tool daraus automatisch die „echter Fehler → echter Fix"-Geschichten und bereitet sie als Story-Kandidaten mit Verkaufssatz-Rohling auf — belegbar, nicht behauptet. Ideal für Webinar, Sales-Page, Social. Rein deterministisch (kein KI-Text, keine erfundenen Zahlen); die finale Auswahl kuratiert weiterhin ein Mensch.
+
+**Verbesserungen**
+- **Angebote sauber abgelegt:** Ein Angebot/Kostenvoranschlag (kein Buchungsbeleg) wandert jetzt automatisch in einen eigenen Ordner-5-Bereich statt in die Buchungs-Queue — mit Erklärung, warum es nicht gebucht wird.
+
+**Unter der Haube**
+- `system/_bin/marketing-wins-sync.mjs` (LIVE-RUNS → `marketing-assets/wins-from-live-runs.md`, Delta-State gitignored) · ABLAGE-MATRIX (CLAUDE.md) um `document_type: offer` → Ordner 5 erweitert.
+
+## v1.47.0 — Angebote werden nicht mehr als Rechnungen verbucht (DE + EN)
+
+**Verbesserungen**
+- **Angebot ≠ Rechnung — jetzt sicher getrennt:** Ein Angebot oder Kostenvoranschlag ist kein Buchungsbeleg (kein Geldfluss, keine Rechnungsnummer). Bruno erkennt Angebote jetzt zuverlässig an ihren Merkmalen — **auf Deutsch UND Englisch** (Angebot, Kostenvoranschlag, Quote, Quotation, Estimate, Offer, Proposal …) — und behandelt sie als „kein Beleg" statt sie versehentlich als Rechnung einzubuchen. Eine echte Rechnung, die nur ihre Angebotsnummer erwähnt, bleibt korrekt eine Rechnung.
+- Bereinigt: 2 Angebote, die früher fälschlich als Rechnungs-Entwürfe gebucht waren, wurden entfernt.
+
+**Unter der Haube**
+- `src/ocr/index.mjs`: eigener `document_type: offer` (getrennt von `dunning`), zweisprachige OFFER/RECHNUNG-Regex mit Verb-Ausschluss („to quote") + „estimated delivery"-Guard · Buch-Gate-Whitelist schließt `offer` automatisch aus · neuer Test `test-offer-detection.mjs` (17 Angebote + 14 Nicht-Angebote, DE+EN, grün) · 12 echte PDF-Fixtures verifiziert.
+
+## v1.46.0 — Bank-Landkarte: „Welcher Beleg fehlt für welche Zahlung?" auf einen Blick
+
+**Neue Funktionen**
+- **Abgleich-Landkarte (Bank ↔ Beleg):** Deine Kontobewegungen sind die wichtigste Datenquelle — Bruno stellt sie jetzt als beidseitige Landkarte dar, nach Anbieter gruppiert: (A) Bank-Bewegungen ohne Beleg, (B) Belege ohne passende Bank-Zahlung, (C) Verdacht auf ein Abbuchungskonto, das noch nicht verbunden ist. So fällt sofort auf, wenn z. B. „6 DHL-Rechnungen, aber keine einzige Abbuchung in der Buchhaltung" heißt: das Konto fehlt. Bruno liest dann selbst die Abbuchungs-IBAN vom Beleg (statt nachzufragen), erkennt die Bank und schlägt den Konto-Import vor.
+- Der Status-Scan (Modus 1.1) nutzt diese Landkarte jetzt als ersten Blick.
+
+**Unter der Haube**
+- `abgleich-landkarte.mjs` (read-only, Vendor-Cluster + Konto je TX + Beleg-ohne-TX-Richtung) · SKILL 1.1 verweist darauf · Grundhaltung #3 + HR#12 gehärtet: Zahlungsweg/Abbuchungskonto steht auf dem Beleg → selbst lesen, nie fragen.
+
+## v1.45.0 — Selbstschutz + optionale Zweitmeinung beim Bank-Abgleich
+
+**Neue Funktionen**
+- **Frühwarnung für interne Schnittstellen:** Bruno nutzt einige Buchhaltungs-Funktionen, die die Software offiziell nur im Fenster anbietet (z. B. die Auszahlungs-Umbuchung). Ändert der Anbieter so etwas im Hintergrund, würde es bisher erst beim nächsten Lauf auffallen. Jetzt prüft Bruno bei jedem Health-Check und Nacht-Lauf kurz, ob diese Funktionen noch erreichbar sind — und meldet einen Ausfall sofort, statt still weiterzumachen.
+- **Optionale Zweitmeinung beim Bank-Abgleich (`--crosscheck`):** Auf Wunsch fragt Bruno vor dem Verknüpfen die eingebaute Zuordnungs-Automatik der Buchhaltungs-Software als zweite Meinung. Weicht sie ab, nimmt Bruno die betroffene Zahlung sicherheitshalber aus dem Lauf und legt sie zum Nachschauen. Wichtig und ehrlich: diese eingebaute Automatik ist im Test **deutlich ungenauer** als Bruno (sie ordnete eine Zahlung dem falschen Anbieter zu, nur weil der Betrag passte). Deshalb ist sie nur ein schwaches Zusatz-Signal — sie stupst Bruno zum Prüfen an, überstimmt ihn nie.
+
+**Verbesserungen**
+- **Kein versehentlicher Start mehr beim Beleg-Einlesen:** Ein Tippfehler oder unbekannter Zusatz beim Aufruf des Beleg-Einlesers startete bisher stillschweigend einen echten Lauf. Jetzt bricht das Tool bei unbekannten Optionen sauber ab und `--help` zeigt die Möglichkeiten — gelesen wird nur, wenn der Aufruf eindeutig ist.
+
+**Unter der Haube**
+- `endpoint-liveness.mjs` (read-only, in Nacht-Lauf Schritt 0a + Health-Check) · `matching-crosscheck.mjs` + `match-vouchers --crosscheck` (Status-Guard: nur offene Zahlungen, sevDesk = schwaches Zweitsignal, blockt nie den Rest) · `ingest-local.mjs` usageGate (Flag-Whitelist, --help/-h, Exit 2 bei Unbekanntem).
+
+## v1.44.0 — Stornos/Gutschriften: Bruno erstellt die fehlenden Belege selbst per Stripe-API
+
+**Neue Funktionen**
+- **Fehlende Storno-Belege direkt aus Stripe:** Wurde eine Zahlung erstattet, fehlte bisher der Gutschrift-Beleg (nur im Dashboard klickbar). Bruno erstellt die Gutschrift jetzt per API — sicher gekoppelt an die BEREITS erfolgte Erstattung (es wird nie neues Geld bewegt), ohne Kunden-E-Mail, mit Vorschau vor jedem Schritt und dokumentiertem Rückgängig-Weg. Das PDF wird automatisch gezogen und GoBD-konform abgelegt.
+- **Auszahlungs-Umbuchungen jetzt vollautomatisch:** Die Umbuchung der Stripe-Auszahlung vom Bankkonto aufs Verrechnungskonto galt bisher als „nur im sevDesk-Fenster klickbar". Bruno hat den internen Weg gefunden (durch Beobachten, was sevDesk selbst beim Klick macht) und erledigt jetzt auch diesen letzten Schritt selbst — mit Sicherheitsprüfung vor und nach jeder Umbuchung. Du musst gar nichts mehr klicken.
+- **Erlös-Gutschriften jetzt buchbar:** sevDesk akzeptiert keine negativen Belege — Bruno kennt jetzt den korrekten Spiegel-Weg (gedrehte Richtung + positiver Betrag aufs Erlösschmälerungs-Konto). Rechnung und Storno heben sich in Buchhaltung und Umsatzsteuer exakt auf.
+
+**Verbesserungen**
+- Der Buchhaltungs-Check erkennt die Gutschrift-Konvention und schlägt bei korrekten Stornos keinen Fehlalarm mehr.
+
+**Unter der Haube**
+- `create-credit-note.mjs` (endpoint-gewhitelistetes POST, refund-Link statt refund_amount, Preview/void) · Dim-5-Kopplung · API-Fund dokumentiert (negative Voucher nicht registrierbar).
+
+## v1.43.0 — Stripe-Einnahmen sauber verrechnet (Erlös + Gebühr + Auszahlung)
+
+**Neue Funktionen**
+- **Stripe-Verrechnung automatisch:** Stripe zahlt nie 1:1 aus — vom Kundenumsatz gehen erst die Gebühren ab, dann kommt ein Sammelbetrag aufs Konto. Bruno bildet das jetzt korrekt ab: Kundenumsätze und monatliche Gebühren-Eigenbelege laufen über ein eigenes Verrechnungskonto, die Bank-Auszahlung ist nur noch eine Umbuchung (kein „falscher Umsatz" mehr). Mit eingebauter Null-Kontrolle: jede Auszahlungs-Kette wird cent-genau gegen die Stripe-Daten geprüft — geht sie nicht auf, wird NICHT gebucht.
+- **Sicherheits-Filter vor jeder Erlös-Buchung:** Bruno prüft je Rechnung, ob das Geld wirklich geflossen ist (Auszahlung angekommen?), ob voll bezahlt wurde und ob es eine Rückerstattung gab. Erstattete oder über Kunden-Guthaben verrechnete Rechnungen werden NICHT einfach als Umsatz gebucht, sondern landen mit Begründung auf deiner Klärliste — das verhindert überhöhte Umsätze und zu viel gemeldete Umsatzsteuer.
+
+**Unter der Haube**
+- Neues Tool `stripe-clearing.mjs` (Dry-Run-Standard, 4 Safe-Gates, Ketten-Null-Kontrolle als Abbruch-Invariante, Readback je Buchung, Audit-Log, bewiesener Rollback) · Gebühren-Eigenbelege pro Monat mit doppeltem Zahlen-Wächter · API-Wissen erweitert (Zahlungen auf Verrechnungskonto per API, Konten-Umbuchung nur im sevDesk-UI).
+
 ## v1.42.3 — Angebote und Kostenvoranschläge sind keine Belege
 
 **Verbesserungen**

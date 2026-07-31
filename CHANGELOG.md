@@ -1,3 +1,913 @@
+## v1.96.0 — Alte Irrtuemer ueber BuchhaltungsButler richtiggestellt
+
+**Verbesserungen**
+- **Ein Irrtum aus dem Juni ist korrigiert:** Bisher stand in meinen Unterlagen, dass sich Belege in
+  BuchhaltungsButler grundsaetzlich nicht loeschen lassen. Das stimmt so nicht — **ungebuchte** Belege
+  lassen sich sehr wohl loeschen und sogar wiederherstellen. Nur GEBUCHTE Belege sind endgueltig
+  (das ist gesetzlich so gewollt). Der alte Befund beruhte auf einem technischen Fehler auf meiner
+  Seite, nicht auf einer Sperre des Anbieters.
+- **Widerspruch in der System-Vergleichstabelle beseitigt.** An einer Stelle stand, Kontoumsaetze
+  liessen sich bei BuchhaltungsButler nur von Hand einlesen — zwei Zeilen darueber stand das
+  Gegenteil, korrekt belegt. Jetzt sagt die Tabelle einheitlich: Einlesen geht automatisch.
+- **Neue Zeile in allen Vergleichen: „Kann ein Fehl-Import wieder korrigiert werden?"** Das ist der
+  wichtigste Unterschied zwischen den Systemen und fehlte bisher voellig. Bei sevDesk kann ich falsch
+  eingelesene Kontoumsaetze selbst wieder entfernen. Bei BuchhaltungsButler nicht — dort bleibt ein
+  Fehl-Import stehen, bis du ihn von Hand loeschst.
+- **Kontoauszuege einlesen funktioniert jetzt auch mit BuchhaltungsButler.** Der Ablauf ist derselbe
+  wie bei sevDesk: PDF rein, ich lese es aus (mit Saldo-Probe), lege ein Konto an und trage die
+  Umsaetze ein. Neu dokumentiert samt der Sicherheitsregeln.
+
+**Wichtig fuer dich, wenn du BuchhaltungsButler nutzt**
+- **Kontoauszuege immer nur EINMAL und immer in ein frisches, leeres Konto einlesen.** Grund: In einem
+  PDF-Kontoauszug steht keine Transaktionsnummer. Ohne sie kann ich drei echte gleich hohe Gebuehren
+  am selben Tag nicht sicher von einem versehentlichen Doppel-Import unterscheiden. Ich pruefe deshalb
+  vor jedem Einlesen alle Konten und breche ab, wenn die Umsaetze schon irgendwo liegen.
+
+**Wissensstand:** 31.07.2026
+
+---
+
+## v1.95.0 — BuchhaltungsButler: jetzt schwarz auf weiss, was automatisch geht und was du klicken musst
+
+**Neue Funktionen**
+- **Wenn du BuchhaltungsButler nutzt, kann Bruno dort jetzt nachweislich die komplette
+  Vorarbeit uebernehmen:** Belege hochladen (mit den Daten aus dem Beleg-Scan), buchen mit
+  Sachkonto und Steuerschluessel, mit der passenden Kontobewegung verknuepfen — und alles davon
+  auch wieder rueckgaengig machen. Jeder dieser Schritte wurde am 31.07.2026 an echten Daten
+  ausprobiert, nicht nur in der Anleitung nachgelesen.
+- **Kontoauszuege als PDF landen jetzt auch in BuchhaltungsButler.** Der Weg Kontoauszug-PDF →
+  Kontobewegungen wurde mit echten Auszuegen durchgespielt: 18 Buchungen, auf den Cent genau,
+  Verwendungszweck vollstaendig uebernommen.
+- **Dreifacher Schutz vor doppelten Kontobewegungen.** Bruno prueft vor jedem Import, ob dieselben
+  Umsaetze schon in einem anderen Konto liegen, und bricht dann ab statt doppelt zu importieren.
+  Wichtig, weil sich Kontobewegungen in BuchhaltungsButler spaeter nicht mehr loeschen lassen.
+
+**Verbesserungen**
+- **Neue Uebersicht „Was macht Bruno, was machst du?"** fuer BuchhaltungsButler. Sie sagt dir in
+  Alltagssprache, welche drei Dinge du weiterhin selbst in der Oberflaeche erledigst
+  (Konten/Kontobewegungen loeschen, DATEV-Export, Umsatzsteuer-Voranmeldung) — und belegt jede
+  Aussage mit dem, was die Schnittstelle tatsaechlich geantwortet hat.
+- **Falsche Angabe korrigiert:** In der System-Vergleichstabelle stand, der Bankabgleich ginge bei
+  BuchhaltungsButler nur von Hand. Das stimmt nicht — Kontobewegungen lassen sich einlesen und mit
+  Belegen verknuepfen. Korrigiert, mit Beleg.
+- **Klare Ansage zum Kontenrahmen:** Bruno liest deinen kompletten Kontenrahmen aus und erkennt, ob
+  SKR03 oder SKR04 eingestellt ist — auch selbst angelegte Sachkonten sieht er. Falls doch mal ein
+  Konto nicht passt, lehnt BuchhaltungsButler die Buchung sauber ab, statt sie still falsch zu
+  verbuchen.
+
+**Unter der Haube**
+- Fuenf neue Pruefwerkzeuge fuer den BuchhaltungsButler-Anschluss (alle mit Probelauf als
+  Voreinstellung, scharf nur auf ausdrueckliche Anweisung).
+- Beleg-Kontingent des Tarifs wird erkannt: ist die Grenze erreicht, stoppt Bruno sofort mit
+  klarer Meldung, statt weiter erfolglos hochzuladen.
+
+**Wissensstand:** 31.07.2026
+
+---
+
+## v1.94.1 — Kleinkram in der Zugangsdaten-Datei bereinigt
+
+**Verbesserungen**
+- **Im Kopf deiner `.env` stand eine Notiz, die nicht fuer dich gedacht war** (ein interner Hinweis
+  des Herstellers samt Datum). Sie ist raus — die Datei erklaert jetzt nur noch, was DU tun musst.
+- Die Online-Setup-Anleitung (`newways.ai/ki-buchhalter/setup`) und die PDF dort zeigen wieder
+  denselben Stand wie dein Ordner: eine `.env` statt zweier Dateien, die aktuellen Ordnernamen
+  und die realistische Einrichtungszeit.
+
+**Unter der Haube**
+- Neue Selbstpruefung: die Auslieferung bricht ab, wenn in der Zugangsdaten-Datei interne Notizen
+  stehen. Weil diese Datei unveraendert bei dir landet, ist dort jede Zeile Kundentext.
+
+---
+
+## v1.94.0 — Einrichtung entwirrt: eine `.env` mit allen Zeilen, statt zwei verwirrender Dateien
+
+**Verbesserungen**
+- **Deine Zugangsdaten-Datei ist jetzt vollstaendig.** Bisher lag im Ordner eine fast leere `.env`
+  und daneben eine `.env.example` mit allen Zeilen — verwirrend, und die Zeile `SEVDESK_API_KEY=`
+  fehlte genau dort, wo du sie brauchst. Jetzt gibt es **eine** Datei namens `.env`, mit allen
+  Zeilen und leeren Werten. Du oeffnest sie, traegst deinen Key ein, fertig. Nichts kopieren,
+  nichts umbenennen.
+- **Der Screenshot in der Anleitung ist wieder da.** Die Setup-Anleitung zeigt dir, wo du in
+  sevDesk deinen API-Key findest — das Bild dazu fehlte im Paket und war ein leerer Platzhalter.
+- **`BRUNO_UPDATE_TOKEN` ist als „schon eingetragen" gekennzeichnet.** Diese Zeile ist bei
+  Auslieferung bereits gefuellt (damit Bruno seine Updates selbst holen kann). Vorher stand da
+  ein Wert ohne Erklaerung — jetzt weisst du, dass du ihn nicht anfassen musst.
+- **Weniger Dateien, die nur verwirren.** Im Ordner des Beleg-Scrapers lag eine Vorlagen-Datei,
+  in die du nie etwas eintragen musst (der Standard-Weg braucht dort keinen Key). Sie ist raus.
+  Willst du das Belege-Lesen anders einstellen, richtet Bruno das im Onboarding fuer dich ein.
+- Die Setup-Anleitung wurde entsprechend korrigiert — sie beschrieb noch den alten Weg
+  („kopiere die Vorlage"), der so nicht mehr stimmt. Das gilt jetzt an **allen** Stellen: in der
+  Text-Anleitung, in der bebilderten PDF-Anleitung und in der Key-Uebersicht, die Bruno beim
+  Einrichten heranzieht. Vorher haette dir die PDF noch den alten Weg gezeigt.
+- **Eine Anleitung weniger zum Suchen.** Von der Setup-Anleitung lagen drei Varianten desselben
+  Inhalts im Ordner. Jetzt bleiben zwei: die **PDF** (bebildert, zum Lesen oder Ausdrucken) und die
+  **Text-Fassung** zum Nachschlagen. Die LIESMICH verlinkt beide direkt.
+- **Der Update-Hinweis auf neue Zugangsdaten-Zeilen funktioniert wieder.** Kommt in einer neuen
+  Version eine optionale Zeile fuer die `.env` dazu, sagt Bruno dir das beim Update. Dieser Hinweis
+  blieb bisher stumm, weil er in einer Datei nachsah, die es bei dir gar nicht gibt.
+
+**Unter der Haube**
+- Ein neues Kontroll-Tor bricht die Auslieferung ab, wenn die `.env` unbrauchbar waere (fehlende
+  Pflicht-Zeile) oder noch eine Vorlagen-Datei im Paket liegt. Solche Fehler erreichen dich damit
+  nicht mehr — sie fallen vorher auf.
+- Der Setup-Screenshot ist jetzt strukturell gegen stilles Verschwinden gesichert (drei neue
+  Selbsttests). Beim Paketieren konnte er bisher unbemerkt herausfallen, obwohl alle Pruefungen
+  gruen meldeten — genau der Fehler, der die Anbieter-Zuordnung in v1.93.0 betraf.
+
+---
+
+## v1.93.0 — 71 erprobte Buchungs-Zuordnungen neu im Paket + Erfahrungsberichte wieder sauber lesbar
+
+**Neue Funktionen**
+- **Die Vendor-Kontenzuordnung ist jetzt Teil deines Pakets** (`tools/sevdesk-connector/vendor-konto-map.json`):
+  71 gaengige Anbieter (Anthropic, OpenAI, Google, Vercel, Adobe, Meta u.v.m.) mit live verifizierter
+  Buchungs-Zuordnung — welches Konto, welche Steuerbehandlung, woran man den Anbieter auf dem
+  Kontoauszug erkennt. Bruno bucht bekannte Anbieter damit ab dem ersten Tag treffsicherer.
+  Sie war fuer dich gedacht, fehlte aber durch einen Auslieferungsfehler in den Paketen der
+  letzten Wochen — das ist behoben, und zwei neue Selbstpruefungen verhindern die Wiederholung.
+- **Wichtig dabei:** Die Zuordnung wird NIE blind uebernommen. Widerspricht dein Beleg der
+  Zuordnung (Anbieter hat z.B. das Sitzland gewechselt), gewinnt immer der Beleg und der Fall
+  geht in die Pruefliste statt gebucht zu werden. Die Map traegt dazu jetzt einen eigenen
+  Warnhinweis (Kontenrahmen SKR04-verifiziert; bei SKR03 vorher pruefen).
+- **Neues Praxis-Wissen:** Wie manuell geschriebene Ausgangsrechnungen (aus dem Banking-Tool
+  statt ueber den Zahlungsdienstleister) korrekt gebucht und mit dem Zahlungseingang verknuepft
+  werden — inkl. der Regel, dass bei Ist-Besteuerung das Zahlungsdatum zaehlt, nicht das
+  Rechnungsdatum (`system/LEARNINGS-SHARE.md`).
+
+**Verbesserungen**
+- **Die Erfahrungsberichte (Learnings) lesen sich wieder wie von Menschen geschrieben.** Eine zu
+  grobe Text-Ersetzung hatte in frueheren Paketen Saetze verstuemmelt ("fuer der Nutzer",
+  "mit die Zahlen begruendet") und an einer Stelle sogar den Sinn verdreht. Alle Fach-Inhalte
+  waren davon nie betroffen — jetzt stimmt auch die Sprache wieder.
+- Zwei defekte Dateien ohne Nutzen fuer dich wurden aus dem Paket entfernt (Einmal-Skripte des
+  Herstellers; eine davon war durch die Anonymisierung nicht mehr lauffaehig).
+
+**Unter der Haube**
+- Die Auslieferung prueft sich jetzt selbst haerter: JEDE mitgelieferte Code-Datei wird vor dem
+  Release auf Lauffaehigkeit geprueft (vorher nur Stichproben), und ein neues Kontroll-Tor
+  verhindert, dass Produkt-Dateien beim Paketieren still verloren gehen.
+
+**Wissensstand:** 2026-07-29
+
+## v1.92.0 — Beim ersten Start fuehrt Bruno dich jetzt direkt in die Einrichtung
+
+**Was sich fuer dich aendert**
+Wer Bruno frisch installiert hatte und `/ki-buchhalter` eingab, bekam sofort das volle Menue mit
+allen 15 Modi zu sehen — obwohl noch gar kein Profil eingerichtet war. Wer dann "1" tippte, startete
+den Buchungs-Workflow, ohne dass Bruno wusste, mit wem er es zu tun hat: Rechtsform, Umsatzsteuer-
+Status, Kontenrahmen, Buchhaltungssystem. Alles unbekannt. Das ist jetzt behoben.
+
+- **Ohne eingerichtetes Profil zeigt Bruno kein Menue mehr**, sondern begruesst dich und schlaegt
+  die Einrichtung vor (Modus 13, einmalig ein paar Minuten). Du kannst dir das volle Menue trotzdem
+  anzeigen lassen — es ist eine Empfehlung, keine Sperre.
+- **Zweite Absicherung:** Waehlst du ohne Profil einen Buchungs-Modus, startet dieser nicht mehr
+  einfach los, sondern verweist auf die Einrichtung. Vorher lief er an.
+- **Ein leeres Profil zaehlt jetzt als "nicht eingerichtet"** — vorher reichte es, dass die Datei
+  ueberhaupt existierte.
+
+**Unter der Haube**
+Die Regel "erst einrichten, dann buchen" gab es schon; sie griff nur nie. Zwei Ursachen: Die
+Pruefung, ob ein Profil existiert, meldete wegen eines Shell-Details nie einen Fehler — die Warnung
+blieb also stumm. Und die Regel selbst stand im Skill an einer Stelle, die erst nach der Menue-
+Ausgabe gelesen wurde. Beides ist korrigiert, die Pruefung laeuft jetzt als Erstes.
+
+- **Personalisierte Ordnernamen entfallen.** Das ausgelieferte Paket heisst fuer alle gleich
+  (`ki-buchhalter-bruno-v<version>`). Die Initialen im Ordnernamen liessen sich ohnehin in Sekunden
+  umbenennen und haben nie etwas geschuetzt. Deine Lizenz-Kennzeichnung in `LIZENZ.md` bleibt.
+
+## v1.91.1 — Selbsttests laufen jetzt mit Musterdaten statt echten Kontodaten
+
+**Was sich fuer dich aendert**
+Bruno bringt Selbsttests mit ("Kanarien"), die nach jedem Update pruefen, ob die Buchungs-Logik
+noch stimmt. Zwei dieser Tests arbeiteten mit echten Konto- und Steuernummern als Beispieldaten.
+Fuer die Pruefung selbst war das egal, sauber ist es trotzdem nicht: Testdaten werden mitgeliefert.
+
+- **Alle Selbsttests nutzen jetzt Musterdaten** (Muster-IBANs, "Max Mustermann", Dummy-Steuernummern).
+- **Die Pruefungen selbst sind unveraendert** — dieselben 13 bzw. 8 Testfaelle, alle bestehen weiterhin.
+  Getauscht wurden ausschliesslich die Beispielwerte, nicht die Logik dahinter.
+- Du merkst im Alltag nichts davon. Der Punkt ist Hygiene: in ausgeliefertem Code haben echte
+  Kontonummern nichts verloren, auch nicht als Testbeispiel.
+
+## v1.91.0 — Health-Check erkennt jetzt widerspruechliche Doppel-Belege
+
+**Was sich fuer dich aendert**
+Manche Rechnungen liegen doppelt vor (z.B. als "Invoice" und als "Receipt" derselben Zahlung) —
+und in seltenen Faellen widerspricht sich dabei der erkannte Steuersatz, obwohl beide Dokumente
+dieselbe Zahlung beschreiben. Das kann zu falscher Umsatzsteuer fuehren, wenn die falsche Datei
+gebucht wird.
+
+- **Neue Pruefung (Dimension 24):** findet automatisch, wenn zwei Dateien derselben Rechnung
+  gleichen Betrag/gleiche Waehrung, aber unterschiedlichen Steuersatz zeigen.
+- **13 solcher Faelle im Bestand gefunden** (Skool, Anthropic, Gumroad, Gamma, Replit) — jeweils
+  mit klarer Anweisung, welche der beiden Dateien geprueft werden sollte.
+- Ausfuehrlich getestet: 7 automatisierte Testfaelle, alle bestehen; keine Fehlalarme bei bereits
+  korrekt erfassten Rechnungen.
+
+## v1.90.0 — Higgsfield-Rechnung nachgefordert und gebucht
+
+**Was sich fuer dich aendert**
+Eine Rechnung war nur als Zahlungsbeleg vorhanden, nicht als vollstaendige Rechnung — fuer den
+Vorsteuerabzug reicht das rechtlich nicht. Nach Nachforderung beim Anbieter (du hast dich eingeloggt,
+die richtige Rechnung geholt) ist sie jetzt korrekt gebucht.
+
+- **Higgsfield Inc. (262,80 EUR, 01.12.2025):** vollstaendige Rechnung ersetzt den alten Zahlungsbeleg,
+  gebucht und mit der Kontobewegung verknuepft.
+
+## v1.89.0 — Waehrung wird jetzt am Beleg geprueft, statt Euro anzunehmen
+
+**Was sich fuer dich aendert**
+Gestern kam heraus, dass 132 Dollar-Belege als Euro erfasst waren. Repariert war das schnell — die
+Ursache aber nicht. Genau die ist jetzt behoben, und zwar an der Quelle: beim Auslesen des Belegs,
+bevor irgendetwas gebucht wird.
+
+**Warum es ueberhaupt passiert ist**
+Zwei Dinge kamen zusammen:
+1. In der Anweisung, mit der Bruno einen Beleg ausliest, stand bei der Waehrung der feste Wert
+   "EUR" — bei jedem anderen Feld steht dort eine Beschreibung ("Firmenname des Rechnungsstellers",
+   "Datum im Format JJJJ-MM-TT"). Nur die Waehrung war vorgegeben statt gefragt. Sie wurde also
+   uebernommen, ohne den Beleg anzusehen.
+2. An sechs weiteren Stellen im Ablauf wurde "Euro" nachtraeglich eingesetzt, wenn nichts erkannt
+   wurde. Selbst eine ehrliche Luecke wurde so wieder zu einem falschen Wert.
+
+**Was jetzt passiert**
+- **Bruno wird nach der Waehrung gefragt, statt sie vorgesetzt zu bekommen** — mit dem klaren
+  Hinweis, sie vom Beleg zu lesen und im Zweifel nichts einzutragen.
+- **Gegenprobe am Dokument:** Unabhaengig davon zaehlt Bruno die Waehrungszeichen im PDF-Text.
+  Steht dort nur "$", der Beleg wurde aber als Euro erfasst, wird das korrigiert — und dir
+  angezeigt, nicht stillschweigend gemacht.
+- **Mehrdeutiges wird nie geraten:** Nennt ein Beleg beide Waehrungen, landet er zur Ansicht bei
+  dir. Nennt er gar keine, bleibt das Feld leer statt falsch gefuellt.
+- **Kein Buchen ohne Waehrung:** Ein Beleg ohne erkannte Waehrung wird nicht mehr hochgeladen.
+  Lieber wartet ein Beleg, als dass ein falscher Betrag in deiner Buchhaltung landet.
+
+**Der Grundsatz dahinter:** Bei Geld ist ein falscher Standardwert schlimmer als eine Luecke. Die
+Luecke faellt auf und wird gemeldet — der falsche Wert sieht aus wie ein geprueftes Ergebnis.
+
+**Abgesichert durch neun Testfaelle**, darunter der reale Instantly-Beleg, die Gegenprobe mit
+deutschen Euro-Rechnungen (kein Fehlalarm) und ein Test, der absichtlich den alten Zustand
+herstellt — er muss fehlschlagen, sonst wuerde die Pruefung den historischen Fehler nicht fangen.
+
+**Wissensstand:** 2026-07-27
+
+---
+
+## v1.88.0 — 7 Steuerberater-Rechnungen (2.294,62 EUR) haengengeblieben, jetzt gebucht
+
+**Was sich fuer dich aendert**
+7 Rechnungen deines Steuerberaters (HSP Steuer) waren seit Monaten haengengeblieben — sie waren
+korrekt an dich adressiert, aber das System hatte den Empfaengernamen beim ersten Einlesen nicht
+erkannt und darum vorsichtshalber zur Kontrolle geparkt. Nach Pruefung gegen das Original-PDF war
+das ein reiner Lese-Fehler, kein echtes Problem.
+
+- **Alle 7 gebucht und mit der Kontobewegung verknuepft** (03.2025 bis 08.2025), darunter die
+  bisher groesste offene Rechnung ueberhaupt: 1.989,68 EUR vom 03.05.2025.
+- Gesamtsumme: 2.294,62 EUR.
+
+## v1.87.0 — Bonder-Rechnung per Waehrungskurs gefunden, AnyMailFinder-Vendor ergaenzt
+
+**Was sich fuer dich aendert**
+Eine Rechnung war ueber Monate nicht mit der Bankbewegung verknuepft, weil der Zahlungsdienstleister
+auf dem Kontoauszug einen fremden Namen anzeigte. Ueber den Dollar-Euro-Umrechnungskurs zum
+Zahltag liess sich die richtige Bewegung trotzdem eindeutig finden.
+
+- **Gabriel Neuman Bonder (383,66 EUR):** Kontobewegung zeigte "SERVICIO RASTREO IOT" statt dem
+  echten Namen — Zahlungsdienstleister-Effekt. Ueber den EZB-Tageskurs am Zahltag (448 USD x 0,8540)
+  eindeutig bestaetigt und verknuepft. Die zweite Bonder-Rechnung (224,90 EUR) bleibt offen — keine
+  passende Kontobewegung gefunden.
+- **AnyMailFinder (3 Rechnungen, 88,10 EUR):** lagen lokal vor, waren aber nie in die Buchhaltung
+  hochgeladen. Neu: der Anbieter rechnet zweigleisig ab — Credit-Kaeufe ohne Umsatzsteuer (Steuer
+  im Ausland), das Monats-Abo dagegen MIT deutscher Umsatzsteuer. Beide Faelle sind jetzt automatisch
+  korrekt erkennbar.
+
+## v1.86.0 — 132 Dollar-Belege waren als Euro erfasst (Zeitbombe vor dem Buchen entschaerft)
+
+**Was sich fuer dich aendert**
+Rechnungen in US-Dollar wurden teilweise als Euro-Belege erfasst. Der Betrag stimmte, aber die
+Waehrung war falsch etikettiert. Wird so ein Beleg gebucht, landet der Dollar-Betrag als Euro in
+der Buchhaltung — Betriebsausgabe zu niedrig, Vorsteuer falsch.
+
+- **Gefunden:** 132 Belege (Instantly, OpenAI, Airtable, Anthropic, OpenRouter, Namecheap, Loom u.a.)
+- **Davon 107 noch ungebucht** — zusammen 4.314 $. Das war die eigentliche Gefahr: haetten wir sie
+  gebucht, waere der Fehler erst entstanden. Alle korrigiert, bevor etwas passiert ist.
+- **25 waren bereits gebucht** — dort wurde beim Buchen korrekt umgerechnet, es ging nur um das
+  Etikett. Gesamtabweichung ueber alle Faelle: **1,90 €**, reine Wechselkurs-Differenzen.
+- **14 mehrdeutige Faelle** (PDF nennt beide Waehrungen) wurden bewusst NICHT automatisch geaendert,
+  sondern zur Ansicht gelistet.
+
+**Damit es nicht wieder passiert: neue Pruefung "Waehrungs-Plausibilitaet"**
+Bruno vergleicht ab sofort die erfasste Waehrung mit dem, was im PDF steht. Weicht es ab, ist das
+ein kritischer Hinweis — und zwar **bevor** gebucht wird, nicht erst danach. Sechs Testfaelle
+sichern die Pruefung ab, darunter der umgekehrte Fall (Euro-Beleg als Dollar erfasst) und der
+Nachweis, dass korrekte Euro-Belege keinen Fehlalarm ausloesen.
+
+**Warum es passieren konnte**
+Die Belegerkennung setzte "Euro" als Standardwert, wenn die Waehrung nicht zweifelsfrei erkennbar
+war. Bei Geld ist ein falscher Standardwert schlimmer als eine Luecke: Die Luecke faellt auf, der
+falsche Wert sieht aus wie ein geprueftes Ergebnis.
+
+**Nebenbei korrigiert:** Ein Instantly-Beleg trug einen erfundenen Steuersatz von 19 %, obwohl das
+PDF gar keine Umsatzsteuer ausweist (US-Anbieter, Reverse-Charge). Das erzeugte einen Fehlalarm
+gegen eine voellig korrekte Buchung.
+
+**Ergebnis:** kritische Meldungen von 27 auf **2**.
+
+**Wissensstand:** 2026-07-26
+
+---
+
+## v1.85.0 — 5 Belege trugen denselben falschen Betrag (OCR-Fehler von Anfang 2025 gefunden und korrigiert)
+
+**Was sich fuer dich aendert**
+5 Werbekosten-Belege desselben Tages hatten alle exakt denselben Betrag eingetragen, obwohl jeder Beleg
+eigentlich einen anderen echten Betrag zeigt. Ursache: ein alter OCR-Fehler beim ersten Einlesen (nicht
+der aktuelle Code) — vermutlich wurde der erste gelesene Betrag versehentlich fuer alle 5 Belege eines
+Mail-Stapels uebernommen, statt jeden einzeln zu lesen.
+
+- **Konkret gefunden + korrigiert:** 5 Meta-Werbekosten-Belege vom 05.02.2025, alle faelschlich mit
+  5,02€ eingetragen. Die echten Betraege (per Beleg gegengelesen): 2,00€ / 2,00€ / 3,00€ / 3,00€ / 5,00€.
+  Keiner davon war vorher schon final gebucht — nur der Entwurf wurde korrigiert, kein Risiko fuer
+  bereits abgeschlossene Buchungen.
+- **Systematisch nachgeprueft:** 11 weitere Verdachtsfaelle (gleicher Anbieter + gleicher Betrag am
+  gleichen Tag) einzeln gegen die Original-Belege gegengelesen. Alle 11 waren in Ordnung — echte,
+  unterschiedliche Rechnungen mit zufaellig gleicher Summe (z.B. wiederkehrende Monatsabos). Nur der
+  eine Meta-Fall war tatsaechlich fehlerhaft.
+- **Zusaetzliche Klarheit gewonnen:** diese 5 Meta-Belege sind offiziell Zahlungsbestaetigungen, keine
+  Rechnungen (steht wortwoertlich so auf dem Beleg) — ein Vorsteuerabzug daraus waere ohnehin nicht
+  sicher. Wird jetzt als Hinweis angezeigt, nicht mehr als "Beleg fehlt".
+
+## v1.84.0 — Bestaetigte Einzelfaelle wurden gespeichert, aber nie beachtet
+
+**Was sich fuer dich aendert**
+Wenn du einen Pruef-Hinweis einmal geprueft und als unbedenklich bestaetigt hast, wird er in einer
+Merkliste hinterlegt — damit er beim naechsten Mal nicht erneut als kritisch erscheint. Diese Liste
+wurde zwar **geschrieben**, aber von der Pruefung **nie gelesen**. Bestaetigte Faelle blieben damit
+fuer immer rot, egal wie gruendlich sie geprueft waren.
+
+- **Jetzt:** Bestaetigte Einzelbelege werden korrekt auf gruen herabgestuft — mit deiner Begruendung
+  sichtbar im Bericht. Nicht versteckt, sondern nachvollziehbar entschaerft.
+- **Eng gefasst:** Die Bestaetigung gilt nur fuer die Pruefart, fuer die du sie erteilt hast. Taucht am
+  selben Beleg ein *anderer* Fehler auf, bleibt er sichtbar.
+
+**Konkret aufgeklaert: die 10 Qonto-Faelle**
+Zehn Belege standen als "Status 750 trotz Vollzahlung" auf kritisch — bisher mit dem Hinweis
+"technische Grenze, kosmetisch akzeptieren". Auf Nachfrage nachgerechnet: Qonto bucht die
+Kontofuehrungsgebuehren nicht einmal im Monat ab, sondern in vielen Einzelbetraegen (Grundgebuehr
+plus Cent-Betraege je Ueberweisung) und stellt am Monatsende **eine** Sammelrechnung. Die Summe der
+Einzelabbuchungen ergibt in allen zehn Faellen **exakt auf den Cent** den Rechnungsbetrag —
+13 Abbuchungen = 33,68 €, 17 Abbuchungen = 30,08 €, kein Cent Abweichung.
+
+Das ist buchhalterisch voellig korrekt: eine Rechnung, viele Zahlungen. Der Status 750 ist die
+richtige Antwort deines Systems darauf, kein Defekt. Alle zehn sind jetzt mit dem Rechenbeweis
+dokumentiert.
+
+**Ergebnis:** kritische Meldungen von 15 auf **0** — jede einzelne nachgewiesen, keine weggeklickt.
+
+**Wissensstand:** 2026-07-25
+
+---
+
+## v1.83.0 — Dollar-Rechnungen wurden faelschlich als Buchungsfehler gemeldet
+
+**Was sich fuer dich aendert**
+Bei Rechnungen in Fremdwaehrung (Dollar-Abos wie Skool, Paddle, make) hat die Pruefung Alarm
+geschlagen, obwohl alles korrekt gebucht war. Grund: Sie verglich den gebuchten Euro-Betrag mit dem
+offiziellen Tageskurs der Europaeischen Zentralbank. Deine Bank rechnet aber mit ihrem **eigenen**
+Kurs, der regelmaessig ein bis zwei Prozent abweicht — und genau dieser Betrag wurde abgebucht.
+
+- **Konkret:** Eine Rechnung ueber 19,00 USD wurde mit 16,31 € gebucht. Nach EZB-Kurs waeren es
+  13,73 € gewesen — das Verhaeltnis sah zufaellig aus wie ein bekannter Steuersatz-Fehler, und die
+  Pruefung meldete faelschlich einen kritischen Buchungsfehler.
+- **Jetzt:** Existiert eine echte Kontobewegung ueber genau den gebuchten Betrag, gilt die Buchung
+  als bank-bestaetigt und wird gruen ausgewiesen — mit dem Nachweis im Bericht. Denn gebucht wird,
+  was tatsaechlich geflossen ist.
+- **Wirkung:** Die kritischen Meldungen sanken von 15 auf 10. Die verbleibenden 10 sind eine bekannte
+  Grenze deines Buchhaltungssystems bei Teilzahlungen, kein Fehler.
+
+**Wichtig:** Die Regel wurde nicht abgeschwaecht. Fehlt die passende Kontobewegung, schlaegt sie
+weiterhin an — sie prueft jetzt nur gegen die Realitaet statt gegen einen Kurs, der nie gezahlt wurde.
+
+**Wissensstand:** 2026-07-25
+
+---
+
+## v1.82.1 — DHL/Deutsche Post als selben Absender erkannt
+
+Kleine Ergänzung zum vorigen Fix: DHL-Paketrechnungen werden bei dir vom Konzernkonto "Deutsche Post AG"
+abgebucht, nicht von "DHL". Der Abgleich kennt jetzt beide als denselben Absender.
+
+## v1.82.0 — Beleg-Abgleich erkannte Zahlungsdienstleister-Namen nicht
+
+**Was sich fuer dich aendert**
+Auf deiner Rechnung steht oft der Firmenname des Anbieters (z.B. "Meta for Business"), auf deinem
+Kontoauszug aber der Name des Zahlungsabwicklers (z.B. "FACEBK") — beides dieselbe Zahlung, aber
+unterschiedlich benannt. Der Abgleich hat nur nach dem Rechnungsnamen gesucht und deshalb nichts
+gefunden, obwohl die passende Kontobewegung laengst da war.
+
+- **Konkret gefunden:** 8 Meta/Facebook-Werbekosten-Rechnungen und mehrere Paddle-Rechnungen (Verkaufs-
+  plattform heisst auf der Rechnung anders als der Zahlungsabwickler auf dem Konto) blieben deswegen
+  als "offen" stehen. Bei ~40 % der noch offenen Faelle lag genau dieses Problem vor.
+- **Jetzt:** Der Abgleich kennt Meta/Facebook als dasselbe Unternehmen und erkennt bei Plattform-Namen
+  automatisch den Zahlungsabwickler dahinter (z.B. Domain-Endung wie ".com" vs. ".net" spielt keine
+  Rolle mehr).
+- **12 Belege sofort automatisch bzw. gezielt nachverknuepft** nach dem Fix.
+
+## v1.81.0 (2) — Beleg-Abgleich uebersah bereits vorkategorisierte Kontobewegungen
+
+**Was sich fuer dich aendert**
+Manche Kontobewegungen sind von deiner Bank/sevDesk automatisch vorkategorisiert, aber noch keinem
+Beleg zugeordnet. Der Abgleich hat diese komplett ignoriert — er hat nur nach ganz "frischen" (nicht
+kategorisierten) Bewegungen gesucht. Ergebnis: Belege blieben "offen", obwohl die passende Zahlung
+laengst im System war, nur eben schon leicht vorsortiert.
+
+- **Konkret gefunden:** 13 Monats-Abo-Rechnungen (durchgehend derselbe Anbieter) hatten trotz exakt
+  passendem Betrag und Datum keinen Treffer — die zugehoerigen Kontobewegungen waren alle in diesem
+  vorkategorisierten Zwischenzustand.
+- **Jetzt:** Der Abgleich erkennt auch vorkategorisierte, aber noch unverknuepfte Bewegungen als
+  gueltige Kandidaten. Bereits fertig verbuchte Bewegungen bleiben weiterhin ausgeschlossen (Schutz
+  vor Doppel-Verknuepfung bleibt bestehen).
+- **11 Belege sofort automatisch nachverknuepft** nach dem Fix.
+
+## v1.81.0 — Der Beleg-Abgleich suchte im falschen Konto (und sagte nichts)
+
+**Was sich fuer dich aendert**
+Wenn du mehrere Bankkonten hast — etwa weil du die Bank gewechselt hast — konnte der Abgleich
+zwischen Belegen und Zahlungen ins Leere laufen: Er durchsuchte immer nur **ein** Konto. Fuer ein
+zurueckliegendes Jahr war das oft das falsche. Das Ergebnis sah dann aus wie "es passt nichts
+zusammen", obwohl er schlicht am falschen Ort gesucht hat. Ohne Fehlermeldung.
+
+- **Konkret gefunden:** 214 von 218 offenen Zahlungen aus 2025 lagen auf einem inzwischen
+  geschlossenen Konto, waehrend der Abgleich auf dem aktuellen Konto suchte. Deshalb bewegte sich
+  dieser Rueckstand wochenlang nicht.
+- **Jetzt:** Bruno bricht mit einer klaren Ansage ab, wenn das eingestellte Konto keine Zahlung aus
+  dem gewaehlten Jahr enthaelt — inklusive Hinweis, wie du das richtige Konto waehlst. Ein stiller
+  Leerlauf ist bei Geld nicht hinnehmbar.
+- **Nebenbei behoben:** Die Angabe `--jahr` wurde vom Abgleich gar nicht ausgewertet.
+
+**Neu: Offene-Posten-Liste auf Knopfdruck**
+Die Uebersicht "welche Kontobewegung hat noch keinen Beleg" (`OFFENE-POSTEN.md`) verwies auf einen
+Befehl zum Neuerzeugen — den es nie gab. Die Datei war handgepflegt und veraltete still. Jetzt gibt
+es das Werkzeug wirklich: `node tools/sevdesk-connector/offene-posten.mjs` erzeugt die Liste
+jederzeit frisch aus deinem Buchhaltungssystem, getrennt nach Jahr, Anbieter und Beschaffungsweg —
+inklusive der Faelle, die gar keinen Beleg brauchen (eigene Umbuchungen, Zahlungsdienstleister).
+
+**Wissensstand:** 2026-07-25
+
+---
+
+## v1.80.0 — Der Buchhaltungs-Report sieht jetzt aus wie gedacht
+
+**Was sich fuer dich aendert**
+Der Report aus Modus 4 („Wie steht meine Buchhaltung da?") war bisher eine schlichte Liste aus Zahlen und
+Tabellen. Das abgenommene Design lag zwar schon im Produkt, wurde von diesem Report aber gar nicht genutzt.
+Jetzt bekommst du dieselbe Uebersicht wie im Lauf-Report:
+
+- **Aktions-Banner oben:** steht ganz oben, wenn wirklich etwas fuer dich zu tun ist — und bleibt weg,
+  wenn nichts ansteht (kein erfundener Handlungsbedarf).
+- **Drei Kennzahlen auf einen Blick:** gebuchte Belege, noch offene Belege, Kontoumsaetze ohne Beleg.
+- **Sprungnavigation:** ein Klick zu Ausgaben, Belegen, Umsatzsteuer oder Konten — mit farbigem Punkt,
+  der zeigt, wo etwas offen ist.
+- **Grosse Uebersicht mit Quoten-Ring:** wie viel Prozent deiner Belege mit einem Kontoumsatz verknuepft
+  sind, plus die wichtigsten Summen daneben.
+- Die Produkt-Version steht jetzt im Report-Kopf, damit du spaeter siehst, mit welchem Stand er erzeugt wurde.
+
+**Unter der Haube**
+Der Report-Generator konnte diese Bausteine laengst — der Modus-4-Report hat sie nur nie aufgerufen.
+Alle Zahlen stammen aus denselben live gelesenen sevDesk-Daten wie zuvor, es kommt keine zweite Wahrheit
+dazu. Ein Anzeigefehler in den Kopfzeilen-Pills ist mit behoben.
+
+## v1.79.0 — Rechnungen aus Anbieter-Portalen holen (wenn's keine Mail-Rechnung gibt)
+
+**Was sich fuer dich aendert**
+Manche Anbieter (OpenAI ist der haeufigste Fall) schicken bei Kartenzahlung nur eine Mail-Benachrichtigung
+("Zahlung erfolgt"), aber KEINE echte Rechnung als Anhang. Die richtige Rechnung liegt dann nur in deinem
+eigenen Kundenkonto im Browser. Bruno konnte solche Rechnungen bisher gar nicht automatisch finden.
+
+- **Konkret gefunden:** 18 fehlende OpenAI-Rechnungen ueber 2025 und 2026 (ChatGPT-Plan + API-Nutzung),
+  weil die Mails dazu keinen PDF-Anhang hatten.
+- **Neu:** Bruno kann jetzt gezielt Rechnungen aus dem Kundenportal eines Anbieters holen — du navigierst
+  einmal in deinem eigenen Browser zu deiner Rechnungs-Uebersicht, Bruno holt sich dann automatisch die
+  PDFs. Kein Passwort wird dabei je an Bruno weitergegeben.
+- **Fuer wen:** funktioniert bei jedem Anbieter, der Rechnungen ueber Stripe abwickelt (sehr verbreitet
+  bei SaaS-Tools) — nicht nur OpenAI.
+- Alle 18 nachgezogenen OpenAI-Rechnungen wurden direkt gebucht und mit deinen Kontobewegungen verknuepft.
+
+**Unter der Haube**
+Der Anbieter "OpenAI" fehlte komplett in der internen Steuer-Zuordnung (trotz frueher schon gebuchter
+Belege) — jetzt ergaenzt (US-Firmensitz und Irland-Firmensitz getrennt, mit korrektem Reverse-Charge).
+
+## v1.78.0 — Erloes-Rechnungen mit Unterstrich blieben faelschlich "offen"
+
+**Was sich fuer dich aendert**
+Rechnungen, die du selbst ausgestellt hast (z.B. an Kunden ueber dein Geschaeftskonto), zeigte Bruno
+manchmal weiter als "noch nicht gebucht" an, obwohl sie laengst gebucht UND mit dem Kontoumsatz
+verknuepft waren. Der Beleg blieb dadurch im falschen Ordner liegen statt im Archiv.
+
+- **Konkret gefunden:** Rechnungsnummern mit Unterstrich (z.B. "RE2025_0003") wurden beim Abgleich
+  mit deinem System anders geschrieben als im Original ("RE20250003" ohne Unterstrich) — fuer Bruno
+  sahen das wie zwei verschiedene Rechnungen aus.
+- **Wie es jetzt geprueft wird:** Der Abgleich ignoriert jetzt auch Unterstriche (wie schon bei
+  Leerzeichen und Bindestrichen), erkennt beide Schreibweisen als dieselbe Rechnung.
+- **Betroffen:** 1 Beleg sofort korrekt einsortiert nach dem Update.
+
+## v1.77.0 — Kartenzahlungen galten faelschlich als "eigene Umbuchung" (Belege waren unsichtbar)
+
+**Was sich fuer dich aendert**
+Bruno hat bei manchen Kartenzahlungen faelschlich angenommen, du haettest nur Geld zwischen deinen
+eigenen Konten verschoben — und sie deshalb von der Belegpflicht ausgenommen. Diese Ausgaben tauchten
+dann nirgends mehr als "Beleg fehlt" auf, obwohl es ganz normale Betriebsausgaben waren. Betroffen
+war jede Zahlung, bei der deine Bank deinen Namen als Karteninhaber in den Verwendungszweck schreibt
+(bei Qonto zum Beispiel bei jeder Kartenzahlung).
+
+- **Konkret gefunden:** 14 Ausgaben des Jahres 2025 an OpenAI, Facebook, vidIQ, Outscraper, Gumroad
+  und Kie.ai galten als "eigene Umbuchung, kein Beleg noetig". Real waren es Betriebsausgaben —
+  mit Vorsteuer, die dir sonst verloren gegangen waere.
+- **Warum das passierte:** Bruno suchte deinen Namen im gesamten Text der Buchung, also auch im
+  Verwendungszweck. Dort steht bei Kartenzahlungen aber der *Zahler* (du), nicht der Empfaenger.
+- **Wie es jetzt geprueft wird:** Entscheidend ist, **wer das Geld bekommt** — nicht, welcher Name
+  irgendwo im Text auftaucht. Eine Umbuchung gilt nur dann als deine eigene, wenn die Gegen-IBAN auf
+  deiner bestaetigten Kontenliste steht oder der Empfaenger exakt dein hinterlegter Name ist. Passt
+  nur der Name ohne IBAN, legt Bruno den Fall vor statt still zu entscheiden.
+- **Du siehst jetzt mehr:** Zu jeder offenen Buchung stehen Empfaenger, Gegen-IBAN, Betrag,
+  Verwendungszweck und die Begruendung des Urteils — damit du Grenzfaelle selbst beurteilen kannst.
+
+**Unter der Haube**
+Die Pruefung nutzt jetzt dasselbe geprüfte Sicherheits-Gate wie das Werkzeug zum Privat-Markieren
+(`system/_lib/privat-gate.mjs`) statt einer eigenen, schwaecheren Logik — eine Wahrheit statt zwei.
+14 neue Kanarien sichern das ab, darunter die fuenf realen Fehlfaelle und ein Sabotage-Test, der
+beweist, dass die alte Logik durchgefallen waere. Zusaetzlich abgesichert: ein stiller
+Konfigurations-Leerlauf (ein gross/klein geschriebenes Feld in deinem Profil wurde nicht gelesen,
+wodurch die Pruefung pauschal nichts mehr entschied — ohne Fehlermeldung).
+
+**Wissensstand:** 2026-07-25
+
+---
+
+## v1.76.0 — Belegerkennung: die Fehlerklasse "Wort statt Struktur" geschlossen + Kanarien-Sammellauf
+
+**Was sich für dich ändert**
+Nachtrag zur letzten Verbesserung: Dieselbe Ursache, aus der eine US-Quittung fälschlich in
+"unklar" landete, steckte noch an zwei weiteren Stellen — überall dort, wo Bruno ein einzelnes
+Wort im Text als Beweis wertete, statt auf die Stelle zu schauen, an der es steht.
+
+- **"Rechnungsnummer: RE20250003"** stand als Verwendungszweck einer Überweisung mitten in einem
+  Kontoauszug (Zeile 327) und wurde als Rechnungs-Merkmal gewertet. Bruno prüft die Rechnungsnummer
+  jetzt nur noch im Kopfbereich eines Dokuments — dort steht sie bei echten Rechnungen ausnahmslos
+  (an 71 von 71 geprüften Belegen in den ersten 19 Zeilen).
+- **Deine eigene Umsatzsteuer-ID** steht im Briefkopf deiner eigenen Kontoauszüge und zählte als
+  Rechnungs-Merkmal. Auf einer Eingangsrechnung zählt aber die ID des Absenders — deshalb wertet
+  Bruno jetzt nur fremde IDs. Deine eigene ID liest er einmal aus dem Profil und blendet sie aus.
+
+**Warum das wichtig ist**
+Jeder dieser Fälle konnte einen Kontoauszug wie eine Rechnung aussehen lassen — und ein Kontoauszug,
+der als Betriebsausgabe gebucht wird, ist ein echter Buchungsfehler. Die Änderung macht Bruno nicht
+leichtgläubiger, sondern genauer.
+
+**Neu: ein Befehl prüft alle Schutzregeln auf einmal**
+Es gab 18 kleine Selbsttests ("Kanarien"), die jeweils eine Buchungs- oder Erkennungsregel absichern —
+aber verstreut über fünf Ordner und nur von Hand einzeln zu starten. Jetzt bündelt sie
+`system/_bin/kanarien.mjs` in einem Lauf, und der Nachtlauf ruft ihn automatisch VOR dem ersten
+Buchen auf. Ist eine Schutzregel kaputt, siehst du es künftig, bevor gebucht wird — nicht danach.
+
+**Unter der Haube**
+Belegerkennung um 7 Kanarien erweitert (jetzt 13), plus ein neuer USt-ID-Leser, der echte
+ID-Syntax von Fließtext trennt (getestet gegen 8 reale Formate). Regression auf dem Bestand:
+818 Belege + 25 Kontoauszüge geprüft, keine Verschlechterung; alle Änderungen per Sabotage-Test
+verifiziert (Schutz entfernt → Test schlägt fehl).
+
+## v1.75.0 — Fehlende Rechnungen werden nicht mehr übersehen (wichtiger Fund)
+
+**Was sich für dich ändert**
+Bruno prüft für jede Kontobewegung, ob die passende Rechnung schon bei dir liegt. Dabei konnte er
+sich bisher von einem ähnlichen Firmennamen täuschen lassen — und hat eine fehlende Rechnung dann
+fälschlich als „ist schon da" abgehakt. Sie tauchte danach in keiner Liste mehr auf. Das ist behoben.
+
+**Der konkrete Fall (in echten Daten gefunden)**
+Eine Zahlung an **Claude.ai** wurde von einer Rechnung der **„Claude Code Academy"** (ein völlig
+anderer Anbieter, ein Kurs) für erledigt erklärt — beide Namen fangen mit „Claude" an, und ein
+gemeinsames Wort reichte dem Abgleich. Folge: **10 Zahlungen über 530,95 € galten als belegt,
+obwohl die Rechnungen fehlten.** Nach dem Fix stehen sie wieder auf der Beschaffungsliste.
+
+**Verbesserungen**
+- **Strengerer Namensabgleich.** Ein einzelnes gemeinsames Wort genügt nicht mehr. Die Namen
+  müssen darüber hinaus zusammenpassen — trägt die Gegenseite noch zwei eigenständige
+  Namenswörter, ist es eine andere Firma. Schreibweisen wie „NAME-CHEAP.COM" ↔ „Namecheap"
+  oder Zahlungs-Präfixe wie „LS* LEARNINGSUITE" werden weiterhin korrekt erkannt.
+- **Neue Schutzprüfung.** 29 Testfälle sichern beide Fehlerrichtungen ab: Rechnungen dürfen weder
+  fälschlich als vorhanden gelten (versteckte Lücke) noch fälschlich als fehlend (unnötige Sucherei).
+  Wird die Regel je aufgeweicht, schlägt die Prüfung sofort an.
+- **Rechnungen von Stripe-Seiten holen.** Viele Anbieter (u.a. Anthropic) stellen ihre Rechnungen
+  über Stripe bereit. Bruno lädt dort jetzt das **echte Anbieter-PDF** herunter — kein Bildschirmfoto —
+  und prüft danach automatisch, ob Betrag und Rechnungsnummer im Dokument lesbar sind. Ist das PDF
+  leer oder abgeschnitten, wird es nicht einsortiert, sondern neu geholt.
+
+**Unter der Haube**
+- `wortanteilPasst`-Gate in `fehlende-rechnungen.mjs` + `canary-vendor-match.mjs` (29 Fälle,
+  Sabotage-verifiziert: Gate entfernt → Prüfung schlägt fehl).
+- Neu `tools/email-invoice-scraper/src/stripe-invoice-fetch.mjs` (eigener Weg statt `paddle-fetch.mjs`:
+  Stripe-Seiten erreichen `networkidle` nie und liefen in einen Timeout).
+
+**Wissensstand:** 2026-07-23
+
+## v1.74.0 — Umzug von einer alten Version: deine Daten kommen automatisch mit
+
+**Was sich für dich ändert**
+Wenn du eine komplett neue Version bekommst statt eines Updates (das passiert bei großen
+Sprüngen — sicherer, weil danach garantiert alles zusammenpasst), musstest du deine Sachen
+bisher von Hand rüberkopieren. Ab jetzt macht das ein Befehl für dich.
+
+**Neue Funktionen**
+- **Daten-Umzug aus jeder alten Version.** Sag Bruno einfach, wo deine alte Installation liegt
+  („Ich bin umgezogen, meine alte Version liegt hier: …") — er holt sich alles, was dir gehört:
+  API-Keys, Firmenprofil, alle Belege, deine privaten Notizen, deine eigenen Anbieter-Regeln
+  und deinen Arbeitsstand.
+- **Alte Ordnernamen werden automatisch einsortiert.** Hießen deine Ordner früher `INPUT`,
+  `OUTPUT` oder `2 BELEGARCHIV`, landen die Belege trotzdem am richtigen Platz in der heutigen
+  Struktur. Egal wie alt deine Version ist.
+- **Neue Anleitung `UMZUG-VON-ALTER-VERSION.md`** — erklärt den Umzug in zwei Minuten, mit
+  Tabelle was mitkommt und was bewusst nicht.
+
+**So sicher ist das**
+- **Deine alte Installation wird nur gelesen, nie verändert.** Sie bleibt als Sicherung liegen,
+  bis du selbst sagst, dass alles stimmt.
+- **Trockenlauf ist die Voreinstellung.** Du siehst erst, was passieren würde. Geschrieben wird
+  nur, wenn du es ausdrücklich startest.
+- **Nichts wird überschrieben.** Was am Ziel schon existiert, bleibt. Läuft der Umzug zweimal,
+  passiert beim zweiten Mal nichts.
+- **Deine API-Keys werden zeilenweise zusammengeführt** — deine Keys kommen dazu, ohne dass der
+  Update-Kanal der neuen Version verloren geht.
+- **Deine eigenen Anbieter-Regeln gewinnen**, aber veraltete Regeln aus deiner alten Version
+  überschreiben keine neueren Produkt-Regeln (z.B. geänderte Steuersätze).
+
+**Unter der Haube**
+- Getestet gegen zwei echte Kundenstände (eine sehr alte Installation mit der früheren
+  3-Ordner-Struktur und eine neuere mit 4 Ordnern) — 16 Einzelprüfungen, alle bestanden:
+  Keys, Profil, Steuernummer, Belege inklusive Unterordner, Kontoauszüge, private Notizen,
+  Arbeitsstand und eigene Regeln kamen vollständig an.
+- Die Liste „was gehört dem Kunden" stammt aus derselben Quelle wie beim normalen Update —
+  es gibt keine zweite Wahrheit, die auseinanderlaufen könnte.
+
+**Wissensstand:** unverändert (2026-07-23).
+
+---
+
+## v1.73.0 — Prüfungen erkennen Fremdwährung, Steuerbefreiungen und stille Ausfälle
+
+**Was sich für dich ändert**
+
+**Rechnungen in Dollar lösen keinen Fehlalarm mehr aus.** Bei Belegen in Fremdwährung rechnet
+deine Bank mit ihrem eigenen Kurs ab, der leicht vom amtlichen EZB-Kurs abweicht. Der Prüfer
+meldete solche Buchungen bisher als „Betrag stimmt nicht" — obwohl die Bank exakt den gebuchten
+Betrag abgebucht hatte. Jetzt gilt: Weicht der Betrag nur geringfügig ab (höchstens 2,5 Prozent
+und höchstens 1,50 Euro) UND gibt es eine Kontobewegung über genau den gebuchten Betrag, ist die
+Buchung bestätigt statt beanstandet. Wichtig: Fehlt die passende Kontobewegung, bleibt die
+Meldung bestehen — ein erfundener Betrag fällt weiterhin auf. Bei deinem letzten Check sind
+dadurch vier von fünfzehn kritischen Meldungen als geklärt ausgewiesen worden.
+
+**Steuerbefreiungen werden beim Einlesen erkannt.** Trägt ein Beleg einen Hinweis wie
+„umsatzsteuerbefreit nach § 4 UStG", „VAT exempt", „Kleinunternehmer nach § 19 UStG" oder
+„Reverse Charge", wird der Steuersatz jetzt auf null gesetzt — auch wenn anderswo auf dem Beleg
+eine Prozentzahl steht. Das ist bares Geld: Ein Postbeleg über 10,49 Euro war mit 19 Prozent
+erfasst, obwohl der Bon ausdrücklich die Steuerbefreiung nennt. Daraus wäre ein Vorsteuerabzug
+entstanden, der dir nicht zusteht. Der wörtliche Wortlaut der Klausel wird mitgespeichert, damit
+später nachvollziehbar bleibt, warum keine Steuer angesetzt wurde.
+
+**Ausgefallene Texterkennung wird gemeldet statt verschwiegen.** Ist der Zugang zur bevorzugten
+Texterkennung abgelaufen oder der Dienst gerade gestört, übernimmt automatisch die nächste —
+das ist richtig so und schützt deine Daten weiterhin. Bisher geschah das aber lautlos, sodass
+monatelang die schwächere Erkennung arbeiten konnte, ohne dass es jemandem auffiel. Jetzt gibt
+es eine Meldung, bei abgelaufenen Zugangsdaten mit ausdrücklichem Hinweis darauf. Am Beleg wird
+vermerkt, welche Erkennung ersatzweise gelaufen ist.
+
+**Zwei neue Übersichten, die sich selbst aktualisieren**
+
+- **Offene Posten** (`OFFENE-POSTEN.md`): Was ist offen, getrennt nach Jahr — Kontobewegungen
+  ohne Beleg, Eingänge ohne Zuordnung, Belege ohne Zahlung. Dazu die Konto-Abdeckung: bis wann
+  reichen die Daten je Konto? Das deckt Lücken auf, die sonst unsichtbar bleiben (Beispiel: ein
+  Konto endet im Januar, Rechnungen laufen bis Juni — dann fehlen Auszüge).
+- **Fehlende Rechnungen** (`FEHLENDE-RECHNUNGEN.md`): die Beschaffungsliste für eine Portal-Runde,
+  nach Anbieter gruppiert, mit Zeitraum und Betrag. Monatsgenau geprüft — ein Anbieter erscheint
+  auch dann, wenn nur ein einzelner Monat fehlt.
+
+Beide werden bei jedem Lauf komplett neu aus deinem Buchhaltungssystem erzeugt. Sie sind eine
+Lesehilfe, keine zweite Wahrheit: Bei Abweichung gilt immer das Buchhaltungssystem.
+
+**Unter der Haube**
+
+- Anbieter-Namen von Kontoauszug und Rechnung werden robuster zusammengeführt („NAME-CHEAP.COM*
+  UJWFOK" und „Namecheap Inc" sind derselbe Anbieter). Getrennt bleiben bewusst verschiedene
+  Landesgesellschaften desselben Konzerns, weil sie steuerlich unterschiedlich behandelt werden.
+  Ohne diese Härtung hätte die Beschaffungsliste 116 Anbieter zu viel enthalten.
+- Neue Schutzregel für Beleg-Bilder: Fotos und Scans von Belegen werden nur noch über den in
+  deinem Profil eingestellten Anbieter gelesen, nie daran vorbei. Ist der nicht erreichbar,
+  bricht die Prüfung ab, statt auf einen Anbieter außerhalb der EU auszuweichen.
+- 60 neue automatische Tests sichern diese Regeln ab (Fremdwährung, Anbieter-Zuordnung,
+  Datenschutz-Kette). Jede wurde durch absichtliches Kaputtmachen gegengeprüft.
+
+## v1.72.0 — Belege werden zuverlässiger erkannt (Quittungen und Kontoabschlüsse)
+
+**Was sich für dich ändert**
+Wenn du Belege in den Posteingang legst, entscheidet Bruno zuerst: Ist das eine Rechnung oder
+ein Kontoauszug? Zwei Sorten Dokumente landeten dabei bisher fälschlich in „unklar" und mussten
+von dir von Hand einsortiert werden:
+
+**Quittungen ohne Umsatzsteuer** (typisch bei US-Anbietern). Die schreiben „RECEIPT" statt
+„Rechnungsnummer" und weisen keine deutsche Umsatzsteuer aus — es fehlte also jedes Merkmal,
+an dem eine Rechnung erkennbar war. Kam dann noch eine lange Positionsliste dazu (etwa eine
+Domain-Abrechnung mit zwölf Zeilen), sah das für Bruno aus wie eine Kontoumsatz-Tabelle.
+Jetzt zählen Quittungs-Kopf und Bestellnummer als Beleg-Merkmale.
+
+**Bank-Kontoabschlüsse** (der Quartals- oder Jahresabschluss mit Zinsen und Entgelten). Die
+tragen oft gar nicht das Wort „Kontoauszug" und wurden deshalb nicht sicher als Bankdokument
+erkannt. Verschärfend kam hinzu: im Kleingedruckten steht ein Satz über Umsatzsteuer, und den
+hat Bruno als Rechnungs-Merkmal gewertet. Beides ist behoben — ein Umsatzsteuer-Hinweis zählt
+jetzt nur noch als solcher, wenn tatsächlich ein Steuersatz oder Steuerbetrag dabeisteht.
+
+**Warum das wichtig ist**
+Ein Kontoauszug, der als Rechnung durchgeht, würde als Betriebsausgabe gebucht — das wäre ein
+echter Buchungsfehler. Deshalb ist Bruno hier bewusst vorsichtig und fragt lieber nach. Diese
+Änderung macht ihn nicht leichtgläubiger, sondern genauer: Er erkennt jetzt mehr Dokumente
+sicher, ohne die Vorsicht aufzugeben.
+
+**Unter der Haube**
+Neue Kanarien-Tests (`src/statement-detect.test.mjs`, 6 Fälle) sichern beide Richtungen ab:
+Quittung darf nie als Kontoauszug gelten, Kontoauszug nie als Rechnung. Gegenprobe auf dem
+Bestand: 825 Belege und 25 Kontoauszüge geprüft, keine einzige Verschlechterung gegenüber
+vorher; die Erkennung wurde per Sabotage-Test verifiziert (Fix entfernt → Test schlägt fehl).
+
+## v1.71.0 — Neues Menü: 15 Modi in 4 Kategorien, neu sortiert und neu nummeriert
+
+**Was sich für dich ändert**
+Das Modus-Menü ist jetzt nach deinem Alltag sortiert statt nach Bau-Reihenfolge: Was du täglich
+brauchst, steht oben — Einrichtung steht unten. Vier Kategorien (ALLTAG · ABSCHLUSS & PFLICHTEN ·
+STEUERWISSEN · EINRICHTUNG), die wichtigsten Modi tragen ein ⭐. Die drei Teilschritte des
+Full-Workflows sind jetzt als 1a/1b/1c direkt unter Modus 1 gruppiert. Alle Menüzeilen sind
+kürzer — nichts wird mehr rechts abgeschnitten.
+
+**🔴 Wichtig: Die Modus-Nummern haben sich geändert!**
+
+| Alt | Modus | Neu |
+|---|---|---|
+| 1 | Full-Workflow | **1** |
+| 3 | Belege scrapen → „Belege holen" | **1a** |
+| 4 | Vorbuchhaltung | **1b** |
+| 5 | Buchen → „Buchen + verknüpfen" | **1c** |
+| 16 | Health-Check | **2** |
+| 6 | Fehlende Belege | **3** |
+| 9 | Report | **4** |
+| 15 | Rechnung/Angebot | **5** |
+| 17 | Kontoauszüge importieren → „Kontoauszüge-Import" | **6** |
+| 8 | UStVA + Fristen | **7** |
+| 7 | Export/Übergabe → „Export an den StB" | **8** |
+| 18 | Festschreiben (GoBD) | **9** |
+| 10 | Konsultieren → „St-Frage" | **10** (unverändert) |
+| 13 | Steuerwissen R·I·C → „St-Wissen-Import" | **11** |
+| 11 | Optimierungs-Check → „St-Optimierung" | **12** |
+| 2 | Onboarding | **13** |
+| 12 | DSGVO-Optimierung → „DSGVO-Härtung" | **14** |
+| 14 | Update | **15** |
+
+**Eingebauter Schutz:** Bruno nennt bei jeder Zahl-Eingabe zuerst den Modus-NAMEN
+(„Modus 2 — Health-Check: …") und startet erst danach. Tippst du aus Gewohnheit eine alte
+Nummer, siehst du sofort, dass ein anderer Modus startet, und kannst abbrechen.
+Freitext funktioniert unverändert — „mach die Buchhaltung" findet immer den richtigen Modus.
+
+**Unter der Haube**
+- Über 100 Querverweise in Skill, Doku und Werkzeugen auf die neuen Nummern umgestellt —
+  dabei auch zwei uralte Falsch-Verweise aus früheren Umbenennungen gefunden und repariert.
+- Neuer Wächter (Kanarie): prüft ab jetzt automatisch, dass Modus-Nummern in Menü, Doku und
+  Werkzeugen zusammenpassen — die Fehlerklasse „vergessener Alt-Verweis" kann nicht mehr
+  unbemerkt liegen bleiben.
+- Hinweis: Changelog-Einträge UNTER diesem hier nennen die alten Modus-Nummern (Tabelle oben
+  übersetzt). Die Versionsnummer v1.69.0 wurde übersprungen (interne Nummern-Kollision zweier
+  paralleler Verbesserungen — keine Funktion fehlt).
+
+**Wissensstand:** unverändert (2026-07-23).
+
+---
+
+## v1.70.0 — Zweigleisige Anbieter richtig buchen + Doppel-Upload-Schutz + Stau-Wächter
+
+**Das Problem, das wir gelöst haben**
+Manche Anbieter (Anthropic, Paddle, Skool, OpenRouter, Google Cloud) stellen mal Rechnungen MIT
+deutscher Umsatzsteuer aus, mal ohne (Reverse Charge) — je nachdem, ob deine USt-ID im Konto
+hinterlegt ist. Bisher blieben all diese Belege sicherheitshalber liegen. Und: Belege konnten
+unbemerkt monatelang im Eingangsordner festhängen, ohne dass eine Prüfung Alarm schlug.
+
+**Neue Funktionen**
+- **Beleg-gesteuerte Steuer-Varianten:** Ein Anbieter darf jetzt ZWEI hinterlegte Behandlungen
+  haben. Bruno wählt die richtige pro Beleg — aber nur mit Beweis: der Steuerbetrag auf dem Beleg
+  muss rechnerisch exakt zum Steuersatz passen, bzw. die Reverse-Charge-Klausel muss wörtlich in
+  der PDF-Textebene stehen. Ohne Beweis bleibt der Beleg wie bisher in der Prüfschleife.
+  Rechnungen mit ausländischer OSS-USt (ohne deutsche USt-ID des Ausstellers) werden brutto als
+  Aufwand gebucht — ohne Vorsteuer-Abzug, denn der stünde dir dort nicht zu (§14/§15 UStG).
+- **Neuer Stau-Wächter (Prüf-Dimension 22):** Der Health-Check meldet jetzt, wenn buchfertige
+  Belege länger als 14 Tage oder Prüf-Fälle länger als 45 Tage unbearbeitet im Eingangsordner
+  liegen. Genau diese Blindstelle hatte 300+ Belege monatelang unbemerkt liegen lassen.
+
+**Verbesserungen**
+- **Doppel-Upload-Schutz verschärft:** Manche Anbieter schicken zum selben Kauf Rechnung UND
+  Quittung mit fast gleicher Nummer (z.B. mit „#" davor). Die Dublettenerkennung normalisiert
+  Belegnummern jetzt strikt — solche Zwillinge werden erkannt statt doppelt gebucht.
+- **Benachrichtigungs-Filter erweitert:** 8 neue Familien (Kontoauszug-Hinweise, 2-Faktor-Mails,
+  Produkt-Updates, Team-Beitritte, Guthaben-Warnungen u.a.) werden als Nicht-Belege aussortiert.
+- **Betrags-Erkennung:** Beträge mit Leerzeichen als Tausendertrenner („1 701,70") werden jetzt
+  auch beim Feld-Heilen korrekt gelesen.
+
+**Unter der Haube**
+- Alle Änderungen mit Kanarien-Tests + Sabotage-Beweis abgesichert (14 neue Tests für die
+  Varianten-Logik, 7 für den Stau-Wächter). Falsch kontierte Entwürfe des ersten Anlaufs wurden
+  vollständig entfernt und korrekt neu angelegt (sevDesk-Konto 5960 erlaubt nur §13b-Steuerregeln —
+  die Brutto-Variante bucht jetzt auf „laufende Lizenzgebühren", wie der bewährte Calendly-Fall).
+
+**Wissensstand:** 2026-07-23
+
+## v1.68.1 — Neuer Modus 18 „Festschreiben" (GoBD-Abschluss) + weniger unnötige Rückfragen + Menü aufgeräumt
+
+**Das Problem, das wir gelöst haben**
+Der Lebensweg eines Belegs endete im Menü scheinbar beim Export — dabei gehört zum GoBD-sauberen
+Abschluss noch die Festschreibung (das endgültige Versiegeln geprüfter Buchungen). Und: Beim
+Komplett-Lauf fragte Bruno „Wie weit soll ich gehen?", obwohl du ihm längst hohe Autonomie gegeben
+hattest.
+
+**Neue Funktionen**
+- **Modus 18 — Festschreiben (GoBD-Abschluss):** Bruno prüft die Kandidaten IMMER frisch per
+  Health-Check und fragt dann: „N Belege sind safe (gebucht + mit Kontobewegung verknüpft + ohne
+  Prüf-Befund) — soll ich sie festschreiben, oder machst du es selbst?" Nach deinem Ja erledigt er
+  es per API — kein Klicken in sevDesk nötig. Wichtig zu wissen: Festschreiben ist endgültig,
+  Korrekturen gehen danach nur noch per Stornobuchung. Wir haben das scharf getestet — auch per
+  API gibt es KEIN Zurück (das ist der Sinn der GoBD).
+- **Neuer Schalter `festschreiben` im Profil:** `tor` (Standard — Bruno fragt einmal pro Periode) ·
+  `auto` (Bruno schreibt selbst fest, aber nur nach abgegebener USt-Voranmeldung und ohne offene
+  Befunde) · `nie` (Bruno zeigt nur die Liste). Deine Autonomie-Stufe allein löst NIE ein
+  Festschreiben aus.
+- **Report-Block „Festschreib-reif":** Jeder große Abschluss-Report zeigt jetzt, wie viele Belege
+  fertig geprüft und bereit zum Versiegeln sind.
+- ⚠️ **Klare Warnung zur Reihenfolge:** Für den DATEV-Export an deinen Steuerberater musst du
+  NICHT festschreiben — es reicht, dass die Belege gebucht und mit der Kontobewegung verknüpft
+  sind. Schreibst du vorher fest, kann dein Steuerberater seine Korrekturwünsche nur noch per
+  Stornobuchung umsetzen. Richtige Reihenfolge: buchen → prüfen → Export an den Steuerberater
+  (der Regler „Dokumente festschreiben" im sevDesk-Dialog bleibt dabei AUS) → seine Rückmeldung →
+  erst dann festschreiben. Der Hinweis steht jetzt im Menü, in Modus 18 und in Modus 7 (Export).
+
+**Verbesserungen**
+- **Komplett-Lauf ohne unnötige Zwischenfrage:** Steht deine Autonomie auf „hoch", sagt Bruno nur
+  noch an („Ich laufe komplett durch bis gebucht + verknüpft — sag stopp, wenn du weniger willst")
+  und arbeitet durch. Die Sicherheitsprüfungen bleiben alle unverändert aktiv.
+- **Menü aufgeräumt:** jede Modus-Beschreibung jetzt eine klare Zeile; E-Mail-Eingang korrekt als
+  „Gmail + gängige Anbieter per IMAP" beschrieben (nicht mehr nur Gmail).
+- **Doku an die Wirklichkeit angepasst:** Der DATEV-Export per Befehl existiert längst
+  (`datev-export.mjs`) — die Anleitung behauptete das Gegenteil. Der Health-Check hat 20
+  Prüfdimensionen (stand fälschlich „15"). Onboarding-Texte auf den aktuellen Stand gebracht.
+
+**Unter der Haube**
+- Scharf-Test mit Wegwerf-Beleg beweist: Nach dem Festschreiben blockt sevDesk Ändern (400),
+  Zurücksetzen auf Entwurf (400 „Already enshrined") und Löschen (409). Ergebnis in der
+  Wissensbasis (GoBD-Referenz) und den API-Notizen dokumentiert; eine ältere, ungetestete
+  Log-Behauptung („Rückgängig möglich") wurde korrigiert.
+- GoBD-Wissen erweitert: Warum Festschreiben Pflicht ist (§ 146 Abs. 4 AO, GoBD Rz 58) und wann
+  der übliche Zeitpunkt ist (spätestens mit Abgabe der USt-Voranmeldung — Fachpraxis).
+
+**Wissensstand**
+- 2026-07-23
+
+## v1.67.0 — Neue Prüfung „Das ist keine Rechnung" + Bank-Schiedsrichter + genaueres Betrags-Lesen
+
+**Das Problem, das wir gelöst haben**
+Manche Dokumente sehen aus wie Rechnungen, sind aber keine: Meta/Facebook verschickt z.B.
+Zahlungsbestätigungen, auf denen wörtlich „Das ist keine Rechnung" steht. 14 solcher Dokumente
+lagen bei uns in der Buchhaltung — für den Vorsteuerabzug reichen sie nicht, die echten Rechnungen
+muss man separat im Werbekonto herunterladen. Das fiel bisher nur durch Zufall auf.
+
+**Neue Funktionen**
+- **Neue Prüfung 21 „Beleg-Natur":** Bruno liest bei jedem Beleg die PDF-Textebene (lokal, ohne KI)
+  und warnt VOR dem Buchen, wenn der Beleg selbst sagt, dass er keine Rechnung ist. Zusätzlich weist
+  der Health-Check jetzt ehrlich aus, wie viele Belege gescannte Bilder ohne Textebene sind — dort
+  kann diese Prüfung nichts sehen (vorher wurden sie stillschweigend als sauber gezählt).
+- **Bank-Schiedsrichter (2-von-3-Prinzip):** Wenn der gebuchte Betrag und der Betrag im PDF-Text
+  sich widersprechen, stimmt jetzt automatisch die Bank ab: stützt eine Kontobewegung Cent-genau
+  genau EINEN der beiden Werte, wird die Warnung entsprechend eingeordnet (wahrscheinlicher
+  Fehlalarm bzw. wahrscheinlich echter Fehler). Es wird dabei nie etwas automatisch geändert oder
+  gebucht — nur die Warnung wird schlauer. Kleinstbeträge unter 10 € stimmen nicht ab (zu leicht
+  zufällig in jeder Bank vorhanden).
+
+**Verbesserungen**
+- Beträge mit Leerzeichen als Tausendertrenner („1 701,70") werden jetzt korrekt gelesen — vorher
+  konnte das einen falschen Alarm auf eine korrekte Buchung auslösen (real bei einer Rechnung
+  passiert). Auch geschützte Sonder-Leerzeichen werden erkannt.
+- Der „Bitte ansehen"-Ordner (_review) wird nach jedem Buchungs-Abgleich automatisch neu aufgebaut —
+  vorher konnten dort veraltete Verweise auf schon abgelegte Belege zurückbleiben (real: 78 Stück).
+- Login-Benachrichtigungen der Bank („Es gab eine neue Anmeldung"), die fälschlich einen Betrag
+  trugen, werden jetzt als Nicht-Belege erkannt und aus der Buchungs-Warteschlange geräumt.
+
+**Unter der Haube**
+- 32 neue Selbsttests (Kanarien) für alle neuen Prüfungen, jeweils mit Sabotage-Beweis (Fix
+  entfernen → Test schlägt an). Unabhängiger Code-Review über alle Änderungen, Funde eingearbeitet.
+- Benchmark an 38 Echtbelegen dokumentiert, warum die KI-Texterkennung der Leser bleibt und die
+  PDF-Textebene der Kontrolleur: `system/research/PDFTOTEXT-ANALYSE-2026-07-23.md`.
+- DSGVO-Doku ergänzt: die komplette Textebenen-Schicht läuft lokal (kein Datenabfluss, kein AVV
+  nötig, bei jeder Engine-Wahl aktiv) + Widerspruchs-Leiter, wer Konflikte auflöst.
+
 ## v1.66.2 — Aufgeräumte Testdaten + neues Reparatur-Werkzeug für lückenhafte Belege
 
 **Verbesserungen**

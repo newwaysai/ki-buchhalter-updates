@@ -1,3 +1,62 @@
+## v1.101.0 — Steuersatz-Falle geschlossen (bevor sie dich treffen konnte)
+
+**Verbesserungen**
+- **Der Steuersatz wird jetzt immer gleich geschrieben.** Die Texterkennung liefert bei manchen
+  Rechnungen "19" und bei anderen "0,19" — beides meint 19 Prozent, aber meine Pruefungen
+  rechnen mit der zweiten Form. Kam die erste an, meldete ich eine voellig korrekte Rechnung als
+  widerspruechlich und legte sie unnoetig in die Pruefliste. Ab jetzt wird der Satz direkt beim
+  Auslesen einheitlich gemacht, damit das nicht mehr passieren kann.
+- **Deine bereits gelesenen Belege sind mitrepariert.** Ich habe alle 1.697 vorhandenen Belege
+  durchgesehen, drei mit der alten Schreibweise gefunden und korrigiert — jeden davon vorher
+  gegen das Original-PDF geprueft, nicht blind umgerechnet. Von jeder geaenderten Datei liegt
+  eine Sicherung daneben.
+
+**Unter der Haube**
+- Die Vereinheitlichung sitzt jetzt an der Stelle, an der der Wert entsteht, statt an zwoelf
+  Stellen, die ihn spaeter lesen. Vier davon waren abgesichert, acht nicht — darunter die
+  Kontrolle, die direkt vor dem Buchen laeuft. Eine Quelle statt zwoelf Reparaturstellen.
+- Unsinnige Werte (etwa 1900 Prozent) werden verworfen statt weitergereicht. Auslaendische
+  Saetze wie 21 Prozent bleiben dagegen erhalten — sie sind eine echte Information und duerfen
+  nicht stillschweigend verschwinden.
+- Sechs neue Tests sichern das Verhalten ab, alle bestehenden Tests laufen unveraendert weiter.
+
+**Wissensstand**
+- Gemessen am 1. August 2026 an 46 echten Rechnungen: BuchhaltungsButler liest sie ohne meine
+  Hilfe zu 95,7 Prozent fehlerfrei, ich komme auf 97,8 Prozent. Das ist praktisch gleichauf —
+  ein Beleg Unterschied. Diese Zahl steht hier, damit niemand einen Vorsprung behauptet, den es
+  nicht gibt: mein Nutzen liegt nicht im Lesen, sondern davor und danach.
+
+## v1.100.0 — Keine Rechnung mehr ohne Empfaengeranschrift
+
+**Neue Funktionen**
+- **Ich trage die Anschrift deines Kunden jetzt selbst in den Beleg ein.** sevDesk uebernimmt die
+  Adresse aus dem Kontakt NICHT automatisch in die Rechnung — das Feld bleibt leer, wenn es
+  niemand fuellt. Genau das ist mir passiert: eine fertige Rechnung ging mit leerem Adresskopf
+  raus, und du musstest es selbst bemerken. Ab jetzt hole ich die Adresse aus dem Kontakt und
+  schreibe sie in den Beleg, bei Rechnungen und bei Angeboten.
+- **Neuer Sicherheitsstopp vor jedem Ausgangsbeleg.** Fehlt Name, Strasse, PLZ oder Ort, lege ich
+  die Rechnung gar nicht erst an, sondern sage dir genau, was fehlt und wie es nachgetragen wird.
+  Grund: ohne vollstaendige Anschrift des Empfaengers ist eine Rechnung nicht ordnungsgemaess
+  (§14 Abs. 4 Nr. 1 UStG) — dein Kunde koennte die Vorsteuer nicht ziehen, und bei einer Pruefung
+  ist der Beleg angreifbar.
+- **Ausnahme fuer Kleinbetraege bleibt moeglich.** Bis 250 Euro brutto ist die Empfaengeranschrift
+  nicht vorgeschrieben (§33 UStDV). Fuer diese Faelle gibt es einen bewussten Schalter — er wird
+  nie stillschweigend gesetzt, du siehst immer einen Hinweis.
+- **Zahlungsziel kann ich jetzt direkt mitgeben.** Bisher musstest du die Faelligkeit von Hand in
+  sevDesk nachtragen. Jetzt setze ich sie beim Anlegen (z.B. 14 Tage); ohne Angabe bleibt es bei
+  "sofort faellig".
+- **Kunden anlegen geht in einem Schritt.** Beim Anlegen eines neuen Kontakts kann ich Strasse,
+  PLZ, Ort und E-Mail gleich mit hinterlegen, statt nur den Namen. Halbe Adressen weise ich ab —
+  eine unvollstaendige Anschrift ist kein Teilerfolg.
+
+**Unter der Haube**
+- Nach dem Schreiben pruefe ich zusaetzlich, ob die Anschrift wirklich im Beleg steht. Fehlt sie,
+  schlaegt die Kontrolle fehl, statt einen leeren Kopf durchzuwinken.
+- Zwei neue feste Regeln: Ausgangsbelege ohne Empfaengeranschrift sind gesperrt, und bei einem
+  Fehler einer Schnittstelle pruefe ich zuerst meinen eigenen Aufruf, bevor ich der Gegenseite
+  die Schuld gebe. Letzteres war hier die eigentliche Ursache — ich hatte die Daten falsch
+  verpackt und daraufhin faelschlich behauptet, sevDesk lehne sie ab.
+
 ## v1.99.0 — Ein Denkfehler beim Wechselkurs, gefunden und abgestellt
 
 **Verbesserungen**

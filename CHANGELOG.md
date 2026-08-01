@@ -1,3 +1,127 @@
+## v1.99.0 — Ein Denkfehler beim Wechselkurs, gefunden und abgestellt
+
+**Verbesserungen**
+- 🔴 **Wichtigste Aenderung: bei Fremdwaehrung zaehlt jetzt die Kontobewegung, nicht der
+  Referenzkurs.** Ich hatte eine Buchung als „11,71 Euro zu hoch" gemeldet, weil ich sie gegen
+  den offiziellen Monatskurs der Europaeischen Zentralbank gerechnet hatte. Deine Bank hatte
+  aber exakt den gebuchten Betrag abgebucht — Karten rechnen zum Tageskurs plus Auslandsentgelt.
+  **Die Buchung war richtig, mein Korrekturvorschlag falsch.** Haettest du ihn uebernommen,
+  waere ein korrekter Wert zerstoert und die Buchung von der Zahlung entkoppelt worden.
+  Ab jetzt gilt fest: gibt es eine passende Kontobewegung, ist deren Betrag der richtige.
+  Der Referenzkurs kommt nur noch zum Einsatz, wenn gar keine Zahlung existiert.
+- **Die Pruefung „Waehrung falsch etikettiert" meldet nicht mehr pauschal Alarm.** Ist ein Beleg
+  bereits gebucht und passt der Betrag zur Bank, ist es nur ein Etikett-Fehler in meinen Daten —
+  kein Geldfehler. Die Meldung sagt das jetzt auch so und warnt ausdruecklich davor, den
+  gebuchten Betrag zu aendern.
+- **Alle 399 Ausgaben-Buchungen gegen die Bank geprueft.** 173 stimmen auf den Cent; 13 weichen
+  um Centbetraege ab (Fremdwaehrung, zusammen 15 Cent). Keine Doppelbuchung gefunden.
+- **27 falsche Steuersatz-Lesungen entfernt.** Das kleine lokale Vorlese-Modell hatte bei
+  US-Rechnungen 19 % erkannt, wo im PDF gar keine Steuer steht. Jede einzelne wurde vorher am
+  Original-PDF geprueft; deine Buchungen waren nicht betroffen (dort stand korrekt 0 %).
+  Die Dateien liegen gesichert mit Begruendung, nichts wurde endgueltig geloescht.
+
+**Unter der Haube**
+- 🔴 **Die Selbsttests haben in Wahrheit den echten Datenbestand mitgeprueft.** Sie sollten einen
+  einzelnen kuenstlichen Testbeleg pruefen, lasen aber immer auch dein Belegarchiv mit. Folge:
+  ein Test schlug dauerhaft fehl — nicht wegen eines Fehlers, sondern weil im Bestand ein
+  berechtigter offener Punkt liegt. Ein Test, der aus fremdem Grund rot ist, wird irgendwann
+  ignoriert; genau so entstehen blinde Flecken. Alle sieben Tests laufen jetzt isoliert.
+  Gegenprobe gemacht: mit einem absichtlich kaputten Beleg werden sie sofort wieder rot.
+- **Bestaetigte Einzelfaelle lassen sich jetzt auch ueber die Belegnummer quittieren.** Bisher
+  ging das nur ueber die Buchungsnummer — Befunde ohne Buchung (z. B. „das ist gar keine
+  Rechnung") blieben deshalb dauerhaft rot, ohne Moeglichkeit sie zu bestaetigen. Sie werden
+  herabgestuft, aber weiterhin im Bericht angezeigt.
+- **Die Kreditoren-Datei fuer den Steuerberater ist jetzt gegen zwei unabhaengige Quellen
+  geprueft** statt nur gegen eine. Ehrlich dazu: die offizielle DATEV-Formatbeschreibung ist
+  oeffentlich nicht abrufbar — die Struktur ist aus zwei uebereinstimmenden Produktivsystemen
+  abgeleitet, nicht aus der Spezifikation selbst. Das steht so in den Unterlagen.
+
+**Wissensstand:** 01.08.2026
+
+## v1.98.0 — Buchhaltung an den Steuerberater uebergeben, ganz ohne Buchhaltungs-Software
+
+**Neue Funktionen**
+- **Du brauchst kein sevDesk/Lexware/BuchhaltungsButler mehr, um deinem Steuerberater sauber
+  zuzuarbeiten.** Ich lese jetzt deine Kontoumsaetze direkt aus dem Bank-Export, ordne ihnen deine
+  Rechnungen zu und baue daraus das fertige DATEV-Paket. Der Steuerberater bekommt Buchungen, bei
+  denen Rechnung und Zahlung bereits zusammengehoeren — er muss nichts mehr von Hand verknuepfen.
+- **Bank-Export: CSV reicht.** Ich lese die normale CSV deiner Bank (jede Bank kann das) und, falls
+  vorhanden, auch das Bankformat CAMT. Kennt mein System deine Bank noch nicht, zeige ich dir die
+  Spalten deiner Datei und frage EINMAL nach der Zuordnung — danach laeuft es automatisch.
+- **Deine Lieferanten werden im Steuerprogramm automatisch angelegt.** Dafuer schreibe ich eine
+  zweite, offizielle DATEV-Datei mit. Die Nummern bleiben dauerhaft gleich, damit derselbe
+  Lieferant Jahr fuer Jahr dieselbe Nummer behaelt.
+- **Schutz vor doppelt vergebenen Lieferantennummern.** Bevor irgendetwas uebergeben wird, bekommst
+  du eine Liste im Klartext ("79001 Musterfirma GmbH [neu] ...") fuer deinen Steuerberater zum
+  Gegenlesen. Grund: haette er eine Nummer schon vergeben, wuerde der Import seinen Lieferanten
+  ueberschreiben. Sagt er "nimm andere", stelle ich alle Nummern in einem Zug um.
+- **Beleg-Paket fuer DATEV Unternehmen Online.** Ich packe die zugehoerigen Belege als ZIP und pruefe
+  vorher, dass zu JEDER Buchung auch wirklich das Belegbild dabei ist. Fehlt eines, wird kein Paket
+  gebaut — ein unvollstaendiges Paket faellt sonst erst beim Steuerberater auf.
+
+**Verbesserungen**
+- **Wichtiger Fund: deine Belegbilder wurden bisher nie mit den Buchungen verknuepft.** Beim Bauen
+  der neuen Pruefung ist aufgefallen, dass das Feld fuer die Beleg-Verknuepfung in jedem bisherigen
+  DATEV-Export leer geblieben ist — durch einen falschen Feldnamen. Das ist behoben: die Belege
+  haengen jetzt an ihren Buchungen. Der Fehler war unsichtbar, weil ein leeres Feld technisch
+  erlaubt ist und niemand eine Fehlermeldung bekommt.
+- **Betraege koennen nicht mehr um den Faktor 1000 verrutschen.** Eine Zahl wie "1.234" bedeutet je
+  nach Land 1234 oder 1,234. Ich rate das nicht mehr, sondern richte mich nach dem Format deiner
+  Bank — und wenn es wirklich nicht eindeutig ist, sage ich das, statt einen Wert zu erfinden.
+- **Schwebende Zahlungen kommen nicht mehr in die Buchhaltung.** Ist eine Kartenzahlung noch "in
+  Bearbeitung", ist das Geld noch nicht abgeflossen und die Buchung gehoert nicht ins Jahr. Ich
+  filtere sie heraus und sage dir, wie viele es waren.
+- **Zwei Bank-Dateien desselben Kontos werden gegeneinander geprueft.** Hast du CSV und CAMT, muessen
+  beide exakt dieselben Umsaetze ergeben. Weicht etwas ab, erfaehrst du es sofort.
+
+**Unter der Haube**
+- Vier neue Selbsttests mit 92 Pruefungen, darunter bewusste Sabotage-Faelle: geloeschte Buchung,
+  doppelte Buchung, um einen Cent veraenderter Betrag, gedrehtes Vorzeichen, verschobenes Datum.
+  Jeder davon MUSS erkannt werden — sonst verweigert das System die Arbeit.
+- Beim Einlesen von CAMT wird bewiesen, dass Anfangssaldo + alle Umsaetze = Schlusssaldo ergibt.
+  Stimmt das nicht, gibt es gar keine Ausgabe statt stiller Falschdaten.
+- Eine Zahlung kann nie zwei Rechnungen zugeordnet werden; passt sie zu mehreren, wird sie zur
+  Pruefung vorgelegt statt geraten.
+- Das bisherige Verhalten bleibt unveraendert: die neuen Moeglichkeiten schalten sich nur ein, wenn
+  du die Kontoumsaetze mitgibst.
+
+**Wissensstand:** 31.07.2026
+
+## v1.97.0 — Ehrliche Antworten auf 21 haeufige Fragen
+
+**Neue Funktionen**
+- **Eine FAQ-Liste, die auch sagt, was ich NICHT kann.** 21 Fragen von Interessenten sind jetzt
+  beantwortet — jede einzelne am Programmcode geprueft, nicht aus dem Gedaechtnis. Wo eine Luecke ist,
+  steht sie offen da. Du findest sie unter „FAQ-bruno".
+
+**Verbesserungen**
+- **Kostenstellen: meine bisherige Antwort war zu pauschal.** BuchhaltungsButler kann Kostenstellen
+  ueber die Schnittstelle vollstaendig verwalten (anlegen, lesen, aendern, loeschen) — ich spreche sie
+  nur nicht an. Das ist etwas anderes als „geht nicht" und steht jetzt korrekt in den Unterlagen.
+- **Die Aufraeum-Liste fuer BuchhaltungsButler war unvollstaendig.** Sie nannte zwei Test-Eintraege,
+  tatsaechlich sind es vier. Ich erzeuge solche Listen jetzt immer frisch aus dem echten Bestand,
+  statt sie aus dem Lauf zu uebernehmen, der sie angelegt hat.
+
+**Was du ueber deine Postfaecher wissen solltest**
+- **Web.de, GMX, T-Online, iCloud und sechs weitere Anbieter** sind fertig eingerichtet — du gibst nur
+  Adresse und Passwort an. Bei GMX und Web.de musst du den Zugriff einmal in den Einstellungen
+  freischalten, ich nenne dir den Klickweg.
+- **Outlook und Microsoft 365 gehen nicht.** Microsoft hat den einfachen Postfach-Zugang abgeschaltet.
+  Der praktische Weg: eine Weiterleitungsregel auf eine zweite Adresse einrichten (fuenf Minuten, ohne
+  Administrator) — oder die Rechnungen in meinen Ordner legen.
+
+**Ehrliche Grenzen, neu dokumentiert**
+- **Das Leistungsdatum lese ich nicht aus.** Ich erfasse Rechnungsdatum und Zahldatum. Fuer die
+  Umsatzsteuer zaehlt aber das Leistungsdatum — bei Rechnungen ueber einen Monatswechsel kann das
+  einen Unterschied machen. Bitte dort selbst hinschauen.
+- **Skonto verarbeite ich nicht.**
+- **Ich pruefe USt-IDs, aber nicht beim Bundeszentralamt.** Deutsche Nummern pruefe ich mit dem
+  echten Rechenverfahren, auslaendische nur auf Format. Die rechtlich verbindliche Abfrage bei
+  EU-Geschaeften musst du weiterhin selbst machen.
+- **Ich habe keine eigene Schnittstelle.** Eine direkte Anbindung an ein ERP-System gibt es nicht.
+- **Ich bin fuer eine Person gebaut**, nicht fuer ein Team mit mehreren Nutzern. Das ist Absicht:
+  gleichzeitige Zugriffe koennten zu Doppelbuchungen fuehren, und dieses Risiko gehe ich nicht ein.
+
 ## v1.96.0 — Alte Irrtuemer ueber BuchhaltungsButler richtiggestellt
 
 **Verbesserungen**

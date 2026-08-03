@@ -1,3 +1,130 @@
+## v1.105.0 — Ein stiller Datumsfehler, der deine Umsatzsteuer verschieben konnte
+
+**Behoben**
+- 🔴 **Rechnungsdaten in deutscher Schreibweise landeten im falschen Quartal.** Ein paar Anbieter
+  schreiben das Rechnungsdatum als `24.09.2025` statt in der Form, die ich intern erwarte. Ich habe
+  das bisher ungeprueft uebernommen. Folge: der Beleg konnte im falschen Quartal abgelegt und in
+  der falschen Umsatzsteuer-Voranmeldung gelandet sein — **ohne dass irgendwo eine Fehlermeldung
+  kam.** Genau das macht so einen Fehler gefaehrlich: er faellt nicht auf.
+  Ab jetzt rechne ich jedes Datum beim Einlesen in die einheitliche Form um. Betroffen waren bei
+  mir 8 von rund 1.700 Belegen — bei dir kann die Zahl anders aussehen, der Fehler ist derselbe.
+- **Ich rate dabei nicht.** Bei eindeutigen Angaben (`24.09.2025`) rechne ich um. Bei mehrdeutigen
+  (`03/04/2025` — 3. April oder 4. Maerz?) lasse ich das Feld lieber leer und melde es dir, statt
+  zu raten. Ein leeres Feld siehst du, ein um einen Monat verschobener Beleg nicht.
+
+**Neue Funktionen**
+- **Selbstpruefung aller Beleg-Felder.** Ein neues Werkzeug geht einmal durch alle eingelesenen
+  Belege und meldet Felder, die vom vereinbarten Format abweichen — dieselbe Fehlerklasse wie oben,
+  bevor sie sich auf deine Buchhaltung auswirkt. Rein lesend, aendert nichts.
+- **Systemmails aussortieren.** Wurde eine reine Benachrichtigung faelschlich als Rechnung
+  eingestuft, raeume ich sie jetzt weg. Das Kriterium ist bewusst streng: nur wenn **gleichzeitig**
+  Datum, Betrag und Rechnungsnummer fehlen. Eine echte Rechnung erfuellt das nie — fehlt nur eines
+  davon, bleibt der Beleg liegen und du siehst ihn. Nichts verschwindet still.
+
+**Wissensstand korrigiert**
+- **Zur E-Bilanz und zur EUeR** habe ich meine Unterlagen ueberarbeitet (Details standen schon in
+  v1.103.0). Neu dazu: eine ausfuehrliche Einordnung, warum die E-Bilanz technisch laengst ans
+  Finanzamt geht, aber trotzdem ein zweites Programm braucht — inklusive der Preise der Anbieter.
+- **Zu fehlenden Rechnungsnummern:** Fehlt auf einem Beleg die Nummer, heisst das meistens nicht,
+  dass der Anbieter keine vergeben hat — sie steht auf dem PDF und wurde nur nicht gelesen. Wie man
+  die beiden Faelle unterscheidet (und wann eine fehlende Nummer nach §33 UStDV voellig in Ordnung
+  ist, naemlich bei Kleinbetragsrechnungen bis 250 Euro), steht jetzt in meinen Unterlagen.
+
+## v1.104.0 — Rechnungsnummern: ein Fehler von mir, und was ich daraus gebaut habe
+
+**Richtiggestellt**
+- 🔴 **Ich habe beim Nachsehen der naechsten Rechnungsnummer drei Nummern verbrannt.** Um dir zu
+  sagen, welche Nummer als naechstes kommt, hatte ich einen sevDesk-Aufruf benutzt, der laut
+  seinem eigenen Parameter (`useNextNumber=false`) nur schauen sollte. Er zaehlt aber trotzdem
+  hoch. Ergebnis: der Zaehler sprang von 1001 auf 1004, obwohl nur eine einzige Rechnung
+  existierte. Kein Geldschaden, aber eine unnoetige Luecke — und meine Aussage "die Nummer wurde
+  nicht verbraucht" war schlicht falsch.
+  **Ab jetzt lese ich Belegnummern nur noch ueber einen Weg, der garantiert nichts veraendert.**
+- **Klickwege nenne ich nicht mehr aus dem Gedaechtnis.** Ich hatte dir "Einstellungen →
+  Rechnungswesen" genannt — diesen Menuepunkt gibt es bei sevDesk gar nicht. Richtig ist
+  **Einstellungen → Buchhaltung → Nummernkreise**. Kuenftig schaue ich erst in meiner
+  Klickweg-Doku nach oder recherchiere die offizielle Hilfe, statt etwas plausibel Klingendes
+  zu sagen.
+- **Nummernkreise lassen sich nicht per Schnittstelle aendern — jetzt sauber geprueft.**
+  Ich hatte das zunaechst nur vermutet. Der Test zeigt: sevDesk kennt die Funktion, sperrt sie
+  aber fuer Schnittstellen-Zugriffe (Fehler "Access denied"). Aendern geht also nur in der
+  Oberflaeche, lesen jederzeit automatisch.
+
+**Unter der Haube**
+- Zwei neue feste Regeln: Aufrufe, deren Name nach "naechste Nummer holen" klingt, gelten als
+  veraendernd, bis das Gegenteil gemessen ist — und ein Klickweg ist eine pruefbare Tatsache,
+  keine Erinnerung.
+- Die Klickweg-Uebersicht wurde korrigiert und erweitert (Nummernkreise inkl. Format-Variablen,
+  richtiger Menuepfad "Unternehmen" statt "Mein Unternehmen").
+
+## v1.103.0 — Korrektur: was ich dir ueber Bilanz und Finanzamt gesagt habe, stimmte nicht ganz
+
+**Richtiggestellt**
+- **Die E-Bilanz kann BuchhaltungsButler nicht selbst ans Finanzamt schicken.** Ich hatte das
+  Gegenteil in meinen Unterlagen stehen. Richtig ist: das Programm erstellt deine Bilanz, aber
+  fuer das Einreichen exportierst du eine Saldenliste und uebertraegst sie in ein zweites
+  Programm namens eBilanz+. Das ist eine fremde Firma, kein Teil von BuchhaltungsButler.
+- **Die EUeR dagegen geht dort inzwischen doch direkt ans Finanzamt.** Auch das stand bei mir
+  noch falsch drin ("kann kein Programm"). Es gibt eine Zusatzfunktion fuer 5,90 Euro im Monat,
+  die die Anlage EUeR im amtlichen Format erstellt und direkt uebermittelt.
+- **Und wir muessen "keine App kann die Umsatzsteuer direkt ans Finanzamt senden" streichen.**
+  Das war schlicht falsch: alle drei Programme koennen das per Klick. Nur ueber die
+  Schnittstelle, also automatisch ohne dich, geht es nicht.
+
+**Neu erklaert**
+- **Warum die Bilanz nicht ueber das kostenlose ELSTER-Portal geht.** Kurz: das Finanzamt nimmt
+  die E-Bilanz sehr wohl an, der Uebertragungsweg dafuer existiert seit 2014. Aber im
+  kostenlosen Portal "Mein ELSTER" gibt es dafuer kein Formular. Eine Bilanz besteht aus
+  hunderten Positionen, die aus deinem Kontenrahmen kommen muessen, das tippt man nicht in eine
+  Eingabemaske. Deshalb braucht es ein Programm.
+- **Was das kostet, falls es dich betrifft.** Es gibt kostenlose Programme dafuer (MyEbilanz)
+  und guenstige (eBilanz+ ab 35 Euro pro Abgabe). Du zahlst nie fuer den Versand ans Finanzamt
+  selbst, sondern nur fuer die Software, die deine Zahlen ins amtliche Format bringt.
+- **Wen das ueberhaupt angeht:** nur wer bilanzieren muss, also GmbH, UG, AG und grosse
+  Einzelunternehmen. Wer eine Einnahmenueberschussrechnung macht, hat mit alldem nie zu tun.
+
+**Unter der Haube**
+- Die Wahrheit steht ab jetzt an genau einer Stelle, alle anderen Unterlagen verweisen darauf.
+  Der Fehler oben war naemlich in sieben Dateien gleichzeitig gelandet, weil jede ihre eigene
+  Fassung hatte. So etwas soll sich nicht wieder ueber Monate ausbreiten koennen.
+- Ich habe mir zusaetzlich notiert, woran es lag: eine unsichere Angabe von einer Anbieter-
+  Webseite wurde beim Weiterkopieren stillschweigend zu einer sicheren. Kennzeichnungen wie
+  "ungeprueft" muessen mitwandern, sonst nuetzen sie nichts.
+
+**Wissensstand**
+- Geprueft am 1. August 2026 an amtlichen Unterlagen der Finanzverwaltung und den Seiten der
+  Anbieter. Ein Punkt bleibt bewusst offen: ob der Schnittstellen-Zugang bei BuchhaltungsButler
+  im Tarif enthalten ist oder 5,90 Euro extra kostet, widerspricht sich zwischen meinen
+  Unterlagen und der aktuellen Bestellseite. Ich habe beide Staende nebeneinander notiert statt
+  zu raten, welcher stimmt.
+
+## v1.102.0 — Rechnungsdatum kann nicht mehr still falsch sein
+
+**Verbesserungen**
+- **Das Rechnungsdatum wird jetzt immer gleich geschrieben.** Manche Rechnungen liefern
+  "24.09.2025", andere "2025-09-24" — gemeint ist dasselbe, aber meine Ablage und die
+  Umsatzsteuer-Zuordnung rechnen nur mit der zweiten Form. Kam die erste an, landete der Beleg
+  still im falschen Quartal, ohne dass irgendwo ein Fehler auftauchte. Genau solche stillen
+  Fehler sind die gefaehrlichen. Ab jetzt wird das Datum direkt beim Auslesen vereinheitlicht.
+- **Mehrdeutige Datumsangaben werden nicht mehr geraten.** Bei "03/04/2025" ist nicht
+  entscheidbar, ob der 3. April oder der 4. Maerz gemeint ist. Statt zu raten lasse ich das Feld
+  leer und melde es — ein um einen Monat verschobener Beleg in der Voranmeldung waere teurer als
+  eine Rueckfrage.
+- **Deine vorhandenen Belege sind mitrepariert.** Acht Rechnungen mit deutschem Datumsformat
+  gefunden und korrigiert (FlixTrain, Emmy, TurboScribe) — jede vorher gegen das Original-PDF
+  geprueft. Von jeder geaenderten Datei liegt eine Sicherung daneben.
+- **Systemmails landen nicht mehr in der Buchungsliste.** Acht Benachrichtigungen ("X ist dem
+  Team beigetreten") waren faelschlich als Rechnung eingestuft. Sie wurden nie gebucht — die
+  Null-Betrags-Regel hat sie abgefangen — aber sie standen in der Liste offener Belege.
+  Aussortiert, nicht geloescht: sie liegen jetzt im Ordner fuer Nicht-Belege.
+
+**Unter der Haube**
+- Zweiter Fall derselben Fehlerklasse wie beim Steuersatz: ein Feld hat eine Formatzusage, aber
+  niemand setzt sie durch. Beide sind jetzt an der Quelle abgesichert, nicht bei den einzelnen
+  Lesern.
+- Fuenf neue Tests, darunter ausdrueckliche Tests dafuer, dass mehrdeutige Formate NICHT
+  interpretiert werden. Alle 19 Tests laufen gruen.
+
 ## v1.101.0 — Steuersatz-Falle geschlossen (bevor sie dich treffen konnte)
 
 **Verbesserungen**

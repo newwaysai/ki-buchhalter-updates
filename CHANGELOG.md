@@ -1,3 +1,203 @@
+## v1.121.0 — Bringt es etwas, die Werte beim Hochladen mitzugeben? Getestet: teils ja, teils nein
+
+**Der Test**
+
+Die Schnittstelle nimmt beim Hochladen weit mehr an als nur die Datei — Lieferant, Rechnungsnummer,
+Datum, Betrag, Waehrung, Steuersatz. Die Frage war: wird die Automatik dadurch besser?
+
+16 Belege aus 2024, die die Software noch nie gesehen hatte, abwechselnd auf zwei Gruppen verteilt.
+Acht nackt hochgeladen, acht mit allen Werten.
+
+**Ergebnis 1: die Datenqualitaet steigt**
+
+Vollstaendig gelesen waren bei den nackten Belegen 5 von 8, bei denen mit Werten 7 von 8.
+Drei Belege, bei denen die Software ein Feld nicht lesen konnte, waren so vollstaendig.
+
+**Ergebnis 2: die Kontierung aendert sich ueberhaupt nicht**
+
+Beide Gruppen: 4 von 8 mit Kontovorschlag, dieselben Konten, dieselben Steuerschluessel. Zeile fuer
+Zeile identisch. Was den Vorschlag ausloest, ist die Wiedererkennung des Lieferanten — nicht die
+Qualitaet der mitgegebenen Daten.
+
+**Was das praktisch heisst**
+
+Werte mitzugeben lohnt sich, aber aus einem anderen Grund als gedacht: Es ersetzt Lesefehler der
+Software durch meine geprueften Werte. Schlauer wird sie dadurch nicht. Genau genommen traegt man
+sein eigenes Wissen ein und laesst es wie eine Leistung der Software aussehen — deshalb wurde fuer
+den Vergleich bewusst nackt hochgeladen.
+
+**Ausserdem**
+
+Alte Kontoauszuege aus 2024 lassen sich jetzt direkt einlesen: Der Kontoauszug-Leser erzeugt eine
+Datei, die der Import ohne Umweg versteht. Wichtig bei aufgeloesten Konten — dort ist das PDF die
+einzige Quelle, weil der Bank-Zugang nicht mehr existiert.
+
+## v1.120.0 — Die entscheidende Prüfung: stimmen die Kontovorschläge der Buchhaltungssoftware?
+
+**Bisher wussten wir nur, DASS BuchhaltungsButler Konten vorschlägt. Jetzt wissen wir, ob sie stimmen.**
+
+Wir haben die Vorschläge gegen die geprüfte Kontierung gehalten, die ich für deine Lieferanten
+hinterlegt habe — jede davon aus dem Original-Beleg verifiziert. Bewertet wurde nur, wo beide Seiten
+eine belastbare Meinung haben.
+
+**Das Ergebnis**
+
+| | Belege | Anteil |
+|---|---|---|
+| gleiches Konto | 37 | 30 % |
+| anderes Konto, gleiche Steuerwirkung | 43 | 35 % |
+| **steuerlich falsch** | **43** | **35 %** |
+
+**Alle 43 Fehler gehen in dieselbe Richtung:** Eine Rechnung aus dem Ausland wird wie eine
+Inlandsrechnung behandelt, das Reverse-Charge-Verfahren übersehen. Kein einziger Fehler andersherum.
+
+Der schwerwiegendste Fall: Bei einer britischen Rechnung schlägt die Software **19 % Vorsteuerabzug**
+vor. Auf dem Beleg steht ausdrücklich „VAT 0 %" und eine Londoner Anschrift. Wer das durchwinkt,
+zieht Vorsteuer, die es nicht gibt.
+
+**Wichtig zur Einordnung, damit die Zahl nicht größer wirkt als sie ist**
+
+Die 43 Fehler stammen von nur **drei Lieferanten** — einer davon mit 26 Belegen. Die richtige
+Aussage lautet deshalb: Die Software erkennt Auslandsrechnungen bei manchen Anbietern und bei
+anderen nicht. Wo sie danebenliegt, tut sie es bei jedem Beleg dieses Anbieters. Auf alle 710
+Belege gerechnet sind es 6 Prozent belegte Fehlvorschläge.
+
+**Auch geprüft:** Der Detail-Dialog zeigt keine Vorschläge, die in der Übersicht fehlen. Es gibt
+also keine versteckte zweite Meinung.
+
+**Ehrlich zu einem eigenen Fehler**
+
+Mein erster Prüflauf meldete 55 Fehler. Beim Gegenlesen fiel auf: Bei zwölf davon habe ich selbst
+keine gesicherte Meinung hinterlegt — ich hätte die Software für Fälle abgestraft, in denen ich
+passe. Korrigiert, das Ergebnis liegt jetzt bei 43.
+
+## v1.119.0 — Beide Jahrgänge komplett getestet: was die Buchhaltungssoftware wirklich allein schafft
+
+**620 echte Belege aus 2025 und 2026, ohne jede Hilfe von mir hochgeladen**
+
+Um die Frage „brauche ich dich überhaupt?" ehrlich zu beantworten, haben wir deine kompletten
+Jahrgänge 2025 und 2026 in BuchhaltungsButler geschoben — nur die PDF-Datei, ohne einen einzigen
+Wert von mir mitzugeben. Dann gemessen, was die Software daraus macht.
+
+**Das Ergebnis bei 710 Belegen im System**
+
+| | Belege | Anteil |
+|---|---|---|
+| Lieferant erkannt und zugeordnet | 482 | 67,9 % |
+| Buchungskonto vorgeschlagen | 386 | 54,4 % |
+| weder noch | 228 | 32,1 % |
+
+**Was gut funktioniert:** Weist man einem Beleg einmal den Lieferanten zu, übernimmt die Software
+ihn automatisch für alle weiteren Belege desselben Lieferanten. 45 Zuweisungen haben bei uns
+482 Belege erledigt — ein Hebel von etwa eins zu elf. Als wir später 219 Belege aus 2026 nachluden,
+wurden sie ohne weiteres Zutun eingegliedert.
+
+**Was nicht funktioniert:** Das Buchungskonto überträgt sich nicht. Wir haben einen US-Anbieter
+korrekt als Reverse-Charge-Fall gebucht — beim nächsten Beleg desselben Anbieters schlägt die
+Software wieder ihr Standardkonto vor. Zwei Konten machen dort 69 Prozent aller Vorschläge aus.
+
+**Was vor dem Hochladen passiert — und dort nicht stattfindet**
+
+Von 952 Dateien in deinen Ordnern waren **332 keine brauchbaren Belege**: 228 Dubletten, 60
+Null-Euro-Benachrichtigungen, dazu Dateien ohne Rechnungsdatum. Die habe ich vorher aussortiert.
+Ungefiltert hochgeladen hätten sie dauerhaft dein Beleg-Kontingent verbraucht — und jede übersehene
+Dublette ist eine Rechnung, die doppelt gebucht werden kann.
+
+**Ehrlich dazu**
+
+144 Belege habe ich bewusst offen gelassen: Bei diesen Lieferanten habe ich keine geprüfte
+Kontierung hinterlegt, und ich rate nicht. Eine falsche Kontierung ist teurer als eine offene
+Position. Weitere 80 Belege konnte die Software nicht datieren und sind dort nicht buchbar.
+
+## v1.118.0 — Welches Lese-Modell du wählst, entscheidet über die Qualität. Wir haben es nachgemessen
+
+**Die wichtigste Änderung: eine falsche Zahl in unserer eigenen Doku ist raus**
+
+Bisher stand bei uns: „Rechnungsnummer, Datum und Betrag werden von **allen** Lese-Optionen zu
+100 % erkannt." Diese Zahl stammte aus einem Test mit 46 ausgewählten Belegen. Am echten Jahrgang
+2025 mit 401 Belegen hält sie nicht — und weil du auf Basis dieser Zeile dein Lese-Modell wählst,
+war das kein Schönheitsfehler.
+
+**Was wir gemessen haben**
+
+| Lese-Modell | Fehler bei Rechnungsnummer, Datum, Betrag |
+|---|---|
+| **Mistral (EU-Cloud)** | **0** von 242 Belegen |
+| **lokales Modell auf deinem Rechner** | **11** von 154 Belegen |
+
+Alle zehn falsch gelesenen Rechnungsnummern des Jahres stammen aus dem lokalen Modell. Kein
+einziger Fehler aus Mistral. Auch der teuerste Betragsfehler kam von dort: 828 Euro gelesen,
+richtig waren 1.197,14 Euro.
+
+**Was das für dich heißt**
+
+- Wenn du **frei wählen kannst** und eine EU-Cloud in Ordnung ist: nimm Mistral. Im Alltag
+  fehlerfrei, am schnellsten, am günstigsten.
+- Wenn in deinen Belegen **fremde Personendaten** stehen und nichts deinen Rechner verlassen darf:
+  das lokale Modell bleibt richtig — aber rechne mit mehr Fällen, die du prüfen musst. Das ist der
+  Preis des Datenschutzes, kein Mangel.
+- Für die Option „LightOn lokal" haben wir **keine** Praxiszahlen. Wir sagen das jetzt so, statt
+  eine Testzahl als Alltagsversprechen zu verkaufen.
+
+**Neu dokumentiert**
+
+Eine Gesamttabelle aller Lese-Wege — was im Test gemessen wurde, was im Alltag herauskam, und wo
+uns Zahlen fehlen. Inklusive der Modelle, die durchgefallen sind und die wir deshalb nicht anbieten.
+
+**Außerdem geprüft: lernt BuchhaltungsButler dazu?**
+
+Teilweise. Weist man einem Beleg einen Lieferanten zu, übernimmt die Software ihn **automatisch für
+alle weiteren Belege desselben Lieferanten** — 42 gezielte Zuweisungen haben bei uns 352 von 491
+Belegen erledigt. Das **Buchungskonto** überträgt sie dagegen nicht: Dort schlägt sie beim nächsten
+Beleg wieder ihr eigenes Konto vor, auch wenn man vorher anders gebucht hat.
+
+## v1.117.0 — Wir haben BuchhaltungsButler mit 491 echten Belegen getestet. Hier ist, was dabei herauskam
+
+**Warum wir das gemacht haben**
+
+Die häufigste Frage von Interessenten lautet: „Wozu brauche ich dich, wenn meine
+Buchhaltungssoftware selbst KI an Bord hat?" Bisher hatten wir darauf keine belastbare Antwort,
+sondern nur Vermutungen. Also haben wir es gemessen — mit einem echten Jahrgang, 491 Belegen, und
+zwar so, dass das Ergebnis auch gegen uns hätte ausfallen können.
+
+**Was dabei herauskam**
+
+- **BuchhaltungsButler schafft etwa die Hälfte allein.** Von 423 Belegen aus 2025 waren 191
+  vollständig gelesen *und* mit einem Kontovorschlag versehen — also ohne Nacharbeit buchbar. Das
+  sind 45 %. Bei den anderen 55 % bleibt Handarbeit.
+- **Es lernt nicht dazu.** Wir haben 21 Belege gebucht, je einen pro Lieferant, auf vier
+  verschiedene Konten. Danach haben wir die 93 unangetasteten Belege derselben Lieferanten geprüft:
+  **kein einziger** hat das gebuchte Konto übernommen. Man kann denselben Lieferanten buchen, so
+  oft man will — beim nächsten Beleg schlägt die Software wieder ihr eigenes Konto vor. Ich merke
+  mir eine einmal geprüfte Zuordnung dauerhaft.
+- **Es kontiert nach Wiedererkennung, nicht nach Verstehen.** Lieferanten, die mehrfach vorkommen,
+  bekommen zu 60 % einen Vorschlag. Lieferanten mit nur einem Beleg zu 3,8 %. Das ist ein
+  Unterschied um den Faktor 16 — und die seltenen Belege sind genau die, bei denen man nachdenken
+  muss.
+- **Beim Belege-Lesen liegen wir vorn, aber knapp.** An 353 direkt vergleichbaren Belegen waren bei
+  mir 88,1 % vollständig genug für den Vorsteuerabzug (Rechnungsnummer, Datum und Betrag alle
+  vorhanden), bei BuchhaltungsButler 80,7 %. Bei 42 Belegen konnte es kein Rechnungsdatum lesen —
+  diese Belege sind dort nicht buchbar.
+
+**Was wir ehrlicherweise zurücknehmen**
+
+Zwei Aussagen, die wir früher gemacht haben, waren **falsch**, und wir ziehen sie zurück:
+„BuchhaltungsButler kontiert nicht" (es kontiert, erkennt sogar Reverse-Charge-Fälle) und „es hat
+kein Feld für das Leistungsdatum" (es hat eins — ich lese es bisher nicht aus, das ist meine Lücke).
+
+**Verbesserungen**
+
+- Der Export für den Steuerberater kennt jetzt fünf weitere Ausgabenarten mit den korrekten Konten
+  (Bankgebühren, Fortbildung, Beratung, Versand) statt sie stillschweigend auf „Sonstiges" zu legen.
+- Wo für eine Ausgabenart keine geprüfte Kontonummer vorliegt, wird das jetzt gemeldet, statt eine
+  falsche zu verwenden.
+
+**Unter der Haube**
+
+Vollständige Liste der 37 Steuerschlüssel dokumentiert (die offizielle Doku nennt nur 16), die
+kontospezifischen Reverse-Charge-Schlüssel erfasst, und die Erkenntnis, dass BuchhaltungsButler
+Dateinamen kürzt — was jeden Abgleich über den Dateinamen stillschweigend scheitern ließ.
+
 ## v1.116.0 — Fremde Rechnungen landen nicht mehr in deiner Buchhaltung, und Belegdaten nicht mehr im Chat
 
 **Neu**

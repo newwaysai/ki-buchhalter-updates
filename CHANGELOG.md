@@ -1,3 +1,324 @@
+## v1.116.0 — Fremde Rechnungen landen nicht mehr in deiner Buchhaltung, und Belegdaten nicht mehr im Chat
+
+**Neu**
+- **Eine Rechnung, die nicht dir gehört, wird nicht mehr gebucht.** Legst du einen Beleg in den
+  Posteingang, der an eine andere Firma adressiert ist, erkenne ich das jetzt und lege ihn in einen
+  eigenen Warteordner statt in deine Buchungs-Queue. Ich lösche ihn nicht und sortiere ihn nicht
+  still weg, sondern melde mich und frage, was damit geschehen soll: weitergeben, ablegen, liegen
+  lassen. Vorher wanderte so ein Beleg mit in deine Ablage — und fremde Daten haben in deiner
+  Buchhaltung nichts verloren (Vorsteuer gibt es dafür ohnehin nicht, die Rechnung muss auf dich
+  lauten).
+- **Rechnungen mit mehreren Steuersätzen werden korrekt aufgeteilt.** Ein Einkauf mit
+  Lebensmitteln (7 %) und Non-Food (19 %) auf einem Beleg wurde bisher auf einen einzigen Satz
+  zusammengezogen — das ergibt zu viel Vorsteuer auf den 7-%-Teil. Ich lese die Steuertabelle jetzt
+  direkt aus dem PDF und rechne jede Zeile gegen: Netto mal Satz muss den Steuerbetrag ergeben,
+  Netto plus Steuer das Brutto, und die Summe muss den Rechnungsbetrag exakt erklären. Geht eine
+  dieser Proben nicht auf, lasse ich die Finger davon und schaue normal weiter. Betrifft vor allem
+  Bewirtung, Einzelhandel und Gastro.
+
+**Behoben**
+- **Steuerbetrag und Steuersatz fehlten in der Belegübersicht.** Durch einen Tippfehler im Code
+  standen beide Werte hinter einem Kommentar und wurden nie mitgespeichert. Ab jetzt sind sie da.
+- **Deine Daten bleiben im Gespräch mit mir besser geschützt.** Wenn ich dir etwas aus einem Beleg
+  zeige, verdecke ich jetzt Kontonummer, Steuernummer, E-Mail, Telefon, Name und Anschrift — aber
+  so, dass du den Beleg noch wiedererkennst (`DE67****4800` statt einer unlesbaren Ersetzung).
+  Neu erkannt wird auch die Steuernummer vom Finanzamt, die vorher durchrutschte. Rechnungsnummern
+  bleiben vollständig lesbar; die wurden vorher versehentlich mit unkenntlich gemacht.
+- **Ein Schutz, der nur auf Papier stand, greift jetzt von selbst.** Es gab bereits zwei Werkzeuge,
+  die Belegdaten aus dem Chat heraushalten — beide musste man aber von Hand aufrufen, und genau das
+  ging zweimal schief. Jetzt warnt mich das System selbst, bevor Belegtext ungefiltert im Gespräch
+  landet, und nennt den richtigen Befehl.
+
+**Unter der Haube**
+- Wer im Onboarding festlegt, dass seine Belege die EU nicht verlassen dürfen, bekommt das nun auch
+  durchgesetzt statt nur notiert. Ohne eigene Festlegung ändert sich nichts — Cloud-Texterkennung
+  bleibt der Standard, damit der Einstieg ohne Einrichtung funktioniert.
+- Ein breiterer Ansatz, Rechnungen ganz ohne Texterkennung auszulesen, wurde gebaut, an echten
+  Belegen getestet und wieder verworfen: er griff nur bei einem von vierzig Belegen und las dort
+  einen falschen Betrag (600 statt 714 Euro). Sicherheit vor Einsparung.
+
+**Was das für dich heißt**
+- Belege von Kunden, Bekannten oder deiner zweiten Firma kannst du mir zeigen, ohne dass sie
+  versehentlich in deiner eigenen Buchhaltung landen.
+- Bei Einkäufen mit gemischten Steuersätzen stimmt die Vorsteuer.
+
+## v1.115.0 — Zahlungen verknüpfen: eine stille Doppelbuchung ist nicht mehr möglich
+
+**Behoben**
+- **Eine Zahlung konnte doppelt gezählt werden, ohne dass irgendwo etwas rot wurde.** Beim
+  Verknüpfen einer Rechnung mit der passenden Kontobewegung gibt es in sevDesk zwei Wege. Der eine
+  meldet „erfolgreich", erledigt die Sache aber nur halb — die Rechnung bleibt als „teilweise
+  bezahlt" hängen. Wer daraufhin nachbessert, bucht die Zahlung ein zweites Mal dazu: Aus einer
+  Rechnung über 28,56 € werden 57,12 € bezahlt, bei einer Rechnung, die nur einmal existiert.
+  Beide Schritte melden dabei „in Ordnung". Ich prüfe jetzt nach jedem Verknüpfen nicht nur, ob es
+  geklappt hat, sondern **ob der bezahlte Betrag zur Rechnungssumme passt** — und setze bei einem
+  Fehlversuch erst sauber zurück, statt nachzuschieben.
+- **Qonto ist mir jetzt namentlich bekannt.** Die Rechnungen deines Geschäftskontos kamen bisher in
+  die manuelle Prüfung, weil der Anbieter in meinem Verzeichnis fehlte. Qonto gehört zur
+  französischen Olinda SAS und rechnet nach dem Reverse-Charge-Verfahren ab (§13b) — das habe ich
+  an drei Rechnungen aus zwei Jahren nachgelesen, nicht angenommen. Qonto-Belege laufen ab jetzt
+  ohne Rückfrage durch.
+
+**Was das für dich heißt**
+- Beim Jahresabschluss steht seltener eine Rechnung als „halb bezahlt" herum, und die Summe der
+  Zahlungen kann nicht mehr höher sein als die Rechnung selbst.
+
+**Unter der Haube**
+- Neue Prüfregel #23b: Bei einem Zugriff auf dein Buchhaltungssystem ist die Rückmeldung
+  „erfolgreich" allein kein Beweis — nachgelesen wird immer die tatsächliche Wirkung. Zusätzlich
+  gilt jetzt: Ist ein solcher Zugriff im Werkzeugkasten schon einmal gebaut worden, nutze ich genau
+  diesen Weg, statt ihn neu zusammenzusetzen. Die Herstellerdokumentation lag an dieser Stelle
+  nachweislich falsch.
+
+## v1.114.0 — Kontobewegungen sauber importieren: drei Fallen entschärft
+
+**Behoben**
+- **Ein Schutzmechanismus blockierte grundlos.** Beim Import von Kontobewegungen gab es eine fest
+  eingetragene Liste „diese Konten hängen an der Bank, hier nicht importieren". Die stammte aus
+  einem alten Stand — und blockierte deshalb ein Konto, das gerade erst leer angelegt worden war.
+  Ab sofort schaue ich nach, statt zu behaupten: Kommen aktuell Umsätze von der Bank herein? Nur
+  dann blocke ich. Bei einem wirklich verbundenen Konto greift der Schutz weiterhin.
+- **Zeitraum lässt sich jetzt beidseitig begrenzen.** Bisher konntest du nur sagen „bis Datum X".
+  Manche Banken liefern aber mehrere Jahre in einer einzigen Datei — bei Qonto sind es 2023 bis
+  2026. Ohne Startdatum wären beim Import „bis Ende 2025" auch 2023 und 2024 mitgekommen: 697
+  Umsätze zu viel, und Kontobewegungen lassen sich nicht wieder löschen. Neu: `--von`.
+- **Qonto-Dateien wurden falsch gelesen.** Ich suchte eine Spalte, die anders heißt, und ließ den
+  Verwendungszweck ganz weg. Beides korrigiert.
+
+**Klarstellung, die dir Sorgen ersparen kann**
+- Wenn bei Kartenzahlungen im Verwendungszweck „N/A" steht, ist das **kein Fehler von mir** — das
+  schreibt die Bank so, weil eine Kartenzahlung technisch keinen Verwendungszweck hat. Bei deinen
+  230 Finom-Umsätzen betrifft das 176 Stück, und in der Originaldatei steht dort exakt dasselbe.
+  Für die Beleg-Zuordnung heißt das: bei Kartenzahlungen zählen Anbietername und Betrag.
+
+**Unter der Haube**
+- Konten lassen sich bei BuchhaltungsButler doch per Schnittstelle anlegen. Der nötige Wert heißt
+  `bank/institution` und steht in keiner Anleitung — 35 naheliegende Varianten wurden vorher
+  abgewiesen. Jetzt dokumentiert.
+
+## v1.113.0 — Der große Vergleich: BuchhaltungsButler gegen mich, wissenschaftlich gemessen
+
+**Die Antwort auf die wichtigste Frage**
+- **„Warum brauche ich dich, wenn mein Buchhaltungsprogramm eigene KI hat?"** Diese Frage stand
+  lange unbeantwortet im Raum. Jetzt ist sie gemessen, nicht behauptet: **BuchhaltungsButlers KI
+  liest Belege gut — aber sie bucht sie nicht.** Bei 45 Testbelegen hat sie **kein einziges Mal**
+  ein Konto vorgeschlagen. Auch nicht, nachdem ich 13 Belege gebucht und 12 Lieferanten angelegt
+  hatte. Kontieren bleibt dort Handarbeit, bei jedem Beleg, dauerhaft.
+- **Auch die Hoffnung „das wird besser, wenn es mich erstmal kennt" hat sich nicht bestätigt.**
+  Ich habe 15 Anbieter genommen, die das Programm nachweislich nicht kannte, je drei Rechnungen,
+  in drei Runden. Nach dem Buchen: keine Verbesserung (58 % → 62 % → 57 %, das ist Zufall).
+  Bei der Anbieter-Erkennung wurde es sogar schlechter.
+
+**Wichtig für deine Entscheidung**
+- **Ein Wechsel lohnt sich nach diesen Zahlen nicht.** BuchhaltungsButler liest nicht besser als
+  ich (95,7 % gegen 97,8 %), kontiert nicht selbst und lernt nicht dazu. Dafür kostet dort der
+  Schnittstellenzugang extra, und es gibt eine Beleg-Obergrenze.
+- **Achtung bei der Obergrenze:** Dort zählt **jeder Upload dauerhaft** — auch wenn du den Beleg
+  danach löschst. Ich habe in deinem Bestand 275 Dubletten, 191 Nicht-Belege und 374 unsichere
+  aussortiert. Ohne diese Vorsortierung wären das über 800 verbrauchte Belege gewesen, für Dinge,
+  die gar nicht in die Buchhaltung gehören.
+
+**Behoben — ein Fehler, der dich erst beim Steuerberater erwischt hätte**
+- Beim DATEV-Export fehlte bei vier Zeilen das Buchungsdatum. **DATEV weist einen solchen Stapel
+  komplett zurück** — du hättest es erst in der Kanzlei gemerkt. Ich habe stillschweigend eine
+  leere Stelle geschrieben, statt zu warnen.
+- Aufgeklärt: Alle vier waren **gar keine Rechnungen**. Eine davon war eine Ergebnis-Mail eines
+  Suchdiensts („1.375 verifizierte E-Mails gefunden") — die Trefferzahl 1.375 hatte ich als Betrag
+  gelesen. Dazu drei Umsatzsteuer-Bestätigungen.
+- Ab sofort: Fehlt ein Buchungsdatum, sage ich es **deutlich** und nenne die betroffenen Zeilen.
+  Belege ohne Datum, die ohnehin zur Prüfung anstehen, kommen gar nicht erst in den Export.
+  Ergebnis für 2025: 191 saubere Buchungszeilen, keine einzige ohne Datum.
+
+**Unter der Haube**
+- Beim Buchen über BuchhaltungsButler heißt der Schlüssel für Vorsteuer `19_pre` — das steht in
+  keiner offiziellen Anleitung und hat 13 Fehlversuche gekostet. Jetzt dokumentiert.
+
+## v1.112.0 — Neu: Rechnungen aus Microsoft-365-Postfächern — ganz ohne IT-Freigabe (Mac)
+
+**Neue Funktion**
+- **Dein Firmen-Postfach (Microsoft 365 / Exchange) lässt sich jetzt anzapfen, ohne dass deine
+  IT irgendetwas freischalten muss.** Microsoft sperrt den direkten Programm-Zugriff auf
+  Firmenpostfächer (das habe ich live getestet — nur dein Admin könnte das öffnen). Der neue Weg
+  umgeht das sauber: Wenn dein Postfach in Apple Mail auf dem Mac eingerichtet ist, hole ich die
+  PDF-Rechnungen direkt aus Apple Mail — automatisch, ohne dass du eine einzige Mail anklicken musst.
+- **Ein Befehl, fertig:** Alle Rechnungs-PDFs der letzten Wochen landen in deinem Posteingangs-Ordner
+  und werden dann wie gewohnt gelesen — auf Wunsch komplett von der lokalen KI auf deinem Rechner
+  (deine Belege verlassen den Mac nie, DSGVO-Weg).
+- **Merkt sich, was schon geholt wurde.** Doppelte Belege werden automatisch erkannt und
+  übersprungen — du kannst den Befehl beliebig oft laufen lassen.
+
+**Gut zu wissen**
+- Funktioniert auf dem Mac (Apple Mail). Beim allerersten Lauf fragt macOS einmal um Erlaubnis
+  („möchte Mail steuern") — einmal bestätigen, dann läuft es dauerhaft.
+- Windows-Nutzer mit Microsoft 365: hier bleibt der Weg über eine Weiterleitungs-Regel oder den
+  Anhang-Export (beides ohne IT möglich; sag Bescheid, ich richte es mit dir ein).
+- Jede geholte PDF wird auf Unversehrtheit geprüft; beschädigte Dateien repariere ich automatisch
+  (siehe v1.111.0), bevor sie gelesen werden.
+
+**Wissensstand:** 2026-08-04
+
+---
+
+## v1.111.0 — Beschädigte PDF-Rechnungen lese ich jetzt trotzdem
+
+**Verbesserung**
+- **Manche PDFs kommen mit einer kaputten internen Struktur an** (abgebrochene Downloads,
+  fehlerhafte Rechnungs-Generatoren) — Standard-Werkzeuge melden dann "keine gültige PDF".
+- **Ich repariere solche PDFs jetzt automatisch,** bevor ich sie lese. Fällt das normale Öffnen aus,
+  schreibe ich die Datei einmal sauber neu (per Ghostscript) und lese sie dann normal. Der Inhalt
+  bleibt vollständig erhalten.
+- **Das greift nur im Notfall.** Intakte PDFs werden wie immer direkt gelesen, ohne Umweg und ohne
+  Zeitverlust. Nur wenn eine Datei sonst gar nicht lesbar wäre, springt die Reparatur ein.
+
+**Unter der Haube**
+- Die Reparatur sitzt zentral in der PDF-Verarbeitung — sie hilft daher bei jedem Lese-Weg
+  (lokale KI, Cloud-OCR), nicht nur bei einer Quelle. Fehlt Ghostscript auf dem Rechner, bleibt
+  das alte Verhalten unverändert (kein Zwang, nur ein zusätzliches Sicherheitsnetz).
+- Hinweis zur Ehrlichkeit: Eine frühere Fassung dieses Eintrags behauptete, Apple Mail beschädige
+  gespeicherte Anhänge. Das war ein Messfehler auf unserer Seite — Apple Mail speichert sauber.
+  Die Reparatur bleibt trotzdem drin, als Netz für echt defekte Dateien.
+
+**Wissensstand:** 2026-08-04
+
+---
+
+## v1.110.0 — Outlook / Microsoft 365: geprüft, warum das Anbinden scheitert (und was stattdessen funktioniert)
+
+**Klare Antwort auf eine häufige Frage**
+- **"Kann ich mein Microsoft-365-Postfach anbinden?" — Nein, und ich weiß jetzt genau warum.**
+  Ich habe es an einem echten Firmenpostfach getestet, nicht geraten. Ergebnis: Microsoft lehnt
+  die Anmeldung ab. Der Grund liegt nicht bei dir und nicht bei mir, sondern in einer
+  Sicherheitseinstellung, die Microsoft seit 2023 bei allen Firmen standardmäßig aktiviert hat.
+  Nur der Administrator deiner Firma kann sie aufheben.
+- **Die Falle dabei:** In den Outlook-Einstellungen steht bei vielen der Schalter "Geräten und Apps
+  den Zugriff gestatten" auf **AN** — und trotzdem funktioniert es nicht. Der Schalter ist nur die
+  halbe Miete; die eigentliche Sperre sitzt eine Ebene höher. Wer nur den Schalter anschaut, denkt
+  fälschlich "müsste gehen". Ich falle darauf nicht mehr herein und sage dir direkt, woran es liegt.
+- **Auch der Umweg über eine App-Anmeldung hilft nicht** — der braucht ebenfalls die Freigabe
+  deines Administrators. Alle Wege führen zur selben Stelle.
+
+**Was stattdessen funktioniert (ohne deine IT zu fragen)**
+- **Weiterleitung einrichten:** In Outlook eine Regel anlegen, die Rechnungen automatisch an ein
+  eigenes Postfach weiterleitet. Das lese ich dann ganz normal. Manche Firmen sperren die
+  Weiterleitung nach außen — teste es einfach mit einer Mail.
+- **Belege exportieren:** Rechnungs-Anhänge aus Outlook speichern und in deinen Ordner
+  "1 POSTEINGANG" legen. Das klappt immer. Ich lese die PDFs, nicht die Mails — woher sie kommen,
+  ist mir egal.
+- **Ein Hinweis, der wichtiger ist als die Technik:** Wenn deine eigenen Geschäftsbelege im
+  Postfach eines Auftraggebers oder Arbeitgebers liegen, solltest du sie dort herausholen. Du bist
+  zehn Jahre lang aufbewahrungspflichtig (§147 AO). Verlierst du den Zugang zu diesem Postfach,
+  sind deine Nachweise weg.
+
+**Unverändert gut**
+- Apple/iCloud, GMX, WEB.DE, T-Online, Posteo, mailbox.org, IONOS, Strato und weitere laufen
+  weiterhin problemlos. Gmail ebenso. Betroffen ist ausschließlich Microsoft 365 / Outlook im
+  Firmenkontext.
+
+**Wissensstand:** 2026-08-04
+
+---
+
+## v1.109.0 — Eine echte Betrugsmail in deinem Postfach gefunden (und die Lücke geschlossen, durch die sie kam)
+
+**Sicherheit**
+- **Ich habe in deinem Bestand eine gefälschte Rechnung gefunden.** Eine angebliche
+  "Microsoft Office"-Zahlungserinnerung über 651,65 Dollar — versteckt in einer Mail, die aussieht,
+  als hätte jemand eine Datei mit dir geteilt. Sie nennt keine Bankverbindung, sondern eine
+  amerikanische Telefonnummer: "Wenn Sie stornieren wollen, rufen Sie an." Genau das ist die Masche.
+  Der Anruf ist der Angriff, nicht die Überweisung. **Ruf solche Nummern nie an.**
+- **Ich hatte sie durchgewinkt.** Ehrlich gesagt: Ich hatte sie als normale Rechnung eingestuft, und
+  meine Betrugsprüfung meldete "keine Auffälligkeiten". Zwei Gründe, beide jetzt behoben:
+  - Meine Betrugsprüfung bekam den Text der Belege nie zu sehen. Sie suchte nach Text an einer
+    Stelle, die beim Einlesen gar nicht gefüllt wird — drei ihrer sechs Prüfungen liefen deshalb
+    seit dem Bau ins Leere. Ab sofort lese ich den Text bei Bedarf direkt aus dem PDF nach.
+  - Es fehlte die Prüfung auf genau dieses Muster: keine Bankverbindung, aber eine Rufnummer plus
+    Druck ("stornieren", "Rückerstattung"). Die gibt es jetzt.
+- **Gegenprobe an deinem kompletten Bestand:** 1.697 Belege geprüft, genau 2 Treffer — beide Male
+  diese eine Betrugsmail. Keine einzige echte Rechnung wurde fälschlich gemeldet. Rechnungen mit
+  Bankverbindung sind grundsätzlich nie betroffen, auch wenn eine Servicenummer draufsteht.
+
+**Was das für dich heißt**
+- Solche Belege markiere ich künftig rot und buche sie nicht automatisch — du entscheidest.
+- Der Fund zeigt auch: Wer Rechnungen aus dem Postfach zieht, zieht irgendwann auch Betrugsversuche
+  mit. Das ist kein Grund, es nicht zu tun, aber ein Grund für diese Prüfung.
+
+## v1.108.0 — Zwei Lese-Regeln geschärft: verrechnete Belege und der richtige Firmenname
+
+**Verbessert**
+- **Belege, die sich selbst aufheben, lese ich jetzt nachweislich richtig.** Beispiel: eine
+  Roller-Fahrt kostet 6,40 Euro, dein Abo verrechnet sie komplett — unter dem Strich zahlst du
+  0,00 Euro. Solche Belege gibt es öfter als man denkt (Abos mit Freikontingent, Guthaben,
+  Gutschriften). Ich nehme dafür ab sofort ausdrücklich die Summenzeile ganz unten, nie eine
+  einzelne Position weiter oben. Das stand vorher nur sinngemäß in meiner Anweisung, jetzt steht
+  es wörtlich drin — samt Beispiel.
+- **Beim Firmennamen nehme ich die rechtliche Firma, nicht den Markennamen.** Auf einer Anzeigen-
+  Rechnung steht oben "Meta for Business", weiter unten aber "Meta Platforms Ireland Ltd.". Für
+  dich zählt die zweite: das Sitzland entscheidet, ob die Rechnung ohne Umsatzsteuer kommt und du
+  sie umgekehrt anmelden musst. Gleiches gilt für Filialen — "Shurgard Berlin Friedrichshain" ist
+  die Filiale, "Shurgard Germany GmbH" die Firma.
+
+**Behoben**
+- Bei drei Belegen eines Anbieters hatte ich einen Buchstaben zu viel im Firmennamen gelesen
+  ("Outscraprer" statt "Outscraper"). Korrigiert, jeweils gegen das Original-PDF geprüft. Eine
+  Kontrolle über alle 1.528 prüfbaren Belege zeigt: bei 93 Prozent steht der von mir gelesene
+  Name wörtlich so im PDF, ein zweiter Fall dieser Art war nicht dabei.
+
+**Unter der Haube**
+- Die Widersprüche zwischen meiner Erkennung und der von BuchhaltungsButler sind jetzt einzeln
+  gegen die Original-PDFs geprüft (177 Fälle). Wo beide etwas gelesen hatten und es entscheidbar
+  war, lag ich in 105 von 140 Fällen richtig, BuchhaltungsButler in 35 — die beiden Regeln oben
+  stammen genau aus dieser Auswertung. Ehrlichkeitshalber: bei einem sauberen Vergleich mit von
+  Hand gelesener Wahrheit liegen beide Programme praktisch gleichauf. Der Unterschied liegt nicht
+  im Ablesen einzelner Zahlen.
+
+## v1.107.0 — Was BuchhaltungsButler kostet und kann: drei Angaben richtiggestellt
+
+**Richtiggestellt**
+- **Der Schnittstellen-Zugang ist guenstiger zu haben, als ich dachte.** Ich hatte notiert: wer mich
+  mit BuchhaltungsButler nutzen will, braucht das teuerste Paket (59,90 Euro im Monat). Richtig ist:
+  es gibt den Zugang auch als Zusatz für 5,90 Euro zu einem kleineren Paket. Damit sind es
+  rechnerisch ab etwa 36 Euro statt 60. Ob sich der Zusatz mit dem kleinsten Paket kombinieren
+  laesst, sagt die Preisseite allerdings nicht ausdrücklich — das müsstest du beim Buchen einmal
+  ausprobieren. Ich sage dir das lieber offen, statt dir eine Zahl zu nennen, die dann nicht haelt.
+- **Die Beleg-Obergrenze stimmte nicht.** Bei mir stand "100 Belege". Auf der Preisseite steht:
+  500 Belege pro Monat in allen Paketen. Woher die 100 in meinem Test kamen, ist noch offen.
+- **Vereine koennen BuchhaltungsButler nutzen.** Es gibt dort Vereins-Kontenrahmen (SKR42 und SKR49)
+  als Zusatz fuer 4,90 Euro. Das hatte ich bisher gar nicht auf dem Schirm.
+
+**Was das fuer dich heisst**
+- Wenn du sevDesk nutzt: nichts, das aendert sich fuer dich nicht. Die Zahlen sind nur wichtig, wenn
+  du oder jemand, den du kennst, mit BuchhaltungsButler arbeitet.
+- Preislich liegen die beiden Programme naeher beieinander, als es bei mir stand — bei sevDesk ist
+  der Schnittstellen-Zugang im Preis drin, bei BuchhaltungsButler kommt er obendrauf.
+
+**Unter der Haube**
+- Ich habe mir notiert, wie ich mich bei dieser Recherche zweimal selbst reingelegt habe: Preise aus
+  einer Vergleichstabelle zu lesen, bei der die Spalten keine Beschriftung tragen, geht schief. Die
+  Wahrheit stehen in den Paketkarten oben auf der Seite, nicht in der Detailtabelle darunter.
+
+## v1.106.0 — Neu: Übergib mir deine alte Buchhaltung — ich prüfe sie und lerne daraus
+
+**Neue Funktionen**
+- **Modus 16 — Alt-Buchhaltungs-Audit.** Du gibst mir einen Ordner mit deiner alten Buchhaltung
+  (z.B. die Jahre 2023–2024, egal ob vom Steuerberater oder einem anderen Programm gefuehrt) und
+  ich gehe sie einmal komplett durch: Ist alles vollstaendig (fehlende Monate, Luecken bei den
+  Rechnungsnummern, Zahlungen ohne Beleg)? Ist alles korrekt (Steuersaetze, Reverse-Charge,
+  Dubletten, privat/geschaeftlich vermischt)? Und was lerne ich daraus fuer deine kuenftige
+  Buchhaltung (deine typischen Anbieter, Abos, Konten)?
+- **Rein lesend, garantiert.** Ich buche nichts, lade nichts hoch und fasse keine einzige Datei
+  in deinem Ordner an. Am Ende bekommst du einen Report mit Ampel-Urteil, jedem Fund samt Beleg
+  (Datei + Fundstelle) — und einer ehrlichen Liste, was ich NICHT geprueft habe. Auch eine
+  Steuerberater-Abnahme nehme ich als Hinweis, nicht als Beweis: geprueft wird trotzdem.
+- **Fertiger Prompt zum Kopieren.** Im Ordner liegt jetzt `PROMPT-ALT-BUCHHALTUNGS-AUDIT.md` —
+  ein Vorlagen-Text, den du nur ausfuellen und mir schicken musst. Alternativ reicht ein Satz wie
+  "pruef mal meine alte Buchhaltung in <Ordner>", ich erkenne den Auftrag auch so.
+
+**Unter der Haube**
+- Menue, Kurzbefehl `16` und Freitext-Erkennung ergaenzt; klare Abgrenzung zu Modus 6 (alte
+  Kontoauszuege IMPORTIEREN) und Modus 2 (Check der von mir gefuehrten laufenden Buchhaltung).
+- Datenschutz eingebaut: Namen fremder Personen aus deinen alten Belegen erscheinen im Chat nur
+  maskiert; Details bleiben in der lokalen Report-Datei.
+
 ## v1.105.0 — Ein stiller Datumsfehler, der deine Umsatzsteuer verschieben konnte
 
 **Behoben**

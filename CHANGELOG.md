@@ -1,3 +1,19 @@
+## v1.135.2 — Start fragt nicht mehr nach einer Freigabe
+
+**Fehlerbehebung**
+
+- **`/ki-buchhalter` startet jetzt, ohne dass du vorher etwas freigeben musst.** Bei einer frischen Installation brach der Start mit einer roten Meldung ab („Shell command permission check failed… This command requires approval"), noch bevor das Menü kam. Grund: Bevor sich Bruno meldet, schaue ich kurz nach, ob dein Profil schon eingerichtet ist. Dieser Startcheck war in den mitgelieferten Sicherheitseinstellungen nicht sauber freigegeben — also fragte Claude Code nach Erlaubnis, und der Start blieb stehen. Die Freigabe liegt jetzt korrekt im Paket.
+- **Das war kein Rechte-Problem an deinem Rechner.** Falls du Claude Code oder VS Code deswegen als Administrator gestartet hast: Das brauchst du nicht, du kannst es wieder normal öffnen. Es ging nur um eine Einstellung innerhalb von Claude Code.
+- **Betroffen war der allererste Start, deine Daten nie.** Der Abbruch passierte vor dem Menü — es wurde nichts gelesen, gebucht oder verändert. Du musst nichts nachholen.
+- **Du musst deinen Sicherheits-Modus nicht umstellen.** Bruno startet jetzt auch im normalen Modus, in dem Claude Code vor Aktionen fragt. Du musst dafür weder „Bypass Permissions" noch sonst eine Lockerung wählen — im Gegenteil, für deine Buchhaltung ist der vorsichtige Modus der richtige.
+
+**Unter der Haube**
+
+- Die Freigabe für den Startcheck steckt jetzt direkt im Skill selbst — sie wirkt damit auch beim allerersten Öffnen, bevor du den Ordner in Claude Code als vertrauenswürdig bestätigt hast (vorher wurden die mitgelieferten Freigaben genau in diesem Moment noch ignoriert; das war die eigentliche Ursache). Zusätzlich wurde die mitgelieferte Freigabe-Liste erweitert. Der Startcheck selbst wurde nicht verändert.
+- Verifiziert mit einem automatischen Erst-Start-Test, der exakt die Situation eines Neukunden nachstellt (frischer Ordner, keine Sonderrechte): Bruno-Menü erscheint, keine Nachfrage.
+
+**Wissensstand:** 2026-08-06
+
 ## v1.135.1 — Start klappt jetzt aus jedem Ordner
 
 **Fehlerbehebung**

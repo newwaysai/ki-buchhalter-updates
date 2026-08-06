@@ -1,3 +1,31 @@
+## v1.137.0 — Bruno lernt jetzt aus der ganzen Community (wenn du willst)
+
+> Hinweis zur Nummerierung: Der weiter unten stehende Eintrag „v1.136.0 — Bruno erkennt jetzt, wenn ein 'Beleg' gar keine Rechnung ist" wurde tatsächlich schon mit den Paketen ab v1.135.3 ausgeliefert — die Nummer 1.136.0 war dort ein Versehen und wurde nie als eigenes Release veröffentlicht. Damit keine Nummer doppelt existiert, springt dieses Release direkt auf 1.137.0.
+
+**Neue Funktionen**
+
+- **Learnings teilen — freiwillig, anonym, mit Vorschau.** Jeder Bruno sammelt im Alltag Praxis-Erkenntnisse ("Anbieter X sitzt in Irland → Reverse Charge", "diese API-Falle kostet Zeit"). Ab jetzt kannst du diese Erkenntnisse mit der Bruno-Community teilen — und bekommst dafür die geprüften Erkenntnisse aller anderen Brunos mit jedem Update automatisch dazu. Dein Bruno wird dadurch mit jedem Nutzer schlauer, nicht nur mit dir.
+- **Standard ist AUS.** Bruno sendet nie von selbst. Nur wenn du in deinem Profil `learnings_teilen: fragen` setzt, bietet er es dir nach Läufen an — und zeigt dir vorher WORTWÖRTLICH, was gesendet würde. Gesendet wird erst nach deinem Go.
+- **Anonymität ist technisch erzwungen, nicht versprochen.** Es gehen NIE E-Mail, Name oder Kauf-Nummer mit. Ein hartes Prüf-Gate blockt zusätzlich jeden Block, der Beträge, IBANs, Steuernummern, E-Mail-Adressen oder Adressen enthält — solche Blöcke bleiben auf deinem Rechner, du siehst warum.
+- **Ein Mensch prüft alles.** Eingesendete Erkenntnisse landen bei Marcel in einer Prüf-Inbox. Erst nach fachlicher Prüfung (stimmt das? wirklich anonym? für welche Rechtsform?) wandern sie ins nächste Update. Nichts wird automatisch veröffentlicht — ein falsches Learning würde sonst bei allen falsch buchen.
+
+**Verbesserungen**
+
+- **19 Community-Erkenntnisse waren bisher unsichtbar — jetzt kommen sie bei dir an.** Ein Format-Detail (der Rechtsform-Tag stand in der Textzeile statt in der Überschrift) sorgte dafür, dass dein Bruno 19 von 29 geteilten Erkenntnissen beim Einlesen still übersprungen hat — darunter wichtige wie "Zahlungsdienstleister im Empfängerfeld ist nicht der Geschäftspartner" und die Fremdwährungs-Regel. Alle 19 sind jetzt korrekt markiert und werden ab diesem Update übernommen (automatisch gefiltert auf deine Rechtsform).
+
+**Warum das wichtig ist**
+
+Deine eigene Buchhaltung zeigt Bruno nur einen Ausschnitt der Welt. Hundert Brunos sehen hundert verschiedene Anbieter, Bank-Formate und Steuer-Sonderfälle. Jeder Fehler, den irgendein Bruno einmal gemacht und gemeldet hat, wird nach Prüfung zur Regel für alle — deiner muss ihn nie machen.
+
+**Unter der Haube**
+
+- Neues Werkzeug `system/_bin/learnings-share.mjs` (Vorschau-Modus ist Standard, Senden nur mit `--send`), neuer Profil-Schalter `learnings_teilen`, 13 automatische Tests fürs Prüf-Gate (alle grün, nur mit Beispiel-Dummy-Daten getestet). Der komplette Weg wurde einmal live durchgespielt: senden, doppelt senden (wird erkannt), prüfen, entscheiden.
+- Der Empfangsweg ist unverändert: geprüfte Community-Learnings kommen wie bisher mit dem Update-Paket und werden automatisch auf deine Rechtsform gefiltert (eine GmbH-Erkenntnis landet nie bei einem Einzelunternehmer).
+
+**Wissensstand:** 2026-08-06
+
+---
+
 ## v1.135.5 — Bruno startet jetzt auch unter Windows
 
 **Fehlerbehebung**
@@ -9,6 +37,24 @@
 **Unter der Haube**
 
 - Jede neue Version wird ab jetzt automatisch auf einem echten Windows- UND Linux-Rechner in der Cloud getestet (die komplette Start-Sequenz, bei jedem Release). Ein Windows-Fehler fällt damit künftig bei uns im Test auf — nicht bei dir.
+
+**Wissensstand:** 2026-08-06
+
+## v1.136.0 — Bruno erkennt jetzt, wenn ein "Beleg" gar keine Rechnung ist
+
+**Neue Funktionen**
+
+- **Neue Prüfung: "Das sieht nicht aus wie eine Rechnung".** Bruno schaut jetzt vor dem Buchen in den Text des Dokuments und fragt: Steht hier überhaupt irgendwo ein Rechnungswort, eine Steuerangabe oder eine Betragszeile? Findet er keines davon, meldet er den Beleg — statt ihn stillschweigend zu verbuchen.
+- **Die Prüfung greift an zwei Stellen:** vor dem Buchen (dann wird gar nicht erst gebucht) und im Health-Check (dann findet sie auch, was früher schon durchgerutscht ist).
+
+**Warum das wichtig ist**
+
+- **Ein echter Fall aus der Praxis:** Eine Warn-Mail des Buchhaltungsprogramms ("Ihr Kontingent ist zu 90 Prozent aufgebraucht") war als Rechnung über **11,07 Euro** erfasst. Diese 11,07 waren gar kein Betrag, sondern das **Datum 11.07.** aus dem Text. Dazu zwei Werbe-Mails, bei denen Zahlen aus Werbebannern und Beispielbildern als Rechnungsbetrag gelandet waren.
+- **Das ist keine Frage der Texterkennung.** Die Texterkennung bekommt die Aufgabe "lies die Rechnungsfelder aus" — nie die Frage "ist das überhaupt eine Rechnung?". Also sucht sie eine Zahl und findet eine. Das passiert bei jedem Erkennungsmodell gleichermaßen. Deshalb ist die neue Prüfung fest verdrahtet und fragt kein Modell.
+
+**Unter der Haube**
+
+- Beim Bauen fingen zwei Selbsttests Fehler, die die Regel wertlos gemacht hätten: Ohne saubere Wortgrenzen erkannte sie "Ab-rechnung-speriode" als Rechnungswort — ausgerechnet der Fall, für den sie gebaut wurde, wäre durchgerutscht. Und US-Anbieter schreiben "Transaction" statt "Rechnung": ohne diese Wörter wurden sechs echte Rechnungen fälschlich gemeldet. Beides behoben, an 1.697 echten Belegen gegengeprüft.
 
 **Wissensstand:** 2026-08-06
 

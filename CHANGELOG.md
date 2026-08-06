@@ -1,3 +1,38 @@
+## v1.135.5 — Bruno startet jetzt auch unter Windows
+
+**Fehlerbehebung**
+
+- **`/ki-buchhalter` startet jetzt auch auf Windows-Rechnern.** Auf Windows brach der Start mit einer roten Fehlermeldung ab (`ERR_UNSUPPORTED_ESM_URL_SCHEME … protocol 'c:'`), noch bevor das Menü erschien. Grund: Windows behandelt Dateipfade wie `C:\…` an einer bestimmten Stelle anders als Mac — der Startcheck hat das nicht berücksichtigt, weil er bisher nur auf dem Mac getestet wurde. Jetzt nutzt er das Format, das auf beiden Systemen funktioniert.
+- **Deine Daten waren nie betroffen.** Der Fehler passierte vor dem Menü — nichts wurde gelesen, gebucht oder verändert.
+- Auch das Buchen von Stripe-Gebühren hätte auf Windows denselben Fehler geworfen — vorsorglich mitbehoben, bevor es jemanden trifft.
+
+**Unter der Haube**
+
+- Jede neue Version wird ab jetzt automatisch auf einem echten Windows- UND Linux-Rechner in der Cloud getestet (die komplette Start-Sequenz, bei jedem Release). Ein Windows-Fehler fällt damit künftig bei uns im Test auf — nicht bei dir.
+
+**Wissensstand:** 2026-08-06
+
+## v1.135.4 — Beleg-Löschen per Schnittstelle: Falschbefund korrigiert + Datei-Download entdeckt
+
+**Fehlerbehebung**
+
+- **„Hochgeladene Belege lassen sich per Schnittstelle nicht löschen" war falsch** (galt nur für einen falschen Aufrufweg). Ungebuchte Belege sind in BuchhaltungsButler sehr wohl per Schnittstelle löschbar — wichtig, wenn versehentlich Dubletten hochgeladen wurden. Der alte Hinweis im Aufräum-Werkzeug ist als überholt markiert.
+
+**Verbesserungen**
+
+- **Bruno kann Beleg-Dateien jetzt direkt vom BuchhaltungsButler-Server abrufen** und byteweise vergleichen. Damit beweist er hart, ob zwei Einträge wirklich dieselbe Datei sind (echte Dublette) oder nur gleich aussehen (zwei echte Rechnungen mit gleichem Betrag am selben Tag). Gelöscht wird nur mit diesem Beweis — nie nach Bauchgefühl.
+
+**Wissensstand:** 2026-08-06
+
+## v1.135.3 — Anleitung zeigt jetzt alle 16 Modi
+
+**Fehlerbehebung**
+
+- **Modus 16 (Alt-Buchhaltungs-Audit) stand nicht in der Einrichtungs-Anleitung.** Die Modi-Tabelle im SETUP-GUIDE endete bei 15 — wer Bruno nur über die Anleitung kennenlernt, wusste nicht, dass er alte Buchhaltungs-Jahre aus dem bisherigen System rein lesend prüfen und daraus lernen kann. Die Zeile ist ergänzt, die Überschrift sagt jetzt korrekt „16 Modi".
+- **Interne Übersichten (TOOLS, System-README) waren beim gleichen Punkt veraltet** — ebenfalls korrigiert. Das System-README pflegt jetzt bewusst keinen eigenen „Aktueller Stand"-Block mehr, sondern verweist auf die Orte, die immer aktuell sind. So kann diese Sorte Veralten nicht wieder passieren.
+
+**Wissensstand:** 2026-08-06
+
 ## v1.135.2 — Start fragt nicht mehr nach einer Freigabe
 
 **Fehlerbehebung**

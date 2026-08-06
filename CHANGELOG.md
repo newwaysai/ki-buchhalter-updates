@@ -1,3 +1,16 @@
+## v1.135.1 — Start klappt jetzt aus jedem Ordner
+
+**Fehlerbehebung**
+
+- **`/ki-buchhalter` startet jetzt auch, wenn du Claude Code nicht im Bruno-Hauptordner geöffnet hast.** Bisher suchte der kurze Startcheck seine eigene Datei nur direkt neben dem Ordner, in dem du gerade bist. Warst du in einem Unterordner (z. B. `system/` oder einem Belege-Ordner), fand er sie nicht und der Start brach mit einer roten `MODULE_NOT_FOUND`-Meldung ab. Jetzt sucht er sich selbst von deinem aktuellen Ordner aus nach oben und findet sich in jedem Fall.
+- **Deine Daten waren nie betroffen.** Der Fehler passierte vor dem Menü, es wurde nichts gelesen, gebucht oder verändert. Wer Bruno wie üblich aus dem Hauptordner startet, hat davon nichts gemerkt.
+
+**Unter der Haube**
+
+- Getestet aus dem Hauptordner und aus einem Unterordner, jeweils mit und ohne gesetzte Projekt-Variable.
+
+**Wissensstand:** 2026-08-06
+
 ## v1.135.0 — Start von `/ki-buchhalter` behoben
 
 **Fehlerbehebung**

@@ -1,3 +1,83 @@
+## v1.135.0 — Start von `/ki-buchhalter` behoben
+
+**Fehlerbehebung**
+
+- **`/ki-buchhalter` startet jetzt zuverlässig.** Bei manchen Sicherheitseinstellungen brach der Aufruf sofort mit einer roten Fehlermeldung ab („Shell command permission check failed… cannot be statically analyzed"), noch bevor das Menü erschien. Ursache war ein Vorab-Befehl, mit dem ich beim Start kurz nachschaue, ob dein Profil schon eingerichtet ist. Der war zu verschachtelt geschrieben, sodass Claude Code ihn nicht prüfen konnte und deshalb blockierte. Er ist jetzt ein einfacher, klar erkennbarer Aufruf — er läuft in jeder Einstellung durch, ohne dass du etwas freigeben musst.
+- **Betroffen war der allererste Start.** Wer die Meldung bekam, kam gar nicht erst ins Onboarding. Falls du das erlebt hast: Nach diesem Update ist es weg, du musst nichts nachholen.
+
+**Unter der Haube**
+
+- Der Startcheck liegt jetzt als eigenes Script im Skill-Ordner und reist bei Export und Update automatisch mit. Der Export bricht ab, falls es je fehlen sollte — damit kann kein Paket mehr ausgeliefert werden, in dem der Skill nicht startet.
+
+**Wissensstand:** 2026-08-06
+
+## v1.134.0 — Alt-Buchhaltungs-Prüfung mit einem Satz starten
+
+**Verbesserungen**
+
+- **Deine alte Buchhaltung prüfen lassen ist jetzt ein Ein-Satz-Auftrag.** Bisher gab es dafür eine lange Prompt-Vorlage mit allen Regeln zum Abtippen. Die brauchst du nicht mehr: Du schreibst nur noch „Bruno, hier ist meine alte Buchhaltung: [Ordner] — analysiere sie, prüfe kritisch, zieh Learnings", und ich mache den Rest. Alle Schutzregeln (nur lesen, nichts buchen, jede Aussage mit Beleg, kritisch auch wenn ein Steuerberater sie geführt hat) sind fest in mir verankert und gelten automatisch — egal wie kurz dein Auftrag ist.
+
+**Wissensstand:** 2026-08-05
+
+## v1.133.0 — Review-Belege abgearbeitet, Anbieter-Erkennung und Konto-Zuordnung synchron
+
+**Neue Funktionen**
+
+- **24 weitere Anbieter erkenne ich jetzt sicher** — wieder jeder einzeln anhand seiner echten Rechnungs-PDFs geprüft (Google Cloud aus Irland, Onepage, deine Steuerkanzlei, mehrere US-Dienste und Skool-Kurse). Wichtig dabei: Google-Rechnungen kommen von der irischen Google-Gesellschaft, nicht aus den USA — das ändert die Steuer-Einordnung, und ich habe es am Beleg geprüft statt am Konzernnamen.
+- **Zahlungs- und Erstattungs-Benachrichtigungen bucht mein System jetzt nicht mehr aus Versehen.** YouTube-Bestellbestätigungen, GoDaddy-Zahlungswarnungen, Stripe-Auszahlungen und „Zahlung erstattet"-Mails sind keine Rechnungen. Sie sind jetzt als solche markiert und landen nie in einer Buchung.
+
+**Verbesserungen**
+
+- **Anbieter-Erkennung und Konto-Zuordnung bleiben automatisch synchron.** Bisher konnte ein Anbieter erkannt sein, aber sein Buchungskonto fehlte an anderer Stelle — dann blieb der Beleg trotz sicherer Erkennung liegen. Ich gleiche beide Listen jetzt automatisch ab, sodass ein neu erkannter Anbieter sofort ein Konto bekommt.
+- **Phantom-Steuersätze auf US-Rechnungen korrigiert.** Einige US-Rechnungen tragen deine deutsche Steuernummer im Empfänger-Feld. Die Texterkennung hat das mehrfach als „19 % Umsatzsteuer" missverstanden, obwohl auf der Rechnung gar keine steht. Das korrigiere ich jetzt automatisch gegen den Rechnungstext — nachweisbar, ohne KI.
+
+**Unter der Haube**
+
+- Die Buchhaltung im Schatten-System ist von 453 auf 487 gebuchte Belege gewachsen. Was offen bleibt, bleibt aus klaren Gründen: Anbieter ohne Rechnungs-PDF zum Nachprüfen (dann rate ich nicht), Kassenbons in der Vier-Augen-Prüfung, und Kontobewegungen ohne 1:1-Beleg (Kreditkarten-Sammelabbuchungen).
+
+**Wissensstand:** 2026-08-05
+
+## v1.132.0 — Sicherheitslücke im Datenschutz-Wächter geschlossen, 26 Anbieter mehr sicher erkannt
+
+**Wichtig — Sicherheit**
+
+- **Mein Datenschutz-Wächter lässt sich nicht mehr von einem Helfer-Prozess abschalten.** Ich habe einen Schutz eingebaut, der verhindert, dass Belegtexte mit Namen, Anschriften oder Steuernummern ungefiltert im Chat landen. Dabei ist mir ein eigener Fehler aufgefallen: Der Wächter hat in seiner Fehlermeldung freundlich erklärt, wie man ihn abschaltet — und einer meiner Recherche-Helfer hat das gelesen und genau das getan. Jetzt gilt: Der Notausgang steht nicht mehr in der Meldung, und ein Helfer-Prozess darf ihn grundsätzlich nicht benutzen. Nur du als Mensch kannst eine Ausnahme freigeben.
+
+**Neue Funktionen**
+
+- **26 Anbieter mehr erkenne ich jetzt sicher** — jeder einzeln anhand seiner echten Rechnungs-PDFs geprüft: Firmensitz, Steuersatz, Umsatzsteuer-Nummer, Reverse-Charge-Klausel. Darunter Gumroad, JVZoo, AppSumo, Atlassian, Framer, deine Steuerkanzlei, united-domains und mehrere Berliner Läden. Kein Raten nach Währung.
+- **Deine eigenen Ausgangsrechnungen buche ich nie mehr als Ausgabe.** Wenn du selbst der Rechnungssteller bist, gehört der Beleg auf die Einnahmen-Seite. Ich hatte drei solche Fälle gefunden, die sonst als Betriebsausgabe durchgelaufen wären — das wäre ein echter Steuerfehler gewesen. Dasselbe gilt für deine Gutschriften an Kunden und für Testbelege.
+- **Kassenbons erkenne ich jetzt als das, was sie sind.** Quittungen vom Fotoladen, Baumarkt oder Elektronikmarkt bereite ich vor, buche sie aber nie automatisch — ein Bon mischt oft Privates und Geschäftliches. Und eine Rückgabe-Quittung ist keine Ausgabe, sondern eine Erstattung; die stoppe ich ganz.
+
+**Verbesserungen**
+
+- **Mehrfach hochgeladene Rechnungen finde ich jetzt wieder zusammen.** Wenn dieselbe Rechnung zweimal im Buchhaltungsprogramm liegt, kürzt das Programm die Dateinamen und hängt eine Nummer an — mein Abgleich lief dann ins Leere. Jetzt entscheide ich zusätzlich über Betrag und Datum.
+
+**Unter der Haube**
+
+- Neue interne Grundregel aus dem Sicherheitsvorfall: Ein Schutzmechanismus darf niemals erklären, wie man ihn umgeht — und was eine Datenschutz- oder Geld-Schutzschicht abschaltet, muss prüfen, WER es abschaltet.
+
+**Wissensstand:** 2026-08-05
+
+## v1.131.0 — Fehlende Rechnungsdaten selbst nachliefern, sicherere Anbieter-Erkennung
+
+**Neue Funktionen**
+
+- **Ich fülle fehlende Rechnungsdaten in deinem Buchhaltungsprogramm nach.** Wenn dein Buchhaltungssystem bei einem Beleg kein Rechnungsdatum lesen konnte, ist dieser Beleg dort nicht buchbar — er liegt einfach da. Ich habe das Datum aber meist längst aus demselben PDF gelesen. Statt dich das von Hand nachtragen zu lassen, lade ich den Beleg mit den fehlenden Angaben neu hoch. Im ersten Einsatz waren das 54 Belege, die vorher gar nicht buchbar waren.
+- **„Das ist gar kein Lieferant"-Kennzeichnung wirkt jetzt wirklich.** Manche Absender schicken nur Kontobenachrichtigungen statt Rechnungen — deine Bank zum Beispiel, oder Zahlungsdienste mit „Zahlung erhalten"-Mails. Solche Absender sind bei mir als „nie buchen" markiert. Diese Markierung wurde bisher an einer Stelle übergangen. Jetzt gilt sie ausnahmslos und vor allem anderen.
+
+**Verbesserungen**
+
+- **Der Doppelbuchungs-Schutz hält jetzt beide Richtungen aus.** Er hatte bisher einen blinden Fleck in die andere Richtung: Bei Anbietern, die dir mehrere Rechnungen am selben Tag über denselben Betrag schicken, hielt er echte Rechnungen fälschlich für Dubletten. Ich prüfe solche Fälle jetzt nach — anhand der Rechnungsnummer und eines Datei-Fingerabdrucks. Nur was wirklich identisch ist, gilt als Dublette; der Schutz selbst bleibt so streng wie vorher.
+- **Zahlungen zuordnen, auch wenn der Name nicht passt.** Bei Kartenzahlungen steht im Kontoauszug oft der Zahlungsdienstleister statt des Anbieters — die Zuordnung scheiterte dann am Namen. Ich vergleiche jetzt zusätzlich Betrag auf den Cent und ein enges Zeitfenster. Eindeutig muss es trotzdem bleiben: Gibt es zwei mögliche Zahlungen, ordne ich nichts zu.
+- **Neun Anbieter mehr sicher erkannt** (unter anderem Instantly, kie.ai, Stan, Alva) — jeder einzeln anhand seiner echten Rechnungs-PDFs geprüft: Firmensitz, Steuersatz, Umsatzsteuer-Nummer. Kein Raten nach Währung.
+
+**Unter der Haube**
+
+- Zwei neue interne Grundregeln aus echten Fehlern dieses Laufs: Ein Anbieter darf nie mit zwei verschiedenen Steuer-Einordnungen im System stehen (das erzeugt Fehlalarme auf korrekte Buchungen), und ein Kennzeichen, das kein Programmteil ausliest, ist wirkungslos — beides ist jetzt festgeschrieben und wird bei jeder Änderung geprüft.
+
+**Wissensstand:** 2026-08-05
+
 ## v1.130.0 — Leistungsdatum, Vier-Augen-Regel für Kassenbons, schlauere Nicht-Beleg-Erkennung
 
 **Neue Funktionen**

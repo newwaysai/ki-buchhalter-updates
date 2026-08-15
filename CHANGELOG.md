@@ -1,3 +1,82 @@
+## v1.141.0 — Bruno bucht deine Einnahmen sicher, auch wenn eine Rechnung storniert wurde
+
+**Neue Funktionen**
+
+- **Einnahmen aus Stripe werden geprüft gebucht, nicht blind übernommen.** Eine Rechnung kann bei Stripe auf "bezahlt" stehen und trotzdem längst gutgeschrieben sein — der Status ändert sich dabei nicht. Bruno schaut deshalb nicht mehr auf den Status, sondern darauf, **ob wirklich Geld geflossen ist**. Eine versehentlich doppelt ausgestellte Rechnung, die nie bezahlt wurde, wird jetzt gar nicht gebucht: Umsatz zu erfinden und im selben Atemzug wieder gutzuschreiben würde deine Zahlen aufblähen und die Umsatzsteuer-Anmeldung verfälschen. Eine **echte** Rückerstattung wird dagegen weiterhin vollständig gebucht, denn dort muss die abgeführte Umsatzsteuer zurückgeholt werden.
+- **Kein doppeltes Buchen mehr.** Vor jedem Lauf liest Bruno nach, was in deiner Buchhaltung bereits als Einnahme steht, und überspringt es. Du kannst denselben Befehl mehrfach ausführen, ohne dass etwas zweimal in den Büchern landet.
+- **Richtiger Monat bei nachträglich erstellten Rechnungen.** Stellst du eine Rechnung später aus, merkt sich Stripe den Tag, an dem *du* sie als bezahlt markiert hast — nicht den Tag, an dem dein Kunde gezahlt hat. Weil bei dir die Umsatzsteuer erst mit dem Geldeingang fällig wird, nimmt Bruno jetzt den echten Zahlungstag. Fünf Juli-Zahlungen wären sonst als August-Umsatz in den Büchern gelandet, also im falschen Anmeldezeitraum.
+
+**Verbesserungen**
+
+- **Falsch gemeldeter Rechenfehler behoben.** Der Buchhaltungs-Check hat bei zwei Dollar-Rechnungen einen Umsatzsteuer-Fehler gemeldet, obwohl gar keine Steuer im Spiel war. Der wahre Grund: Der Dollarbetrag war eins zu eins als Euro gebucht — 10,80 Dollar wurden zu 10,80 Euro, obwohl deine Bank nur 9,23 Euro abgebucht hatte. Bruno erkennt diesen Fall jetzt als das, was er ist, und nennt ihn beim Namen. Wichtig war das, weil die falsche Diagnose zur falschen Reparatur geführt hätte.
+- **Neues Werkzeug für nicht umgerechnete Währungen.** Findet Bruno so einen Fall, holt er sich den echten Eurobetrag aus deiner Kontobewegung — dem einzigen verlässlichen Nachweis, was tatsächlich abgeflossen ist. Gibt es keine eindeutige Bewegung, wird **nichts** automatisch geändert, sondern dir vorgelegt. Ein Wechselkurs wird nie geschätzt.
+- **Kritische Punkte im Buchhaltungs-Check: 9 → 7.** Zwei echte Betragsfehler sind repariert, jeweils mit Sicherung vorher und Gegenprüfung nachher.
+
+**Unter der Haube**
+
+- 23 neue automatische Tests für die Einnahmen-Buchung und 5 für die Währungsprüfung. Bei letzteren wurde zusätzlich geprüft, dass die Tests auch wirklich anschlagen: Schaltet man die neue Regel ab, fallen genau die zuständigen Tests durch und keine anderen. Ein Test, der immer grün ist, beweist nichts.
+- Zwei neue Grundregeln (#36, #37) halten fest, woran diese Fehler erkennbar waren — damit sie nicht wiederkehren.
+
+## v1.140.0 — FAQ erweitert: 10 neue Antworten aus echten Kunden-Gesprächen
+
+**Wissensstand**
+
+- **10 neue FAQ-Antworten in `wissen/FAQ-was-kann-bruno.md`** (Abschnitt E2), gesammelt aus einem Live-Onboarding und Interessenten-Nachfragen — jede Antwort am Code bzw. an der Doku verifiziert, Grenzen ehrlich benannt: GmbH + Bilanz-Weg, EÜR vs. Bilanz, automatische Kontierung (SKR03/04), Arbeiten mit vorhandenem sevDesk-Bestand, Linux + Nextcloud, „Was, wenn etwas schiefgeht?" (die vier Schutzebenen), was der Steuerberater am Jahresende bekommt, Privatausgaben auf dem Geschäftskonto, Claude-Abo/Desktop-App-Frage, Mitarbeiter-Chats + Zugriffs-Beschränkung.
+
+## v1.139.0 — Bruno holt fehlende Rechnungen jetzt selbst aus Anbieter-Portalen
+
+**Neue Funktionen**
+
+- **Fehlende Rechnungen direkt aus dem Anbieter-Portal.** Manche Anbieter (z.B. OpenAI) schicken per Mail nur eine Zahlungs-Benachrichtigung — die echte Rechnung liegt nur im Kunden-Portal. Bisher musstest du sie von Hand herunterladen. Jetzt sagst du einfach „hol mir die fehlenden OpenAI-Rechnungen" (Modus 3): Bruno öffnet das Portal im Browser-Fenster, du loggst dich **einmal selbst** ein, Bruno lädt die Rechnungs-PDFs und sortiert sie ein. Dein Login bleibt gespeichert — beim nächsten Mal entfällt er meist. Das funktioniert jetzt bei jedem, nicht mehr nur in einer speziellen Entwickler-Umgebung; den Browser-Baustein richtet Bruno beim ersten Mal selbst ein (einmalig ~150MB).
+- **Sicherheit ist eingebaut, nicht versprochen.** Das Portal-Werkzeug KANN technisch nur drei Dinge: die offizielle Rechnungs-Seite des Anbieters öffnen, Rechnungs-Links finden, PDFs speichern. Tippen, kaufen, kündigen oder Einstellungen ändern existiert in dem Werkzeug nicht. Passwörter und 2FA-Codes macht immer du — Bruno sieht sie nie und speichert sie nie.
+- **Bruno merkt sich den Weg zur Rechnung — pro Anbieter.** Wo im Portal die Rechnungen liegen und wie man sie lädt, steht jetzt zentral in einer Wegbeschreibungs-Liste (mit den bereits bewährten Wegen für Skool, Apple und OpenAI). Ändert ein Anbieter seine Seiten, findet Bruno den neuen Weg selbst und merkt ihn sich — der nächste Lauf ist wieder schnell.
+- **Portal-Wege aus der Community (freiwillig).** Diese Wegbeschreibungen können über den bestehenden Learnings-Kanal geteilt werden: dein Bruno kann so von den Portal-Wegen profitieren, die andere Nutzer schon gefunden haben (z.B. für einen Anbieter, den du neu nutzt). Wie immer gilt: Teilen nur wenn du willst, alles läuft über Marcels Prüfung, und das Schutz-Gate blockt jetzt zusätzlich persönliche Rechnungs-Links (die enthalten kundenindividuelle Codes und gehen nie mit raus).
+
+**Verbesserungen**
+
+- **Die Modi-Tabelle in der LIESMICH zeigte noch die alte Nummerierung** (dort stand z.B. „2 = Onboarding", tatsächlich ist 2 der Health-Check). Die Tabelle stimmt jetzt mit dem Menü überein.
+- Auch der Paddle-Rechnungs-Abruf richtet den Browser-Baustein jetzt bei Bedarf selbst ein (vorher brach er ohne klare Meldung ab, wenn er fehlte).
+
+**Warum das wichtig ist**
+
+Fehlende Belege sind der häufigste Grund für Rückfragen vom Steuerberater — und das lästigste Stück Handarbeit. Je mehr Portal-Wege Bruno kennt (deine + die der Community), desto öfter heißt es künftig einfach: „3 Rechnungen fehlten, ich habe sie geholt."
+
+**Unter der Haube**
+
+- Neues gedeckeltes Browser-Werkzeug `portal-fetch.mjs` (öffnen / Links finden / lesen / holen / Weg speichern) mit Domain-Sperre im Code
+- Gemeinsame Playwright-Erstinstallation (`playwright-install.mjs`) für alle Browser-Werkzeuge
+- Portal-Wegbeschreibungen zentral in `system/portal-registry.json` (Klickweg, Selektor, Login-Art, Format je Anbieter)
+- Browser-Profil liegt in `system/_privat/` (bleibt auf deinem Rechner, nie in Updates oder Exporten)
+- Beleg-Zuschnitt beim HTML-Render (`karte_marker` je Anbieter): Support-Fenster und andere Seiten-Elemente landen nicht mehr mit im Beleg-PDF (live gegen Skool verifiziert, 3 Rechnungen)
+
+**Wissensstand:** 2026-08-15
+
+---
+
+## v1.138.0 — Bruno prüft jetzt den Beleg, den dein Kunde wirklich sieht
+
+**Neue Funktionen**
+
+- **Belege werden vor dem Versand am Dokument geprüft, nicht am Statusfeld.** Bisher galt eine Rechnung als "bezahlt", wenn das Buchhaltungssystem das meldete. Ein realer Fall hat gezeigt, dass das nicht reicht: Eine Rechnung stand intern auf "bezahlt", das ausgelieferte PDF zeigte aber weiterhin "470,05 € offen — jetzt bezahlen". Ein Kunde, der längst gezahlt hat, hätte eine Zahlungsaufforderung bekommen. Bruno liest jetzt vor jedem Versand die PDF-Textebene UND die Ansicht, die dein Kunde beim Anklicken sieht — beide können auseinanderfallen.
+
+**Verbesserungen**
+
+- **Nachträgliche Rechnungen in der richtigen Reihenfolge.** Wenn ein Kunde schon bezahlt hat und die Rechnung fehlt, gibt es eine feste Abfolge. Wird sie vertauscht, lässt sich die Zahlung nicht mehr an die Rechnung hängen — und beim Reparieren entsteht schnell eine zweite Rechnung für denselben Vorgang. Bruno kennt die Reihenfolge jetzt und prüft dabei automatisch, ob die Umsatzsteuer überhaupt gerechnet wurde (in dem realen Fall fehlten sonst 75,05 € auf dem Beleg).
+- **Keine Rechnungen mehr an dich selbst.** Bei der Auswertung "welche Kunden brauchen noch eine Rechnung?" hat Bruno bisher jeden mit einer Umsatzsteuer-ID als Geschäftskunden gezählt — auch dich, wenn du dein eigenes Produkt zum Testen gekauft hast. Von sechs vermeintlichen Kunden waren vier eigene Testkäufe. Deine eigene USt-IdNr wird jetzt ausgeschlossen.
+
+**Warum das wichtig ist**
+
+Ein Beleg ist erst dann in Ordnung, wenn er beim Empfänger richtig ankommt — nicht wenn ein Feld in der Datenbank "erledigt" sagt. Diese Trennung kostet sonst Vertrauen beim Kunden und im schlimmsten Fall eine doppelte Zahlung.
+
+**Unter der Haube**
+
+- Neue Prüfregel #33 (Dokument-Readback vor Kundenversand, Reihenfolge bei Nachtrags-Rechnungen, Grenzen bei Gast-Zahlungen)
+- Lauf-Protokoll mit allen belegten API-Antworten in `system/LIVE-RUNS.md`
+
+**Wissensstand:** 2026-08-15
+
+---
+
 ## v1.137.0 — Bruno lernt jetzt aus der ganzen Community (wenn du willst)
 
 > Hinweis zur Nummerierung: Der weiter unten stehende Eintrag „v1.136.0 — Bruno erkennt jetzt, wenn ein 'Beleg' gar keine Rechnung ist" wurde tatsächlich schon mit den Paketen ab v1.135.3 ausgeliefert — die Nummer 1.136.0 war dort ein Versehen und wurde nie als eigenes Release veröffentlicht. Damit keine Nummer doppelt existiert, springt dieses Release direkt auf 1.137.0.

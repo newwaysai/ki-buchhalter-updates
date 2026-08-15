@@ -1,3 +1,22 @@
+## v1.142.0 — Bruno prüft seine eigene Anleitung, bevor du sie bekommst
+
+**Verbesserungen**
+
+- **Die Modus-Übersicht in der LIESMICH kann nicht mehr veralten.** Bisher standen die 16 Modi an drei Stellen (Menü, Anleitung, Kurzbefehle) — änderte sich eine, konnten die anderen still zurückbleiben. Genau das war passiert: die Anleitung nannte monatelang eine alte Nummerierung, sodass „Modus 2" dort etwas anderes bedeutete als im Menü. Ein neuer Prüfer vergleicht die drei Stellen jetzt automatisch bei jedem Paketbau; stimmen sie nicht überein, wird gar kein Paket erst ausgeliefert.
+- **Auch die Versionsangabe wird gegengeprüft** — ein Update ohne passenden Änderungs-Eintrag fällt sofort auf.
+- **Menüzeilen bleiben lesbar:** zu lange Zeilen, die im Chat rechts abgeschnitten würden, meldet der Prüfer vorher.
+
+**Unter der Haube**
+
+- Neuer Prüfer `system/_bin/doku-drift-check.mjs` (rein lesend, kein Netz, kein KI-Modell — reiner Textvergleich)
+- 7 Tests, davon 5 mit absichtlich eingebauten Fehlern: bewiesen wird, dass echte Abweichungen **gefunden** werden, nicht nur dass es „keine Meldung gibt"
+- Ändert jemand das Format einer Quelldatei, meldet der Prüfer „blind" statt „alles in Ordnung" — ein stiller Ausfall ist ausgeschlossen
+- Eingehängt in die Paket-Abnahme (`verify-export.sh`, Schritt 10)
+
+**Wissensstand:** 2026-08-15
+
+---
+
 ## v1.141.0 — Bruno bucht deine Einnahmen sicher, auch wenn eine Rechnung storniert wurde
 
 **Neue Funktionen**

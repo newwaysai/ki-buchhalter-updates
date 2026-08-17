@@ -1,3 +1,2077 @@
+## v1.186.0 — Steuerwissen-Aktualität läuft jetzt zentral (2026-08-17)
+
+### Verbesserungen
+
+- **Gesetzesänderungen musst du nicht mehr selbst überwachen.** Ob sich UStG, EStG, AO oder
+  ein BMF-Schreiben geändert hat, prüfen wir ab jetzt zentral am amtlichen Quell-Stand —
+  und liefern dir betroffene Wissens-Korrekturen fertig geprüft und verifiziert als
+  Produkt-Update (Modus 15). Der frühere manuelle Aktualitäts-Check entfällt dadurch in
+  deinem Paket. Fragst du Bruno „ist mein Steuerwissen aktuell?", prüft er ab sofort
+  direkt, ob ein Update für dich bereitliegt.
+- **Eigene Gesetzes-Importe bleiben voll erhalten.** Brauchst du eine Norm, die dein
+  Standard-Paket nicht abdeckt (Modus 11), importiert Bruno sie wie bisher byte-treu und
+  verifiziert aus der amtlichen Quelle. Ein erneuter Import lädt dabei immer die aktuelle
+  Fassung — so frischst du selbst importierte Zusatz-Quellen jederzeit auf.
+
+### Unter der Haube
+
+- Auslieferungs-Pipeline kann jetzt Betreiber-interne Abschnitte gezielt aus der Doku
+  filtern; drei neue automatische Tests + eine neue Abnahme-Prüfung sichern das ab.
+
+## v1.185.0 — Doppelter Aufwand entdeckt, doppeltes Buchen abgestellt (2026-08-17)
+
+### Neue Funktionen
+
+- **Doppelten Aufwand aufgespürt, den bisher keine Prüfung finden konnte.** Manche Anbieter
+  stellen für denselben Monat ZWEI Rechnungen mit verschiedenen Nummern: eine über die
+  Grundgebühr, eine über die Grundgebühr plus alle Einzelposten. Abgebucht wird nur einmal.
+  Wer beide bucht, hat den Grundbetrag doppelt in den Büchern. Jede einzelne Buchung sieht
+  dabei völlig korrekt aus — echter Beleg, richtiges Konto, plausibler Betrag. Der Fehler
+  zeigt sich erst, wenn man beide Rechnungen zusammen gegen das Konto hält. Genau das macht
+  Bruno jetzt bei jedem Gesundheits-Check.
+- **Das Konto entscheidet, nicht der Beleg.** Die neue Prüfung fragt: Ist mehr Aufwand
+  gebucht, als tatsächlich abgeflossen ist? Nur wenn eine einzelne Rechnung den kompletten
+  Geldfluss allein abdeckt, gilt der Rest als darin enthalten. Bleibt es unklar, meldet
+  Bruno lieber nichts, statt einen korrekten Beleg zum Löschen vorzuschlagen.
+
+### Verbesserungen
+
+- **Zahlungsziele verwirren die Prüfung nicht mehr.** Eine Rechnung vom 29. wird oft erst im
+  Folgemonat bezahlt — das ist normal und darf nicht als fehlende Zahlung erscheinen. Die
+  Prüfung rechnet jetzt mit einem realistischen Zahlungsfenster in beide Richtungen.
+- **Hilfsbuchungen werden nicht mit echten Zahlungen verwechselt.** Für Belege ohne
+  Bankzahlung legt das Buchhaltungssystem interne Hilfseinträge an. Die zählen jetzt nicht
+  mehr als Geldfluss — sonst hätte sich jeder Beleg rechnerisch selbst gedeckt und der
+  doppelte Aufwand wäre unsichtbar geblieben.
+- **Ein Anbieter bleibt ein Anbieter.** Derselbe Dienst taucht in Rechnungen oft in mehreren
+  Schreibweisen auf ("Marke", "Marke SA", "Marke (Betreiber SAS)"). Bruno fasst diese jetzt
+  zusammen, statt sie als verschiedene Firmen zu behandeln.
+
+- **Kein doppeltes Buchen mehr nach einem Serverfehler.** Meldete das Buchhaltungssystem einen
+  Fehler, obwohl es die Buchung schon ausgeführt hatte, wiederholte Bruno den Versuch blind —
+  und buchte die Zahlung ein zweites Mal. Der Beleg sah dabei immer korrekt aus, nur das Konto
+  trug die Zeile doppelt. Jetzt wird vor jeder Wiederholung nachgesehen, ob der erste Versuch
+  nicht doch gewirkt hat. Im Zweifel wird nicht wiederholt.
+
+### Unter der Haube
+
+- Neue Prüf-Dimension 28 im Gesundheits-Check, abgesichert durch 35 automatische Tests.
+- Jeder Schutzmechanismus wurde gezielt sabotiert, um zu beweisen, dass die Tests wirklich
+  anschlagen — ein Test, der immer grün ist, prüft nichts.
+
+## v1.184.0 — Google-Rechnungen direkt aus dem Portal, der Klickweg ist jetzt Wissen (2026-08-17)
+
+### Neue Funktionen
+
+- **Google-Workspace-Rechnungen kann Bruno jetzt selbst aus dem Admin-Portal ziehen** (bei
+  eingeloggtem Browser). Der komplette Weg — richtige Seite, Zeitraum-Filter auf „Gesamt
+  bisher", Monats-PDF-Download samt dreier technischer Fallen des Google-Portals — ist in der
+  Portal-Registry dokumentiert und reproduzierbar. Live bewiesen: 19 Monatsrechnungen über
+  zwei Jahre in einer Runde geholt, gebucht und mit den Kontobewegungen verknüpft.
+
+### Unter der Haube
+
+- portal-registry: google*workspace von „nur Mail" auf vollwertigen Portal-Weg gehoben
+  (Konto-Transaktionsseite, goog-menu-Bedienung, iframe-Koordinaten-Klicks, Scroll-Reihenfolge).
+
+## v1.183.0 — Der Prüfer meldet keine Geister mehr, Dubletten-Aufräumer sieht Fremdwährung (2026-08-17)
+
+### Verbesserungen
+
+- **Kein Fehlalarm mehr nach einer Link-Reparatur.** Wenn Bruno eine falsche Beleg-Verknüpfung
+  repariert, blieb der alte Eintrag im internen Verlaufs-Log stehen — der Nachprüfer meldete den
+  längst behobenen Fehler bei jedem Lauf erneut als kritisch. Jetzt prüft er live, ob eine
+  Verknüpfung überhaupt noch besteht, und pro Kontobewegung zählt nur der neueste Eintrag.
+- **Dubletten-Aufräumer versteht Fremdwährung und Betreiber-Firmen.** Manche Anbieter schicken
+  pro Kauf ZWEI Dokumente (Zahlungsbeleg + Rechnung) und rechnen unter einem anderen Firmennamen
+  ab als die Marke (z.B. eine US-LLC hinter einem KI-Dienst). Der Aufräumer erkennt jetzt beide
+  Fälle: Ein Entwurf wird auch dann als Doppel erkannt, wenn alle passenden Zahlungen bereits
+  durch andere gebuchte Belege erklärt sind (neue Beweisklasse Z2b) — gelöscht wird weiterhin
+  nur mit Beweis, die Quelldatei wandert in Quarantäne statt in den Papierkorb.
+- **Neue Anbieter-Erkennung:** Die Abrechnungs-Firmen eines KI-Dienstes sind jetzt als Aliase
+  hinterlegt — deren Rechnungen werden automatisch richtig zugeordnet statt in der Prüfschleife
+  zu landen.
+
+### Unter der Haube
+
+- verify-after-match: Geister-Schutz (Status-Live-Check + letzter-Eintrag-pro-Bewegung gewinnt).
+- entwurfs-dubletten: Beweisklasse Z2b (alle Kandidaten-Bewegungen anderweitig erklärt).
+- vendor-aliases + Konto-Map: Betreiber-LLC-Keys ergänzt; Reparatur-Verknüpfungen werden im
+  Match-Log nachgetragen, damit Prüfer und Realität dieselbe Wahrheit sehen.
+
+## v1.182.0 — Warum Gutschriften nie funktioniert haben (2026-08-17)
+
+### Das Rätsel ist gelöst
+
+**sevDesk kann Belege mit negativem Betrag überhaupt nicht buchen.** Der Server lehnt schon den
+ersten Schritt ab: *"Sum of all positions must not be less than zero"*. Deshalb lagen deine
+beiden Gutschriften seit Monaten unbuchbar herum — es war kein Einstellungsfehler und nichts,
+was man mit dem richtigen Klick löst.
+
+In der offiziellen Dokumentation steht das nirgends. Herausgefunden habe ich es, indem ich es
+kontrolliert versucht habe: Der Fehler des Servers war die einzige verfügbare Auskunft.
+
+**Der richtige Weg:** ein neuer Beleg mit positivem Betrag als Gegenbuchung auf dasselbe
+Aufwandskonto. Fachlich ist eine erhaltene Gutschrift eine Vorsteuer-Berichtigung nach
+§ 17 UStG — sie mindert den Aufwand, sie ist kein Ertrag. Das steht jetzt vollständig in der
+Doku, mit allen Fehlermeldungen und den passenden Steuerschlüsseln.
+
+### Was aufgeräumt wurde
+
+**Der Paddle-Doppeleintrag ist weg.** Der offene 24-€-Beleg trug nur die nackte Bestellnummer
+und hatte keinen Beleg im Haus; die echte Rechnung derselben Bestellung ist längst gebucht und
+mit der Zahlung verknüpft.
+
+**Der Testbeleg über 0,01 € bleibt** — er ist festgeschrieben und damit nach GoBD
+unveränderlich. Das Aufräum-Werkzeug hat das korrekt verweigert. Er steht jetzt als
+Dauerzustand vermerkt statt jedes Mal als offener Punkt aufzutauchen.
+
+### Ehrlich zum Stand
+
+Die beiden Gutschriften konnte ich nicht selbst verbuchen: Der Sicherheitsfilter meiner
+Entwicklungsumgebung blockiert die schreibenden Läufe — dreimal versucht, dreimal geblockt.
+Umgangen habe ich ihn nicht. Der Weg ist geklärt und dokumentiert, die Ausführung braucht
+entweder dich oder eine Freigabe in den Einstellungen.
+
+## v1.181.0 — Vier Rätsel gelöst, vier Belege gebucht (2026-08-17)
+
+### Was gelöst wurde
+
+**Die 5 Anthropic-Abbuchungen à 18 € waren nur 2 echte.** Für zwei identische Rechnungen (beide
+8. April, beide Claude Pro, derselbe Leistungszeitraum) lagen fünf Abbuchungen im System. Der
+Kontoauszug klärt es: Über die Salden-Kette sind am 8./9. April nur **zwei** Abbuchungen
+belegt. Die übrigen stammen aus einem zweiten Import derselben Umsätze (kein Verwendungszweck,
+drei Wochen später angelegt). Die zwei echten sind jetzt verknüpft und gebucht.
+
+**"PIRATE.COM" ist nicht dein n8n-Abo.** Deine n8n-Zahlungen erscheinen als
+"PADDLE.NET* N8N CLOUD1" — dreizehnmal im Konto. PIRATE.COM taucht genau einmal auf; ein Abo
+hätte monatliche Abbuchungen. Der eigentliche Grund war ein anderer: Der offene 24-€-Beleg ist
+ein **Doppel-Eintrag**. Zur selben Bestellung ist längst eine Rechnung gebucht und mit der
+richtigen n8n-Zahlung verknüpft; der Zwilling hat nicht einmal einen Beleg im Haus.
+
+**Zwei Meta-Rechnungen à 3 €** waren nicht zuzuordnen, weil im Kontoauszug "FACEBK" steht.
+Ebenfalls gebucht.
+
+### Was behoben wurde
+
+**Der Cluster-Abgleich prüfte das Datumsfenster zu spät.** Er sammelte erst alle betrags- und
+namensgleichen Zahlungen ein und filterte nach Datum erst beim Zuordnen. Dadurch scheiterte die
+sichere Regel "gleich viele Rechnungen wie Zahlungen → der Reihe nach zuordnen" an Zahlungen,
+die längst außerhalb des Zeitfensters lagen. Jetzt wird zuerst gefiltert, dann gezählt. Das
+Standardverhalten ändert sich nicht — es engt ein, es lockert nichts.
+
+### Was offen bleibt
+
+**Zwei Gutschriften (143,69 €).** Beim ersten Fall steht der passende Geldeingang taggenau fest.
+Ich buche trotzdem nicht selbst: Für Gutschriften nennt die Doku einen anderen Weg, es gibt
+keinen Vergleichsfall in deinem Bestand, und bei falschem Vorzeichen würde sich der Betrag
+verdoppeln. Ein kontrollierter Testlauf wurde vom Sicherheitsfilter blockiert — richtig so.
+
+**Und ja, wir brauchen die Gutschriften:** Ohne sie stehen 97,54 € zu viel Aufwand und 18,53 €
+zu viel gezogene Vorsteuer in den Büchern.
+
+## v1.181.0 — Privat markierte Bewegungen zählen nicht mehr als „Beleg fehlt" (2026-08-17)
+
+### Was behoben wurde
+
+Der Jahres-Bericht „Bewegungen ohne Beleg" zählte auch Abbuchungen mit, die bereits als
+PRIVAT markiert sind — für die braucht es per Definition keinen Beleg (Privatentnahme).
+Real blähten 47 private Apple-Abos die Fehl-Liste auf. Jetzt: privat = raus aus der Zählung.
+Ehrliche Zahlen danach: 2025 = 121 Bewegungen ohne Beleg · 2026 = 58.
+
+---
+
+## v1.180.0 — 2024 raus aus sevDesk, Restposten aufgeklärt (2026-08-17)
+
+### Was gemacht wurde
+
+**32 Belege aus 2024 sind aus sevDesk entfernt.** Sie hatte ich selbst am 15.08. dort angelegt,
+obwohl 2024 beim Steuerberater längst abgeschlossen ist. Sie verfälschten jede Auswertung und
+tauchten dauerhaft als "offen" auf.
+
+Vor dem Löschen dreifach geprüft: Belegdatum in sevDesk (alle Okt–Dez 2024), Gegenprobe gegen
+die lokalen Belege (31 von 32 bestätigt, der eine Zweifelsfall einzeln angesehen), und die
+Kontrolle, dass **alle 32 lokal als Datei vorhanden sind**. Die Belege selbst bleiben also
+vollständig erhalten — entfernt wurde nur die Buchung. Eine Sicherungskopie aller Daten liegt
+lokal.
+
+**Ein Beleg mehr verknüpft.** Zwei Meta-Rechnungen à 3 € konnten nicht zugeordnet werden, weil
+im Kontoauszug "FACEBK" steht statt "Meta". Die Übersetzungsliste dafür gab es längst — der
+Cluster-Abgleich benutzte sie nur nicht, sondern hatte eine eigene, einfachere Namensprüfung.
+Das war die dritte eigene Variante derselben Prüfung im System; jetzt nutzen alle dieselbe.
+
+### Was noch offen ist — und warum
+
+Vier Punkte stehen in deiner Aufgabenliste, alle mit Begründung:
+
+- **Gutschrift 116,07 €**: Der passende Geldeingang steht taggenau fest. Ich verknüpfe trotzdem
+  nicht selbst — für Gutschriften nennt die Doku einen anderen Weg, und es gibt keinen
+  Präzedenzfall zum Prüfen. Bei falschem Vorzeichen würde sich der Betrag verdoppeln.
+- **Gutschrift 27,62 €** (Erlösseite): braucht eine Entscheidung.
+- **"PIRATE.COM"**: könnte dein n8n-Abo sein, das über Paddle läuft. Das kann ich aus den Daten
+  nicht beweisen — ein falscher Eintrag würde künftig fremde Zahlungen zusammenführen.
+- **3 Belege mit mehreren gleich guten Zahlungen**: bei Anthropic stehen 5 Abbuchungen à 18 €
+  für 2 Rechnungen. Da rate ich nicht.
+
+## v1.179.0 — Jetzt zähle ich am Ende jedes Laufs, was liegen bleibt (2026-08-17)
+
+### Was neu ist
+
+**Der Durchlauf endet ab sofort mit einer ehrlichen Restliste.** Bisher prüfte ich nur, ob das
+Gebuchte richtig ist — nicht, was gar nicht erst gebucht wurde. Genau dort lagen 87 Entwürfe
+und 200 offene Kontobewegungen monatelang, während jeder Lauf grün meldete.
+
+Am Ende steht jetzt: wie viele Belege noch nicht fertig sind, wie viele Kontobewegungen offen
+sind (je Konto), und vor allem **warum** — jeder einzelne Posten bekommt eine Begründung:
+
+- **keine passende Zahlung im System** (dann ist der fehlende Kontoauszug die Aufgabe, nicht
+  der Abgleich)
+- **Zahlung da, aber anderer Empfänger** (Betrag stimmt zufällig — richtig nicht verknüpft)
+- **mehrdeutig** (mehrere Zahlungen passen gleich gut — da rate ich bewusst nicht)
+- **Teilzahlung**, **Gutschrift**, **Testbeleg aus der Entwicklung**
+
+Bleibt ein Posten ohne Begründung, sage ich das deutlich: dann ist es keine Restmenge, sondern
+eine ungeklärte Lücke, der ich nachgehe.
+
+**Warum das wichtig ist:** Eine Zahl allein ("83 offen") sagt nichts. Erst die Begründung
+zeigt, ob etwas zu tun ist — und ob ich mir selbst etwas vormache.
+
+### Beim ersten Lauf gleich gelernt
+
+Der Bericht meldete zunächst 6 Posten als ungeklärt. Beim Nachsehen war jeder einzelne zu Recht
+offen: Ein Beleg über 24 € traf eine Zahlung an einen völlig anderen Händler, ein anderer eine
+Zahlung 468 Tage vor dem Rechnungsdatum — nur der Betrag stimmte zufällig. Mein Prüfwerkzeug
+urteilte gröber als der eigentliche Abgleich und hätte Arbeit erzeugt, die es nicht gibt. Jetzt
+prüft es Betrag, Zeitraum und Empfänger — wie der Abgleich selbst. Übrig blieb: nichts
+Ungeklärtes.
+
+## v1.178.0 — Der Bank-Abgleich sah nur eines deiner Konten (2026-08-17)
+
+### Was behoben wurde
+
+**Der nächtliche Durchlauf hat nur EIN Konto abgeglichen — seit Monaten.** Er startete den
+Bank-Abgleich ohne Angabe, welches Konto gemeint ist, und nahm damit immer das Standardkonto.
+Deine Zahlungen liegen aber auf drei Konten. Konkret: 134 offene Bewegungen auf dem alten
+Qonto-Konto und 2 auf dem Fyrst-Konto wurden bei jedem Lauf übersprungen. Aufgefallen ist es
+nie, weil der Lauf grün meldete — auf *seinem* Konto gab es ja nichts mehr zu tun.
+
+Jetzt ermittelt der Durchlauf selbst, welche Konten offene Bewegungen haben, und geht sie
+nacheinander durch.
+
+**Gutschriften konnten nie mit einer Zahlung verbunden werden.** Eine Gutschrift ist
+spiegelverkehrt: negativer Rechnungsbetrag, und das Geld kommt zurück statt abzugehen. Der
+Abgleich suchte aber ausnahmslos nach Abbuchungen. Eine Gutschrift über 116,07 € lag seit Mai
+2025 als Entwurf, obwohl die passende Gutschrift am selben Tag auf dem Konto stand.
+
+Gutschriften werden jetzt korrekt gefunden. Verbucht werden sie noch nicht automatisch — wie
+das System sie genau verbucht, ist nicht eindeutig dokumentiert, und bei einem falschen
+Vorzeichen würde sich der Betrag verdoppeln statt auszugleichen. Der Treffer wird deshalb
+angezeigt, damit du ihn mit einem Klick selbst bestätigen kannst.
+
+**"Namecheap, Inc." fand "NAME-CHEAP.COM" nicht.** Beim Namensvergleich sollten Zusätze wie
+"Inc." oder "GmbH" abgeschnitten werden — im Code stand das als Absicht, passiert ist es nie.
+Dadurch scheiterte der Abgleich an einem angehängten "inc", obwohl Betrag, Datum und Anbieter
+übereinstimmten.
+
+### Was das gebracht hat
+
+**4 Belege sind jetzt vollständig verbucht und mit ihrer Zahlung verknüpft** (75,08 €) —
+vorher lagen sie als Entwurf. Jeder wurde nach dem Buchen gegengeprüft.
+
+### Ehrlich zum Rest
+
+Von den verbleibenden offenen Belegen haben **66 schlicht keine passende Kontobewegung** —
+die Zahlung ist in der Buchhaltung nicht vorhanden, meist weil sie über ein Konto lief, das
+nicht angebunden ist. Da hilft kein Abgleich, sondern nur der fehlende Kontoauszug.
+
+Weitere Fälle bleiben bewusst liegen, weil mehrere Bewegungen gleich gut passen (etwa sechs
+identische Abbuchungen über 18 €). Dort zu raten wäre schlimmer, als es dir zu zeigen.
+
+## v1.177.0 — Eigenbelege gelten jetzt als das, was sie sind: Belege (2026-08-16)
+
+### Was behoben wurde
+
+**Ein Eigenbeleg wurde als "vermutlich Werbung" eingestuft.** Deine Privateinlage über 150 €
+(mit Datum, Betrag, Vorgang, Unterschriftszeile, nach GoBD erstellt) landete in der
+Aussortier-Vorschlagsliste — weil ihr die typischen Rechnungswörter fehlen. Zu Recht fehlen
+sie: Eine Privateinlage ist kein umsatzsteuerlicher Vorgang, da gibt es nichts auszuweisen.
+Einen selbst erstellten Beleg nach Fremdrechnungs-Merkmalen zu beurteilen, ist ein
+Denkfehler. Eigenbelege werden jetzt als eigene Klasse erkannt und gelten als buchbar.
+
+Damit das nicht zur Hintertür wird: Eine Werbemail, die das Wort "Eigenbeleg" beiläufig
+erwähnt, bleibt eine Werbemail — geprüft wird die Dokument-Überschrift, nicht ein Stichwort.
+
+### Was sonst passiert ist
+
+**Die 35 Zweifelsfälle sind abgearbeitet — jeder einzeln am Original angesehen.** Ergebnis:
+31 waren tatsächlich keine Belege (Banking-Benachrichtigungen, Zahlungs-Ankündigungen,
+Produktmails, eine Testmail), 1 war der oben genannte Eigenbeleg, 3 waren Screenshots aus
+Zahlungsübersichten. Alle Nicht-Belege liegen jetzt im Ordner für aussortierte Dokumente —
+verschoben, nicht gelöscht, jeder mit Begründung im Sortier-Log.
+
+**Zwei Funde dabei, die teuer geworden wären:**
+
+Eine Mitteilung einer Anwaltskanzlei über **1.372,31 €** war als Ausgabe erfasst. Tatsächlich
+ist es eine Insolvenz-Abschlagszahlung **an dich** — also Geld, das reinkommt. Als Ausgabe
+gebucht wäre der Fehler doppelt gewesen.
+
+Vier Banking-Mails über zusammen **936,83 €** meldeten Geld-EINGÄNGE von Stripe. Auch die
+hätten als Ausgabe gebucht in die falsche Richtung gezeigt.
+
+**Nebenbei aufgefallen:** Bei mehreren dieser Mails war der erfasste Betrag frei erfunden —
+"1000 Credits" wurde zu 1.000 €, "300,000 credits" zu 300 €, eine Sendungsnummer zu 18,02 €.
+Da diese Dokumente jetzt aussortiert sind, richten die Zahlen keinen Schaden mehr an.
+
+### Was für dich übrig bleibt
+
+Eine Aufgabe in deiner Liste: zwei Google-Chrome-Rechnungen über je 5 USD aus dem Portal
+holen (dein Login, deshalb nicht von mir machbar). Ehrlich gesagt lohnt es kaum — es steht
+in der Liste mit Aufwand-Ertrag-Einschätzung, du entscheidest.
+
+## v1.176.0 — Aussortieren erkennt jetzt, was sich selbst als Nicht-Rechnung ausweist (2026-08-16)
+
+### Was neu ist
+
+**Zahlungs-Benachrichtigungen werden automatisch aussortiert.** Bisher verlangte der
+Aussortierer, dass ein Dokument *weder Datum noch Betrag noch Rechnungsnummer* hat. Gemessen
+an deinem Bestand: von 45 offensichtlichen Nicht-Rechnungen traf das auf **keine einzige** zu —
+alle hatten einen Betrag. Genau das macht solche Mails ja heikel, sie sehen aus wie Rechnungen.
+
+Jetzt gilt zusätzlich: Sagt ein Dokument in seinem eigenen Text, dass es **keine Rechnung**
+ist ("Das ist keine Rechnung") oder dass die **Zahlung fehlgeschlagen** ist, wandert es in den
+Nicht-Beleg-Ordner. Fünf Meta-/Instagram-Zahlungsbelege sind so weggeräumt worden.
+
+**Was bewusst NICHT automatisch passiert:** Dokumente, denen nur die typischen Rechnungswörter
+fehlen, werden lediglich **aufgelistet** (`--vorschlag`) statt verschoben. Diese Einschätzung
+irrt nachweislich — eine Zahlungsbestätigung vom Bezirksamt über 15 € ist ein völlig gültiger
+Beleg, aber Behörden schreiben nie das Wort "Rechnung". Solche Fälle siehst du dir selbst an.
+
+### Was behoben wurde
+
+**Eine echte Rechnung wäre beinahe weggeräumt worden.** Ein Verein stellte einen
+Mitgliedsbeitrag über 25 € neu in Rechnung, weil die Lastschrift zurückkam — im Titel stand
+"Rücklastschrift". Das galt bisher als "Zahlung fehlgeschlagen". Tatsächlich ist die
+Rücklastschrift der *Anlass* der Rechnung, die Forderung besteht sehr wohl. Trägt ein Dokument
+Rechnungsnummer, Steuerangabe und Betrag, wiegt das jetzt schwerer als dieses eine Wort.
+Aufgefallen, weil vor dem Verschieben ins Original gesehen wurde.
+
+**Behördensprache wirkt jetzt überall.** Die Erweiterung von gestern (Zahlungsbestätigung,
+Gebühr, entrichtet) war nur im Prüfer aktiv, nicht beim Einsortieren — es gab die Wortlisten
+doppelt im System. Sie stehen jetzt an einer Stelle, beide Wege nutzen dieselbe.
+
+### Unter der Haube
+
+Der Schutz, der verhindert, dass Belegtexte mit Namen und Steuernummern in den Chat gelangen,
+hat endlich einen eigenen Test: 14 Fälle gegen die echte Schutzdatei, darunter die Sperre, die
+verhindert, dass ein Hintergrund-Agent den Schutz selbst abschaltet. Jetzt 38 Selbsttests,
+jeder neue mehrfach absichtlich sabotiert.
+
+## v1.175.0 — Aussortierte Belege zählen nicht mehr als „vorhanden" (2026-08-16)
+
+### Was behoben wurde
+
+Der Bericht „fehlende Belege" zählte auch Dateien aus den Aussortier-Bereichen (privat,
+kein Beleg, ungetrennte Postfächer) als „Beleg liegt vor — nur buchen". Realer Fall: ein als
+PRIVAT aussortierter Zahlungsbeleg ließ eine Geschäftskonto-Abbuchung als buchbar erscheinen —
+richtig wäre eine Privat-Entscheidung gewesen, keine Buchung. Diese Bereiche sind jetzt vom
+Bestand ausgeschlossen; die Zahlen sind dadurch ehrlicher (einzelne „fehlend"-Einträge mehr,
+dafür stimmen sie).
+
+---
+
+## v1.175.0 — Vier Fehlalarme, die dich in die falsche Richtung geschickt hätten (2026-08-16)
+
+### Was behoben wurde
+
+**Der Buchhaltungs-Check hat vier Mal Alarm geschlagen, obwohl deine Buchung richtig war.**
+Jeder dieser Alarme kam mit einem Reparatur-Vorschlag — und wer ihm gefolgt wäre, hätte
+eine korrekte Buchung kaputtgemacht. Alle vier sind nachgeprüft und behoben:
+
+**„Der Betrag stimmt nicht"** — bei einer Rechnung über 5,90 € stand plötzlich, sie müsse
+506,94 € sein. Ursache: Belege ohne Rechnungsnummer wurden alle in denselben Topf geworfen
+und konnten sich gegenseitig überschreiben; verglichen wurde dann mit einem wildfremden
+Beleg. Betraf 465 von rund 2.000 Belegen. Jetzt gilt: kein Vergleich ist besser als ein
+falscher — ohne Rechnungsnummer meldet die Prüfung sauber „keine Zuordnung".
+
+**„Da fehlt Umsatzsteuer"** — bei vier Auslandsrechnungen (USA). Auf den Belegen steht gar
+keine Steuer, das Lesegerät hatte den Prozentsatz schlicht geraten. Ab jetzt zählt nur ein
+echter Steuer**betrag** als Steuerausweis, nicht eine geratene Prozentzahl.
+
+**„Diese Einnahme ist falsch herum gebucht"** — bei zwei Kundenzahlungen. Der Check hat nach
+dem Wort „Erlös" im Buchungstext gesucht; stand dort „Direktzahlung", fiel die Einnahme durch.
+Jetzt schaut er aufs Konto — das sagt eindeutig, ob es eine Einnahme ist.
+
+**„Das ist wohl keine Rechnung"** — bei einer Zahlungsbestätigung vom Bezirksamt (Gewerbe-
+ummeldung, 15 €). Behörden schreiben nie „Rechnung", sondern „Gebühr" und „entrichtet".
+Der Check kennt diese Sprache jetzt.
+
+**Außerdem:** Belege, die du längst aussortiert hast, werden nicht mehr erneut angemahnt.
+Drei der Warnungen betrafen Werbe-Mails, die schon im Aussortiert-Ordner lagen.
+
+### Was das für dich heißt
+
+Von 13 roten Warnungen bleiben 3 — und die sind echt: zwei Benachrichtigungs-Mails ohne
+Rechnung dahinter und ein Textdokument, das versehentlich als Beleg erfasst wurde. Alle drei
+sind noch nicht gebucht, es ist also nichts passiert. Eine Warnliste, die nur noch echte
+Fälle enthält, ist eine Liste, die man auch wirklich abarbeitet.
+
+### Unter der Haube
+
+Vier neue Selbsttests (jetzt 37) bewachen die vier Regeln — jeder wurde absichtlich sabotiert,
+um zu beweisen, dass er den Fehler auch wirklich meldet. Die dahinterliegende Lehre steht als
+feste Regel #41 im Regelwerk: Eine Prüfung, die aus einem einzigen Feld urteilt, prüft nicht,
+sie rät mit.
+
+## v1.174.0 — Dubletten-Aufräumer räumt jetzt auch die Quelle weg (2026-08-16)
+
+### Was behoben wurde
+
+**Ein gelöschter Doppel-Entwurf kam nach einer Stunde wieder.** Der Aufräumer hat den
+Entwurf im Buchhaltungssystem gelöscht — aber die Quelldatei lag weiter im Beleg-Eingangsordner.
+Der nächste Hochlade-Lauf hat daraus brav denselben Doppel-Entwurf neu erzeugt (real passiert,
+am selben Tag entdeckt). Jetzt wandert beim Löschen auch die Quelldatei in den
+Dubletten-Ordner, mit Vermerk im Verzeichnis, welcher gebuchte Beleg das Original ist.
+Die übrigen Quelldateien der heutigen 20 Löschungen räumt der nächste Lauf im selben
+Mechanismus auf — nichts geht verloren, nichts kommt doppelt.
+
+---
+
+## v1.174.0 — „Habe ich den Beleg schon?" ist jetzt eine Frage, die ich stelle (2026-08-16)
+
+### Verbesserungen
+
+**Fotografierte Belege werden endlich richtig gelesen.** Wer eine Quittung abfotografiert
+statt ein PDF zu bekommen, hatte bisher Pech: Die Texterkennung bekam das Bild mit falschem
+Etikett gereicht und scheiterte still. Datum, Betrag und Anbieter wurden dann aus dem
+Dateinamen geraten. Jetzt lesen wir Bilder als Bilder. Bei den 9 betroffenen Belegen im
+Bestand: vorher 0 mit erkanntem Betrag, jetzt 9 von 9 vollständig, keiner braucht mehr eine
+Nachprüfung.
+
+**Ein Foto konnte sich selbst überschreiben.** Beim Nachtragen der Beschreibungsdatei wurde
+bei Bildbelegen der falsche Dateiname berechnet — im Ergebnis hätte die Beschreibung den
+Beleg ersetzt. Behoben, bevor es passiert ist. Bei PDFs trat der Fehler nie auf.
+
+**Vor „dieser Beleg fehlt" schaue ich jetzt nach.** Bisher konnte aus einer Zählung eine
+Empfehlung werden: „Für April bis Juni liegt nichts vor, hol bitte die Kontoauszüge." In
+Wahrheit lag alles da — ein einziges PDF deckte den ganzen Zeitraum ab. Solche Sammelbelege
+sind normal (Quartalsabrechnungen, Jahresrechnungen). Ab sofort gilt: erst im Bestand suchen,
+dann die gefundenen Dokumente aufschlagen und ihren Zeitraum lesen, und erst dann etwas als
+fehlend melden. Auch der Gesundheits-Check sagt jetzt „schau erst nach" statt „beschaffe".
+
+**Die Bestandssuche ist abgesichert.** Der Befehl, der beantwortet „habe ich diesen Beleg
+schon?", entscheidet mit darüber, ob eine Rechnung ein zweites Mal geholt und im
+schlimmsten Fall doppelt gebucht wird. Er war bisher ungeprüft. Jetzt bewachen ihn 16
+Tests, die absichtlich versuchen, ihn zu brechen — unter anderem den Fall, dass eine leere
+Suche plötzlich „ja, hab ich" für alles antwortet.
+
+### Unter der Haube
+
+- Die Suchlogik liegt in einem eigenen, testbaren Baustein; der Befehl selbst kümmert sich
+  nur noch ums Lesen der Dateien. Die Ergebnisse sind unverändert (an drei echten Suchen
+  gegengeprüft, Treffer identisch).
+- Drei Tests standen in der Prüfliste, ohne je zu existieren. Sie sind ausgetragen — mit
+  Vermerk, was davon anderweitig abgedeckt ist und was nicht (Bildprüfung: offene Lücke,
+  ehrlich benannt statt stillschweigend als „geprüft" geführt).
+- Neue Regeln festgehalten: ein Dokument kann mehrere Monate abdecken · vor jedem Löschen
+  wird der Inhalt einer Datei angesehen, nicht ihr Name.
+
+---
+
+## v1.173.0 — Aufräumer für doppelte Beleg-Entwürfe (2026-08-16)
+
+### Neue Funktionen
+
+**`entwurfs-dubletten.mjs`** — findet Beleg-Entwürfe, die eine bereits gebuchte Zahlung
+duplizieren, und löscht sie nach Beweis (Probelauf zuerst, jede Löschung mit Begründung im
+Protokoll). Zwei Beweisketten: gleiche Rechnungsnummer schon gebucht, ODER die Zahlung ist
+nachweislich durch einen anderen gebuchten Beleg erklärt. Ein Entwurf zu einer ungeklärten
+Abbuchung bleibt IMMER stehen — der wird ja noch gebraucht. Erster Lauf: 20 Dubletten
+erkannt (darunter 9 Meta-Doppel, die die Werbekosten verdoppelt hätten), 69 behalten.
+
+**Bericht „fehlende Belege" übergibt jetzt an den Bucher** (`--paare-out`): jede Bewegung
+mit lokalem Beleg wird maschinenlesbar exportiert — mit ALLEN Kandidaten und Evidenz-Label,
+damit der Buchungs-Schritt streng entscheiden kann (Fund-Suche darf großzügig sein,
+gebucht wird nur eindeutig).
+
+---
+
+## v1.172.0 — Aus 126 „fehlenden Belegen" wurden 8 echte (2026-08-16)
+
+### Was behoben wurde
+
+**Der Bericht „Kontobewegungen ohne Beleg" hat massiv übertrieben.** Er meldete 126 Abbuchungen
+ohne Beleg — in Wahrheit waren es 8. Drei getrennte Blindstellen, alle vom selben Muster
+(nur EINE Variable geprüft statt alle):
+
+1. **Verknüpfte Belege wurden nicht erkannt.** Ob eine Abbuchung einen Beleg hat, wurde nur
+   am Betrag ±2 Cent gemessen. Bei Dollar-Rechnungen weicht der gebuchte Betrag (EZB-Kurs)
+   aber immer ein paar Prozent vom Bank-Betrag (Karten-Kurs) ab — 73 korrekt verknüpfte
+   Belege galten deshalb als „fehlt". Jetzt prüfe ich vier Stufen: den Verknüpfungs-
+   Fingerabdruck im Buchungssystem, den Original-Dollarbetrag aus dem Verwendungszweck
+   (cent-exakt!), den Euro-Betrag und zuletzt den Kurs-Korridor.
+2. **Kurze Markennamen fielen durch.** Der Anbieter-Vergleich verlangte mindestens 6 gleiche
+   Zeichen — Canva, Adobe, Loom, Make, Kie und Co. konnten nie treffen. Ihre längst gebuchten
+   Belege galten als fehlend. Jetzt gibt es EINE zentrale Alias-Liste (31 Anbieter), die auch
+   Bank-Schreibweisen kennt (FACEBK = Meta, Deutsche Post = DHL).
+3. **Eine schwache Zuordnung konnte einer starken den Beleg wegnehmen.** Die Zuordnung läuft
+   jetzt in Durchgängen von der stärksten zur schwächsten Evidenz — ein Beleg landet immer
+   bei der Bewegung, zu der er beweisbar gehört.
+
+### Was das für dich ändert
+
+Die Liste „fehlende Belege" zeigt jetzt die Wahrheit: 8 Positionen über 666 Euro statt
+126 über 5.994 Euro. Du suchst nur noch Belege, die wirklich fehlen.
+
+### Unter der Haube
+
+Neue zentrale Prüf-Funktionen (Evidenz-Leiter + Mehrpass-Verbrauch) in der Signal-Bibliothek,
+beide Berichts-Werkzeuge umgestellt, 17 Regressionstests (vorher 8) — jeder bildet einen real
+passierten Fehler ab.
+
+---
+
+## v1.171.0 — Eine Prüfung, die nichts geprüft hat (2026-08-16)
+
+### Was behoben wurde
+
+**Die Kontrolle nach dem Umsortieren war wirkungslos.**
+
+Nach dem Verschieben von Belegen prüfe ich, ob jeder Eintrag im Verzeichnis noch seine Datei
+findet. Diese Kontrolle las ein Feld, das im Verzeichnis gar nicht existiert — sie verglich
+1.871 Einträge gegen leere Werte und meldete anschließend "alle in Ordnung".
+
+Die Erfolgsmeldung nach der Umsortierung war damit wertlos. Sie hat nichts geprüft.
+
+Jetzt liest die Kontrolle das richtige Feld. Und sie gibt keine Entwarnung mehr, wenn sie gar
+keine prüfbaren Daten vorfindet: Ein Verzeichnis, dessen Einträge kein lesbares Dateifeld
+tragen, gilt als "nicht prüfbar" — nicht als "sauber".
+
+**Was die korrigierte Prüfung ergibt:** 570 Einträge zeigten nicht auf eine Datei im erwarteten
+Ordner. 515 davon liegen korrekt woanders — sie sind gebucht und ins Archiv gewandert.
+55 fehlen wirklich, und 51 davon sind aussortierte Nicht-Rechnungen. Bleiben vier echte Belege.
+
+### Was neu ist
+
+**Ich gleiche jetzt in beide Richtungen ab.**
+
+Bisher prüfte ich nur: Gibt es zu jeder Buchung den Beleg? Die Gegenrichtung fehlte: Liegt ein
+Beleg lokal, der noch gar nicht gebucht ist? Beides zusammen ergibt erst eine vollständige
+Schattenbuchhaltung.
+
+Bei einem Nutzer: 43 Buchungen ohne lokalen Beleg (fast alle selbst erzeugte Gebührenbelege,
+für die es keine Fremdrechnung gibt) und 49 lokale Belege ohne Buchung — Schwerpunkt 2024.
+
+### Unter der Haube
+
+- Der Fehler gehört zur selben Klasse wie zwei andere an diesem Tag: eine Kontrolle liest ein
+  Feld, das niemand schreibt, und ist damit wirkungslos. Neue Regel für mich: Vor jeder
+  Prüfung, die ein Feld liest, einen echten Datensatz laden und die Feldnamen ausgeben lassen.
+  Zehn Sekunden Aufwand, verhindert eine Kontrolle, die immer grün ist
+- Zwei neue Selbsttests: einer nutzt bewusst die echte Feldbezeichnung, einer stellt sicher,
+  dass eine Prüfung ohne prüfbare Daten keine Entwarnung gibt
+- 32 Kanarien laufen, keine rot
+
+### Wissensstand
+2026-08-16
+
+---
+
+## v1.170.0 — Deine Belege liegen vollständig bei dir (2026-08-16)
+
+### Was neu ist
+
+**Ich prüfe jetzt, ob zu jeder Buchung der Beleg auch wirklich bei dir liegt.**
+
+Bisher habe ich verglichen, ob eine Buchung den richtigen Status hat. Das beantwortet aber
+nicht die wichtigere Frage: Hast du den Beleg noch, wenn du das Buchhaltungssystem einmal
+wechselst oder es nicht mehr gibt?
+
+Bei einem Nutzer waren das 43 von 447 Buchungen: Status überall korrekt, die Datei lag
+trotzdem nicht lokal. Zusammen rund 267 Euro, überwiegend Kleinbeträge eines Shop-Anbieters.
+
+Warum das zählt, in der Reihenfolge der Wichtigkeit:
+
+- **Vorlagepflicht:** Das Finanzamt verlangt Belege von **dir**, nicht von deinem
+  Software-Anbieter. Zehn Jahre lang. Ein Beleg, den nur ein fremdes System hat, ist kein
+  sicher vorlegbarer Beleg
+- **Unabhängigkeit:** Wenn du die Buchhaltung später ohne dein jetziges System machen willst,
+  geht das nur, wenn lokal alles liegt. Sonst ist der Wechsel ein Datenverlust
+- **Prüfbarkeit:** Alle meine Gegenkontrollen brauchen die Datei selbst. Ohne sie vergleiche
+  ich nur noch Beschreibungen mit Beschreibungen
+
+**Belege werden nicht gelöscht — auch vermeintliche Doppelte nicht.**
+
+Von 286 Dateien im Doppelte-Ordner waren nur 54 wirklich Kopien (Byte für Byte identisch mit
+einem vorhandenen Original). 197 waren Einzelstücke ohne jedes Original, 35 hatten denselben
+Namen bei anderem Inhalt. Wer nach Dateinamen löscht, vernichtet Belege. Gelöscht wird nur bei
+bewiesener Identität — sonst wird umsortiert, nie entfernt.
+
+### Was besser geworden ist
+
+**Doppelte liegen jetzt pro Jahr statt pro Quartal.**
+
+638 Dateien aus 19 verstreuten Unterordnern liegen jetzt in einem Ordner je Jahr. Ein
+Doppelte-Ordner ist kein Arbeitsordner: Du suchst dort nicht den Beleg vom März, sondern
+schaust einmal im Jahr nach, ob etwas versehentlich dort gelandet ist. Dafür reicht ein
+Ordner pro Jahr.
+
+### Unter der Haube
+
+- Die neue Prüfung muss zwei Fehler gleichzeitig vermeiden: Meldet sie zu viel, geht der eine
+  echte Fall in hundert Fehlalarmen unter. Meldet sie zu wenig, fällt die Lücke erst beim
+  Finanzamt auf. Selbst erstellte Belege (Gebührenabrechnungen, eigene Rechnungen) sind
+  deshalb eng abgegrenzt, und "keine Belegnummer vorhanden" ist eine eigene Kategorie —
+  nicht dasselbe wie "fehlt"
+- Ein eigener Test fand einen Fehler in genau dieser Prüfung: Sie hätte vorhandene Belege als
+  fehlend gemeldet, wenn die Schreibweise der Nummer leicht abwich. Das hätte dich auf die
+  Suche nach etwas geschickt, das du längst hast
+- Eine Zwischenauswertung meldete "62.361 Euro betroffen". Beide Zahlen dahinter stimmten, die
+  Deutung nicht: derselbe Steuerberater-Beleg war siebenmal gezählt, weil er in einem
+  Mailverlauf immer wieder mitzitiert wurde. Eine Summe über Dateien ist keine Summe über
+  Vorgänge
+- 32 Kanarien laufen, keine rot
+
+### Wissensstand
+2026-08-16
+
+---
+
+## v1.170.0 — Ich hätte dich fast Belege suchen lassen, die längst da waren (2026-08-16)
+
+### Was behoben wurde
+
+**Ich habe 107 Belege als "fehlt" gemeldet, obwohl sie im Archiv lagen.**
+
+Der Grund war simpel und peinlich: Viele deiner Rechnungen sind in **Dollar** ausgestellt — die
+meisten Software-Anbieter sitzen in den USA. Dein Konto bucht aber in Euro. Aus 99 Dollar werden
+auf dem Kontoauszug 85,35 Euro. Ich habe stur Euro gegen Euro verglichen, nichts gefunden und
+gemeldet: "Beleg fehlt, muss beschafft werden."
+
+Bei einem einzigen Anbieter waren das 48 Rechnungen über 2.209 Euro. Hättest du danach gesucht,
+wäre es verlorene Zeit gewesen — sie lagen alle da.
+
+**Der umgekehrte Fehler passierte auch:** Weil ich nur auf den Betrag geschaut habe, hätte ich
+fast eine Rechnung dem falschen Anbieter zugeordnet. Zwei verschiedene Dienste hatten zufällig
+denselben Betrag. Bei Kleinbeträgen passiert das ständig.
+
+**Was ich jetzt mache:** Beim Abgleich prüfe ich Betrag **mit Währungsumrechnung**, Anbietername
+(auch wenn er auf dem Kontoauszug anders heißt), Rechnungsnummer und Zeitfenster — alles
+zusammen, nicht eines davon.
+
+Zusätzlich erkenne ich jetzt Umbuchungen zwischen deinen eigenen Konten am Verwendungszweck.
+Acht davon standen als größter Posten auf der Liste fehlender Belege, obwohl es dafür naturgemäß
+nie einen Beleg geben kann.
+
+### Was das für dich ändert
+
+Die Liste "fehlende Belege" ist von **123 Positionen über 8.581 Euro** auf **9 Positionen über
+709 Euro** geschrumpft. Der Rest war nie weg.
+
+### Unter der Haube
+
+Acht Regressionstests, die jeden dieser Fehler festnageln. Läuft einer davon rot, ist der Fehler
+zurück — und ich merke es, bevor du es merkst.
+
+---
+
+## v1.169.0 — Deine Belege liegen jetzt nach Monaten (2026-08-16)
+
+### Was neu ist
+
+**Der ganze Bestand ist von Quartalen auf Monate umsortiert.**
+
+Bisher lagen deine Belege in Quartalsordnern (`2025-Q1`), neue kommen seit Kurzem monatlich.
+Ein gemischter Bestand ist unübersichtlich: für dieselbe Rechnung musstest du je nach Alter
+an zwei verschiedenen Stellen suchen.
+
+Jetzt liegt alles einheitlich nach Monat. 1.017 Belege sind umgezogen, keiner blieb zurück.
+
+**Wie ich sichergestellt habe, dass dabei nichts kaputtgeht:**
+
+Zu jedem Beleg gehört ein Eintrag in einem Verzeichnis — daran erkenne ich, ob er schon
+gebucht ist. Reißt diese Verbindung beim Verschieben, gilt eine bezahlte Rechnung wieder als
+offen und könnte ein zweites Mal gebucht werden. Deshalb prüfe ich vor **und** nach jedem
+Umzug, dass jeder Eintrag noch seinen Beleg findet: 1.299 Einträge, alle in Ordnung.
+
+Dazu: nichts wird gelöscht, nichts überschrieben. Liegt am Zielort schon eine Datei gleichen
+Namens, halte ich an und frage, statt zu überschreiben. Jede Bewegung steht in einem
+Protokoll und lässt sich rückgängig machen.
+
+### Was besser geworden ist
+
+**Nicht jeder Beleg ist ein PDF.**
+
+Abfotografierte Quittungen liegen als Bilddatei im Bestand — die hatte ich beim ersten
+Durchgang übersehen. Neun Stück wären als einzige im alten Ordner zurückgeblieben, während
+alles andere umgezogen ist. Wer in den Monatsordner geschaut hätte, hätte sie nie gefunden.
+Jetzt ziehen Bilder mit, ebenso alle Begleitdateien eines Belegs.
+
+**Die Merkliste "bitte ansehen" wird nach einem Umzug neu aufgebaut.**
+
+Diese Liste besteht aus Verweisen auf Belege, die deine Aufmerksamkeit brauchen. Nach dem
+Verschieben zeigten sie ins Leere. Sie baut sich selbst neu auf — aber sie tut es nicht von
+allein, der Anstoß muss zum Umzug dazugehören. Ergebnis: 369 Verweise, alle funktionsfähig,
+kein einziger toter.
+
+### Unter der Haube
+
+- Ein Datum wie "2025-13-45" wäre bisher als gültig durchgegangen und hätte einen Ordner
+  "Monat 13" erzeugt — für jede Prüfung unsichtbar. Die Datei läge da, gefunden hätte sie
+  niemand. Der eigene Test fand das, bevor es passieren konnte
+- Beim Sabotieren der Schutzregeln blieb eine folgenlos: eine zweite Regel dahinter fing die
+  Testfälle still mit ab. Zwei Regeln, die sich gegenseitig verdecken, sind zusammen so
+  schwach wie eine. Das ist an einem Tag die dritte Testlücke, die nur durch Sabotage
+  sichtbar wurde
+- Sonderordner (Dubletten, aussortierte Post, Kontoauszüge) bleiben unberührt — sie sind
+  nicht nach Zeitraum sortiert und behalten ihre Bedeutung
+- 31 Kanarien laufen, keine rot
+
+### Wissensstand
+2026-08-16
+
+---
+
+## v1.169.0 — Ich schaue jetzt zuerst aufs Konto, nicht auf den Belegstapel (2026-08-16)
+
+### Was besser geworden ist
+
+**Ich habe die Reihenfolge umgedreht — und dabei einen Fehler bei mir selbst gefunden.**
+
+Bisher bin ich vom Belegstapel ausgegangen: Beleg nehmen, passende Zahlung suchen. Das klingt
+richtig, führt aber in die Irre. Bei neun Werbe-Rechnungen habe ich gemeldet, es gäbe keine
+passende Kontobewegung — vermutlich per Kreditkarte bezahlt. Beides war falsch.
+
+Die Zahlungen standen längst auf dem Konto. Nur eben unter einem anderen Namen: Auf dem
+Kontoauszug steht nicht der Anbieter, sondern sein Zahlungsdienstleister. Ich hatte nur nach dem
+Anbieternamen gesucht — ein einziges Merkmal, und schon war der Befund falsch.
+
+Schlimmer: Die Zahlungen waren **schon gebucht**. Für denselben Vorgang lagen zwei Dokumente vor
+— eine Zahlungsbestätigung und eine Rechnung. Hätte ich die Rechnungen zusätzlich gebucht, wären
+deine Werbekosten doppelt in den Büchern gelandet.
+
+**Was ich jetzt anders mache:**
+
+Ich frage zuerst: *Welche Abbuchung auf deinem Konto hat noch keinen Beleg?* Das ist die
+Arbeitsliste. Alles andere ist meistens überflüssig — oder eine Dublette.
+
+Beim Zuordnen prüfe ich jetzt alle verfügbaren Merkmale statt nur eines: Referenznummer (die
+steht oft nur im Dateinamen), Betrag, Zeitfenster, Anbietername **und** seine bekannten
+Kontoauszug-Schreibweisen. Vor jeder Buchung läuft zusätzlich eine Dublettenprüfung: Ist derselbe
+Betrag in den Tagen davor oder danach schon gebucht? Dann buche ich nicht, sondern frage nach.
+
+Geldtransit und deine eigenen Privatentnahmen sind davon ausgenommen — die brauchen keinen
+Fremdbeleg.
+
+### Neu für dich
+
+**Ein Bericht, der zeigt wo Belege fehlen.** Gruppiert nach Anbieter, mit Summe und Jahr — damit
+du in einem Portal-Besuch gleich mehrere Belege holen kannst statt einzeln zu suchen.
+
+### Unter der Haube
+
+Zwei Messfehler in meiner eigenen Prüfung behoben: Das Zeitfenster war zu eng (eine Rechnung mit
+33 Tagen Zahlungsziel galt fälschlich als unbelegt), und ein einzelner Beleg konnte mehrere
+gleich hohe Abbuchungen "erklären" und damit echte Lücken verstecken. Jeder Beleg zählt jetzt nur
+einmal.
+
+---
+
+## v1.168.0 — Fehlgeschlagene Zahlungen sind kein Aufwand (2026-08-16)
+
+### Was neu ist
+
+**Ich erkenne jetzt Mails über fehlgeschlagene Zahlungen.**
+
+Wenn eine Abbuchung scheitert, schickt der Anbieter eine Mail: Firmenname, Betrag, Datum —
+sie sieht aus wie eine Rechnung und wurde bisher auch so erfasst. Nur ist nie Geld geflossen.
+Als Ausgabe gebucht wären das erfundene Kosten und eine Vorsteuer, die dir nicht zusteht.
+
+Bei einem Nutzer fand ich sechs solcher Belege über zusammen 234 Euro. Einer davon war
+besonders heimtückisch: eine Mail mit einem Bestätigungscode, bei der der **Code selbst als
+Betrag gelesen** wurde — aus "101509" wurden 10,15 Euro.
+
+Wichtig ist mir dabei die Formulierung "Ihre Rechnung über 49 Euro konnte nicht abgebucht
+werden". Die enthält das Wort Rechnung und alle Beträge — und galt vorher als buchbarer
+Beleg. Jetzt gewinnt der Fehlschlag.
+
+Umgekehrt passe ich auf, dass eine echte Rechnung nicht aussortiert wird, nur weil sie eine
+frühere Fehlbuchung erwähnt ("Ihre letzte Zahlung schlug fehl, dieser Betrag wurde
+erfolgreich eingezogen"). Diese Richtung ist die gefährlichere: eine zu Unrecht
+weggeworfene Betriebsausgabe fällt niemandem auf, weil man sie nie gesehen hat.
+
+**Der Unterschied zu "Beleg fehlt" ist praktisch, nicht theoretisch.** Fehlt nur die
+Rechnung, kannst du sie beim Anbieter nachfordern. Ist die Zahlung fehlgeschlagen, gibt es
+keine — dich darauf anzusetzen wäre eine Jagd nach etwas, das nicht existiert.
+
+### Was besser geworden ist
+
+**Nachträge laufen jetzt gut viermal so schnell.**
+
+Das Nachtragen fehlender Beleg-Beschreibungen lief bisher strikt nacheinander: 8 Sekunden
+pro Beleg. Jetzt arbeiten mehrere gleichzeitig — gemessen 1,9 Sekunden. Aus 48 Minuten
+werden rund 10.
+
+Das ist bewusst nur hier erlaubt: Dieser Vorgang schreibt nichts, was mehrere Belege sich
+teilen — keine Buchung, kein Verzeichnis, keine Abgleichsliste. Beim eigentlichen Buchen
+bleibt alles streng nacheinander, weil dort ein Zwischenstand geteilt wird und eine
+Doppelbuchung entstehen könnte.
+
+**Eine Prüfung war nie im Testlauf angemeldet.**
+
+Die Prüfung "ist das überhaupt eine Rechnung?" hatte eigene Tests — aber niemand startete
+sie. Ein Test, den man nicht ausführt, meldet keinen Rückfall. Jetzt läuft er bei jedem
+Durchgang mit.
+
+### Unter der Haube
+
+- Beim absichtlichen Sabotieren der neuen Regel blieben zunächst alle Tests grün: der
+  Testfall enthielt zwar das Wort "fehlgeschlagen", aber keine der Formulierungen, auf die
+  die Regel wirklich reagiert. Er prüfte also nichts. Das ist an einem Tag die zweite
+  Testlücke, die nur so sichtbar wurde
+- Eine erste Geschwindigkeitsmessung ergab nur den Faktor 1,1 — sie lief über einen
+  Durchgang mit sieben Scheinfehlern und war damit wertlos. Erst der saubere Lauf zeigte 4,2
+- 30 Kanarien laufen, keine rot
+
+### Wissensstand
+2026-08-16
+
+---
+
+## v1.167.0 — Belege ohne Beschreibung, und ein Datum aus drei Quellen (2026-08-16)
+
+### Was neu ist
+
+**Ich trage fehlende Beleg-Beschreibungen nach.**
+
+Zu jedem Beleg gehört bei mir eine kleine Beschreibungsdatei: was steht drauf, welcher
+Anbieter, welcher Betrag, welches Datum. Ohne sie ist ein Beleg für mich halb unsichtbar —
+er liegt zwar im Ordner, taucht aber in keiner Prüfung auf und lässt sich nicht buchen.
+
+Bei einem Nutzer fehlte diese Datei bei 459 PDFs. Ursache: sie kamen über Wege in die
+Ablage, die keine Texterkennung fahren — von Hand kopiert, aus einem Portal geladen oder
+noch von einer alten Version abgelegt. Gemeldet hat das nie jemand, weil niemand nach einer
+Datei sucht, von der er nicht weiß, dass sie fehlen müsste.
+
+Das neue Werkzeug liest diese Belege nach und legt die Beschreibung daneben. **Es rührt die
+PDFs selbst nicht an** — nicht verschieben, nicht umbenennen, nicht löschen. Das ist wichtig,
+weil ein Teil davon längst gebucht ist: die dürfen ihren Platz nicht verlieren.
+Kontoauszüge lässt es aus, die sind kein Buchungsbeleg.
+
+**Das Belegdatum kommt jetzt aus drei Quellen statt einer.**
+
+Ein Datum bestimmt, in welchen Umsatzsteuer-Zeitraum ein Beleg gehört. Bisher verließ ich
+mich auf die Texterkennung allein. Neu vergleiche ich drei Angaben:
+
+- was im PDF-Text steht (der Aussteller hat es geschrieben — stärkstes Signal)
+- was die Texterkennung gelesen hat
+- was im Dateinamen steht (schwächstes Signal — der stammt oft vom Download, nicht vom Beleg)
+
+Sind sich die starken Quellen einig, buche ich ohne Rückfrage. **Widersprechen sie sich,
+entscheide ich nicht** — dann bekommst du den Beleg vorgelegt, mit beiden Daten im Klartext.
+Ein still gewählter Monat wäre eine Buchung auf Verdacht.
+
+Beim Lesen aus dem PDF-Text nehme ich außerdem nur, was ausdrücklich als Rechnungsdatum
+gekennzeichnet ist. Auf einer Rechnung stehen schnell fünf Daten — Fälligkeit, Lieferung,
+Abbuchungstag, Druckdatum. Wer einfach das erste nimmt, erwischt meist das falsche.
+
+### Was besser geworden ist
+
+**Belege, die sich selbst widersprochen haben.**
+
+Der erste Entwurf setzte still das Datum aus dem Dateinamen ein, wenn die Texterkennung
+nichts fand. Das Ergebnis war eine Beschreibungsdatei, die zugleich ein Datum trug **und**
+behauptete, das Datum fehle. Aufgefallen ist es bei der ersten Stichprobe von drei Belegen.
+
+Ein Beleg, der behauptet, sein Datum fehle, obwohl eines drinsteht, ist gefährlicher als
+einer ganz ohne Datum: dem ersten glaubt man, den zweiten prüft man. Jetzt steht bei jedem
+Datum dabei, aus welcher Quelle es stammt.
+
+### Unter der Haube
+
+- Neues Prüfmodul für den Datums-Abgleich mit 20 Selbsttests
+- Beim Sabotieren des Moduls fiel eine Lücke in den eigenen Tests auf: der gefährlichste
+  Fall — Texterkennung und PDF-Text widersprechen sich — war gar nicht geprüft. Alle Tests
+  blieben grün, obwohl die Schutzregel entfernt war. Lücke geschlossen, jetzt sterben drei
+  Tests bei derselben Sabotage
+- Ein Analyse-Werkzeug meldete zunächst "0 Belege gefunden" — es suchte an einem falsch
+  zusammengesetzten Pfad. Ein Nullbefund aus einem kaputten Pfad sieht aus wie ein Ergebnis
+- 29 Kanarien laufen, keine rot
+
+### Wissensstand
+2026-08-16
+
+---
+
+## v1.166.0 — Zahlungen ohne Rechnung, Rechnungen ohne Zahlung (2026-08-16)
+
+### Was neu ist
+
+**Ich erkenne jetzt Zahlungen, die vor der Rechnung kamen.**
+
+Wenn du einen Zahlungslink verschickst, zahlt der Kunde sofort — die Rechnung schreibst du
+danach. Für dich ist das ein Vorgang. Für die Buchhaltung sahen es bisher zwei aus: eine
+Zahlung ohne Rechnung und eine Rechnung, die als "außerhalb bezahlt" markiert ist und keinen
+Zahlungsbezug trägt. Ich konnte beides nicht zusammenbringen und habe die Rechnungen liegen
+lassen. Bei einem Nutzer waren das über 2.000 Euro echter Umsatz, die im Jahresergebnis
+fehlten.
+
+Jetzt führe ich beide Seiten zusammen — aber nur, wenn es eindeutig ist. Stehen drei
+Rechnungen über denselben Betrag nur zwei Zahlungen gegenüber, ordne ich **keine einzige** zu
+und lege dir alle drei vor. Das ist der Punkt, an dem der erste Entwurf noch falsch lag: er
+hätte die beiden erstbesten bedient und die dritte leer ausgehen lassen — und welche das
+gewesen wäre, hätte allein die Reihenfolge entschieden, in der die Daten ankommen. Bei Geld
+ist "die erste" kein Argument.
+
+**Ich prüfe jetzt, ob dein Geld wirklich auf dem Konto ist.**
+
+Bisher konnte ich sagen: die Zahlung ist bei deinem Zahlungsdienstleister eingegangen. Das ist
+nicht dasselbe wie "auf deinem Bankkonto". Neu rechne ich das Guthabenkonto Bewegung für
+Bewegung nach und vergleiche das Ergebnis mit dem echten Kontostand. Stimmen beide auf den
+Cent überein, weiß ich zweierlei: es fehlt keine Bewegung, und ich kann dir sagen, bis zu
+welchem Tag alles ausgezahlt ist. Erst bis zu diesem Tag buche ich.
+
+**Fehlende Gebühren-Belege lege ich selbst an.**
+
+Die Monatsbelege für die Transaktionsgebühren musstest du bisher von Hand anlegen — es gab
+schlicht kein Werkzeug dafür. Fehlte einer, meldete das auch niemand: es sucht ja keiner nach
+einem Beleg, den es nie gab. Bei einem Nutzer fehlten zwei Monate. Ich lege sie jetzt selbst
+an, den laufenden Monat bewusst nicht, und nie zweimal denselben.
+
+### Was besser geworden ist
+
+**Eine Umbuchung, die immer "nichts zu tun" meldete.**
+
+Die Auszahlungen deines Zahlungsdienstleisters sollen automatisch mit den Eingängen auf deinem
+Bankkonto verknüpft werden. Diese Funktion hat nie einen einzigen Treffer gefunden — sie las
+das Ankunftsdatum aus einem Feld, das es gar nicht gibt. Das Ergebnis war kein Fehler, sondern
+eine ruhige Null: "0 Umbuchungen". Sah aus wie ein sauberes Ergebnis. Jetzt werden die
+Eingänge zugeordnet; bei einem Nutzer waren es vier über zusammen 2.014,79 Euro.
+
+**Eine Prüfung, die den falschen Monat durchsucht hat.**
+
+Wird eine Rechnung nachträglich geschrieben, trägt sie beim Zahlungsdienstleister das Datum
+der Rechnungserstellung als Zahlungszeitpunkt — nicht den Tag, an dem das Geld floss. Meine
+Monatsprüfung suchte deshalb Julizahlungen im August, fand im Juli nur eine stornierte
+Rechnung und blockierte den Gebühren-Beleg mit "kein Umsatz". Ein Fehlalarm auf einem korrekt
+gebuchten Monat. Jetzt zählt der Tag des Geldflusses.
+
+**Stornierte Doppel-Rechnungen blockieren nichts mehr.**
+
+Eine versehentlich doppelt ausgestellte und danach gutgeschriebene Rechnung ist kein Umsatz —
+es floss nie Geld. Sie hätte trotzdem die Zuordnung der echten Rechnungen blockiert, weil sie
+die Zahl der offenen Rechnungen verfälscht. Solche Belege lasse ich jetzt außen vor und sage
+dir, welche das waren.
+
+### Unter der Haube
+
+- Zwei neue Prüfmodule mit zusammen 25 Selbsttests: Guthaben-Kette (12) und Zahlungs-Nachweis (14)
+- Ein weiteres für die Gebühren-Monatsbelege (11 Selbsttests), geprüft gegen drei bereits
+  gebuchte Monate — alle drei auf den Cent identisch
+- Alle drei Module absichtlich sabotiert, um zu beweisen, dass die Tests den Schaden auch
+  wirklich melden: fünf Tests sterben, sobald die Eindeutigkeitsprüfung entfernt wird
+- Gebühren-Belege folgen §13b (Netto gleich Brutto, kein Steuersatz) — ein gesetzter
+  Steuersatz hätte 39,62 Euro zu 47,15 Euro gemacht
+- 28 Kanarien laufen, keine rot
+
+### Wissensstand
+2026-08-16
+
+---
+
+## v1.165.0 — Einnahmen buchen, und eine Prüfung, die nur so tat als ob (2026-08-16)
+
+### Was neu ist
+
+**Ich kann jetzt auch Einnahmen mit deinem Kontoeingang verknüpfen.**
+
+Das klingt selbstverständlich, war es aber nicht: Bisher konnte ich nur Ausgaben zuordnen.
+Deine eigenen Rechnungen blieben als Entwurf liegen, auch wenn das Geld längst da war — und
+Entwürfe zählen in keiner Auswertung mit. Bei einem Nutzer waren das über 1.700 Euro echter,
+belegter Einnahmen, die deshalb im Jahresergebnis fehlten.
+
+Ab jetzt ordne ich sie zu. Vorsichtig: Ich verlange, dass deine Rechnungsnummer im
+Verwendungszweck steht oder wenigstens der Kundenname passt, dass Betrag und Zeitraum
+stimmen — und dass es **genau eine** passende Zahlung gibt. Zahlen zwei Kunden am selben Tag
+denselben Betrag, ordne ich nichts zu, sondern lege beide zur Ansicht vor. Raten wäre hier
+eine Zuordnung zum falschen Kunden.
+
+Neu ist auch das längere Zeitfenster: Ausgaben werden abgebucht, da vergehen Tage. Deine
+Rechnungen haben ein Zahlungsziel, da vergehen Wochen. Ich schaue jetzt bis zu 30 Tage weit.
+
+### Was besser geworden ist
+
+**Eine Prüfung hat gemeldet "alles in Ordnung", ohne irgendetwas geprüft zu haben.**
+
+Das ist der wichtigere Teil dieser Version. Vor dem Buchen der Zahlungsdienstleister-Gebühren
+prüfe ich, ob die Zahlungen des Monats vollständig nachvollziehbar sind. Diese Prüfung lief
+über eine Liste — und wenn die Liste leer war, meldete sie "vollständig". Nicht, weil alles
+stimmte, sondern weil es nichts zu prüfen gab.
+
+Genau das ist bei zwei Monaten passiert. Die Gebühren wären gebucht worden, ohne dass eine
+einzige Zahlung angesehen wurde.
+
+Ich unterscheide jetzt zwei verschiedene Dinge, die vorher vermischt waren:
+**"geprüft und in Ordnung"** und **"konnte gar nicht prüfen"**. Das Zweite ist kein grünes
+Licht mehr, sondern landet bei dir zur Ansicht — mit dem konkreten Grund, statt eines
+pauschalen Hinweises.
+
+**Auszahlungen, die dein Zahlungsdienstleister nicht aufschlüsselt.**
+
+Wenn du Auszahlungen manuell auslöst statt automatisch, verrät Stripe nachträglich nicht mehr,
+welche Kundenzahlungen darin steckten. Ich rechne das jetzt nach, wo es eindeutig geht.
+
+Ehrlich zur Grenze: Ich habe das gegen vier Auszahlungen geprüft, deren wahre Zusammensetzung
+bekannt war. **Zwei konnte ich exakt rekonstruieren, zwei nicht.** Wo viele Cent-Beträge
+zusammenkommen, gibt es zu viele rechnerisch passende Möglichkeiten — dann sage ich das, statt
+mir eine auszusuchen. Für eine vollständige Zuordnung führt der Weg über das Stripe-Dashboard
+oder über die Umstellung auf automatische Auszahlungen.
+
+### Unter der Haube
+
+- Neu: `system/_lib/match-revenue.mjs` + `tools/sevdesk-connector/match-revenue.mjs`
+  (Einnahmen-Zuordnung, Probelauf als Standard, Rückabwicklung vorhanden, Kontrolllesung
+  nach jeder Buchung)
+- Neu: `system/_lib/payout-kette.mjs` (Auszahlungs-Rekonstruktion mit harter
+  Eindeutigkeitsregel)
+- Repariert: das Monats-Gate in `stripe-clearing.mjs` — leere Prüfliste gilt nicht mehr
+  als bestandene Prüfung
+- 30 neue automatische Tests, darunter vier Sabotage-Proben: absichtlich kaputt gemachte
+  Schutzregeln müssen auffallen. Der gesamte Testlauf steht bei 25 grün, 0 rot.
+
+### Wissensstand
+
+2026-08-16
+
+---
+
+## v1.164.0 — Brauche ich überhaupt einen Steuerberater? (2026-08-16)
+
+### Was neu ist
+
+Ich habe eine neue Wissensseite dabei: **wie deine fertige Buchhaltung tatsächlich ans
+Finanzamt kommt** — einmal komplett selbst, einmal über den Steuerberater. Für
+Einzelunternehmer mit EÜR. Für GmbH und UG gab es das schon, jetzt ist die andere Seite da.
+
+Frag mich einfach: *"Wie reiche ich das ein?"* oder *"Brauche ich meinen Steuerberater noch?"*
+
+### Der Satz, der die meiste Verwirrung auflöst
+
+**Deine Buchhaltung wird nirgendwo abgeschickt.** Ans Finanzamt gehen nur ausgefüllte
+Formulare. Ein DATEV-Export ist kein Einreichen — er ist eine Datei für deinen
+Steuerberater. Wer "DATEV-konform exportiert" hat damit noch gar nichts abgegeben.
+
+### Was du selbst darfst
+
+Mehr als die meisten denken: **für deine eigene Buchhaltung gibt es keinen Vorbehalt.**
+Kontieren, abschließen, EÜR erstellen, selbst einreichen — alles erlaubt. Das
+Steuerberatungsgesetz verbietet nur, so etwas *geschäftsmäßig für andere* zu tun.
+
+Genau deshalb halte ich mich beim Festschreiben zurück: **ich** wäre der Dritte, nicht du.
+
+### Was drin steht
+
+- Welche Formulare du als EÜR-Einzelunternehmer überhaupt abgeben musst (und welche
+  komplett wegfallen — keine Bilanz, keine Offenlegung)
+- Der Weg Schritt für Schritt: was sevDesk selbst sendet und was du in Mein ELSTER eintippst
+- Was beim Steuerberater mechanisch passiert, wenn er deinen Export bekommt
+- Was ein Steuerberater kann, das keine Software kann — ehrlich, ohne Schönfärberei
+- **Die längere Abgabefrist** mit Steuerberater: statt sieben Monaten hast du bis Ende
+  Februar des übernächsten Jahres
+
+### Eine Zahl korrigiert
+
+Die Grenze, ab der das Finanzamt dich von der Umsatzsteuer-Voranmeldung befreien kann,
+liegt bei **2.000 Euro** Zahllast im Vorjahr — nicht bei 1.000. Ich hatte den älteren Wert
+notiert. Und: das Finanzamt *kann* befreien, es *muss* nicht. Unter der Grenze zu liegen
+heißt noch nicht, befreit zu sein.
+
+### Wissensstand
+
+Alle Gesetzesstellen (§5 StBerG, §18 UStG, §149 AO) liegen wortgetreu aus dem amtlichen
+Text vor und werden bei jeder Änderung maschinell gegengeprüft.
+
+---
+
+## v1.163.0 — Rechnungsportale: der schnelle Weg wird jetzt auch genutzt (2026-08-16)
+
+### Was sich ändert
+
+Wenn ich Rechnungen aus einem Anbieter-Portal hole, gehe ich ab sofort **zuerst den
+direkten Weg**, falls der Anbieter einen anbietet. Vorher habe ich immer die Webseite
+durchsucht — auch dann, wenn es schneller und zuverlässiger ging.
+
+Für dich ändert sich nichts an der Bedienung. Der Unterschied zeigt sich nur, wenn etwas
+schiefgeht.
+
+### Warum das wichtig ist
+
+Bisher konnte folgendes passieren: Ich suche im Portal nach Rechnungen, finde die Liste
+nicht (weil der Anbieter seine Seite umgebaut hat) und melde **"Portal nicht erreichbar —
+vermutlich abgemeldet"**. Das klang nach einem Login-Problem. In Wahrheit gab es einen
+funktionierenden zweiten Weg, den ich nur nicht genutzt habe.
+
+Das Ergebnis wäre gewesen: **"Beleg fehlt"** — obwohl er abrufbar war. Und ein Beleg, den
+du nicht hast, ist Vorsteuer, die du nicht ziehen kannst.
+
+Jetzt gilt: erst der direkte Weg, und nur wenn der nicht klappt, die Webseiten-Suche. Wenn
+beides scheitert, sage ich dir dazu, dass ein schnellerer Weg existiert und was ihm fehlt —
+statt eine falsche Ursache zu nennen.
+
+### Was gleich bleibt
+
+- **Die Dublettensperre.** Vor jedem Download prüfe ich weiterhin, ob der Beleg schon im
+  Haus liegt — beide Wege laufen durch dieselbe Prüfung.
+- **Der Login bleibt bei dir.** Passwort und 2FA gebe ich nie ein und sehe sie nie.
+- **Anbieter ohne direkten Weg** (aktuell 30 von 31) verhalten sich exakt wie vorher.
+- **Eine abgelaufene Anmeldung wird erkannt.** Portale antworten dann gern mit einer
+  Login-Seite statt mit Daten — früher hätte das ausgesehen wie "keine Rechnungen
+  vorhanden". Ich prüfe jetzt, ob echte Daten kamen, und sage dir sonst Bescheid.
+
+### Unter der Haube
+
+- `portal-fetch.mjs`: neues Kommando `liste` (nur lesend, läuft im selben abgesicherten
+  Browser-Fenster wie bisher — kein zweiter Netzwerkweg an den Schutzmechanismen vorbei).
+- `portal-runde.mjs`: nutzt den direkten Weg vor der Webseiten-Suche, fällt bei jedem
+  Problem automatisch zurück. Die Begrenzung `--max` wirkt jetzt in beiden Wegen.
+- 10 neue automatische Tests für das Auslesen der Rechnungsliste (24 insgesamt, alle grün).
+
+---
+
+## v1.162.0 — Belege liegen jetzt nach Monat statt nach Quartal (2026-08-16)
+
+### Was sich ändert
+
+Neue Belege werden ab sofort **nach Monat** abgelegt:
+
+```
+2 BELEGE (gelesen, noch zu buchen)/
+   2026/
+      2026-03/     ← neu: ein Ordner je Monat
+      2026-04/
+```
+
+Vorher lagen sie in Quartalsordnern (`2026-Q1`). **Deine bestehenden Ordner bleiben, wie sie
+sind** — es wird nichts verschoben und nichts umbenannt. Bruno liest beide Formen.
+
+### Warum
+
+Drei Gründe, der wichtigste zuerst:
+
+**Monate lassen sich zusammenfassen, Quartale nicht auseinandernehmen.** Aus zwölf
+Monatsordnern ist jede Quartals- oder Jahressicht ableitbar. Andersherum müsste man jeden
+Beleg einzeln anfassen.
+
+**Dein Melderhythmus kann sich mitten im Jahr ändern.** Steigt deine Umsatzsteuer-Zahllast über
+7.500 € im Vorjahr, wird aus der vierteljährlichen Voranmeldung eine monatliche (§18 Abs. 2
+UStG). Bei einer Neugründung sind die ersten beiden Jahre ohnehin monatlich. Eine Ablage, die
+am Rhythmus hängt, müsste dann umziehen — eine Monatsablage nie.
+
+**Bei einer Betriebsprüfung wird nach einem Monat gefragt**, nicht nach einem Quartal.
+
+Willst du ausdrücklich bei Quartalen bleiben, geht das weiterhin: `--period=quarter`.
+
+### Ein Fehler, der dabei aufgefallen ist
+
+Beim Umbau kam heraus, dass drei Stellen im Code das Quartalsformat fest eingebaut hatten —
+darunter der nächtliche Buchungslauf. Mit Monatsordnern hätte er **keinen einzigen Beleg
+gefunden und trotzdem „erfolgreich" gemeldet.** Ein Lauf, der still nichts tut, ist schlimmer
+als einer, der abbricht: man merkt es erst Wochen später.
+
+Die Erkennung liegt jetzt an einer einzigen zentralen Stelle, abgesichert durch 32 automatische
+Prüfungen. Darunter Fälle, die absichtlich **nicht** greifen dürfen: Ordner wie „Kontoauszüge"
+oder „zur Ansicht" dürfen nie als Buchungsmonat gelesen werden — sonst wanderten Belege, die
+bewusst zur Prüfung geparkt sind, in einen Buchungslauf.
+
+### Beim Einrichten
+
+Bruno fragt jetzt ausdrücklich nach deinem Voranmeldungs-Rhythmus (monatlich, vierteljährlich,
+jährlich) und trägt ihn fest ein. Daran hängen die Fristen-Erinnerungen. Weißt du ihn nicht,
+bleibt er offen und du klärst ihn mit deinem Steuerberater — geraten wird er nicht.
+
+---
+
+## v1.160.0 — Erst nachsehen, ob der Beleg schon da ist (2026-08-16)
+
+### Das Problem
+
+Bruno führt zwei Listen über deine Belege: die Dateien selbst und ein Verzeichnis dazu. Beim
+Prüfen, ob eine Rechnung noch fehlt, schaute er nur ins Verzeichnis.
+
+Das ging lange gut — bis auffiel, wie weit die beiden auseinanderliegen: **2.068 Belege liegen
+im Haus, nur 1.298 stehen im Verzeichnis.** 770 Belege waren damit für jede Prüfung unsichtbar.
+Sie liegen in Sammelordnern wie „zur Ansicht" oder „aussortiert", für die gar kein Verzeichnis
+geführt wird.
+
+Die Folge: Rechnungen galten als fehlend, obwohl sie längst da waren. Zwei davon wären beinahe
+ein zweites Mal aus dem Anbieter-Portal geholt worden — eine davon war sogar schon gebucht.
+Ein zweiter Beleg derselben Rechnung ist gefährlich: er kann zu einer Doppelbuchung führen.
+
+### Die Lösung
+
+Vor jeder Beschaffung schaut Bruno jetzt in die **Dateien** — durch alle Unterordner hindurch,
+egal ob ein Verzeichnis geführt wird oder nicht. Am eigenen Bestand gemessen stieg damit die
+Zahl der erkannten Belege von 1.298 auf **2.319**. Beide Beinahe-Dubletten werden zuverlässig
+erkannt.
+
+Zusätzlich gilt jetzt eine feste Reihenfolge, bevor überhaupt ein Portal geöffnet wird:
+
+| Stufe | Frage |
+|---|---|
+| **0** | Liegt der Beleg schon auf der Platte? |
+| 1 | Gibt es eine Schnittstelle beim Anbieter? |
+| 2 | Kam er per Mail? |
+| 3 | Erst dann: Portal im Browser |
+
+### Was du davon hast
+
+Kein doppelt geholter Beleg und keine unnötigen Portal-Logins. Und wenn Bruno sagt „diese
+Rechnung fehlt", dann fehlt sie wirklich — vorher konnte es auch heißen, dass sie nur in einem
+Ordner ohne Verzeichnis lag.
+
+### Unter der Haube
+
+- Drei neue Prüf-Kanarien, die genau diesen Fall festhalten: ein Beleg in einem Ordner ohne
+  Verzeichnis, und ein Beleg zwei Ebenen tief in der Ordnerstruktur.
+- Ein Fehlalarm in dieser Prüfung ist bewusst harmlos: die Folge ist „nicht holen", und eine
+  echte Lücke meldet ohnehin der Gesundheits-Check. Die umgekehrte Richtung — holen, obwohl
+  vorhanden — ist die teure.
+
+---
+
+## v1.158.0 — „Keine Rechnungen gefunden" war oft nur der falsche Zeitraum (2026-08-16)
+
+### Das Problem
+
+Viele Anbieter-Portale zeigen von sich aus nur einen kurzen Zeitraum: Meta die letzten sieben
+Tage, andere den letzten Monat. Wer eine Rechnung von vor einem halben Jahr sucht, sieht dort
+eine leere Liste — und die bedeutet nicht „gibt es nicht", sondern „nicht in diesem Fenster".
+
+Bruno wusste das und hatte es sogar notiert. Nutzen konnte er es trotzdem nicht: der Befehl, der
+die Rechnungsliste ausliest, rief immer die Startseite des Portals auf. Ein Zeitraum ließ sich
+gar nicht mitgeben.
+
+Ergebnis: eine Fehlanzeige, die wie ein Befund aussah.
+
+### Die Lösung
+
+Der Zeitraum lässt sich jetzt mitgeben. Die Sicherheitsgrenze bleibt unverändert — aufgerufen
+werden ausschließlich Adressen des hinterlegten Anbieters, alles andere wird abgewiesen.
+
+### Was du davon hast
+
+Ein leeres Ergebnis heißt ab jetzt wirklich „keine Rechnung da". Vorher konnte es auch heißen
+„falsches Fenster" — und eine fehlende Rechnung, die als „gibt es nicht" abgehakt wird, fällt
+erst beim Steuerberater auf.
+
+---
+
+## v1.156.0 — Belege beschaffen, ohne dieselben nochmal zu holen (2026-08-16)
+
+### Das Problem
+
+Wenn eine Rechnung fehlt, sagt Bruno dir, in welchem Anbieter-Portal sie liegt. Nur fand er
+das Portal oft nicht — obwohl es seit Monaten eingetragen war.
+
+Grund: Die Bank schreibt Anbieternamen mit Sternchen, Bindestrichen und angehängten
+Referenznummern. Der Registry-Eintrag steht dort in normaler Schreibweise. Verglichen wurde
+Zeichen für Zeichen, also passte nichts zusammen. Sechs Buchungen desselben Cloud-Anbieters
+liefen so ins Leere.
+
+Sichtbar wurde es an der Registry selbst: derselbe Anbieter stand zweimal drin, einmal mit
+und einmal ohne Bindestrich. Statt den Vergleich zu reparieren, hatte jemand die Schreibweise
+nachgetragen.
+
+### Die Lösung
+
+Beide Namen werden vor dem Vergleich auf ihre Buchstaben und Ziffern reduziert. Aus
+„NAME-CHEAP.COM* UYUWOP" und „namecheap" wird dieselbe Form — der Treffer sitzt.
+
+Kurze Namen bleiben streng: „Apple" darf nicht in „Pineapple Studios" treffen, „DHL" nicht in
+einem beliebigen Wort. Ein Falsch-Treffer wäre teurer als ein verpasster, denn er schickt die
+Beschaffung auf ein **fremdes** Portal. Zwölf Prüfungen bestehen ausschließlich darin, genau
+das zu verhindern.
+
+Gemessen am eigenen Bestand: von 70 Kontobewegungen ohne Beleg finden jetzt **52** ihr Portal
+statt vorher 23.
+
+### Nur holen, was wirklich fehlt
+
+Neu ist eine Portal-Runde, die vor dem Herunterladen abgleicht, welche Rechnung schon im Haus
+ist. Am eigenen Bestand gemessen: 51 Rechnungen im Portal, 50 bereits im Archiv — genau **eine**
+war zu holen. Vorher hätte das 51 Abrufe bedeutet.
+
+Der Abgleich schaut dabei bewusst über **alle** Anbieter, nicht nur den gesuchten. Bei
+Marktplätzen trägt ein Beleg oft den Händler statt des Rechnungsstellers — wird danach
+gefiltert, gilt ein vorhandener Beleg als fehlend und wird ein zweites Mal geholt. Genau so
+entstand am 15.08. eine Dublette.
+
+### Drei neue Anbieter-Portale
+
+Drei Anbieter aus deinen offenen Kontobewegungen haben jetzt einen Eintrag, jeder mit
+belegter Adresse aus der offiziellen Hilfe des Anbieters. Fünf weitere bleiben bewusst leer:
+dort ließ sich keine Adresse belegen, und geraten wird hier nicht — der Report sagt dann
+ehrlich „Portal unbekannt".
+
+### Unter der Haube
+
+- 36 neue Prüf-Kanarien (24 für die Namensauflösung, 12 für den Abgleich).
+- Rechnungsnummern liefen im Portal-Lauf ungefiltert über die Konsole und wären auch im
+  stillen Modus im Chat gelandet. Dieselbe Fehlerklasse wie am 15.08. an anderer Stelle —
+  jetzt geschlossen und mit einem Nachweis belegt.
+- Report und Beschaffung nutzen dieselbe Auflösung. Vorher konnte der Report ein Portal
+  anzeigen, das die Beschaffung nicht fand.
+
+---
+
+## v1.161.0 — Der Betrag steht nicht immer in einer Summenzeile (2026-08-16)
+
+### Was dazugekommen ist
+
+Die Erkennung „Datum als Betrag gelesen" (v1.159.0) suchte den richtigen Betrag nur in einer
+Summen**zeile** — „SUMME: EUR 5,90". Vier Belege eines Anbieters nennen ihn aber nur im Fließtext:
+
+```
+Ihre neue Rechnung vom 23.03.2026 über 70,57 EUR liegt für Sie im Control-Center bereit.
+Den offenen Betrag buchen wir am 28.03.2026 von Ihrem Konto ab.
+```
+
+Erfasst wurde `28.03` — wieder der Abbuchungstag. Der richtige Betrag stand im Satz darüber.
+
+Bruno liest jetzt auch solche Formulierungen („Rechnung … über X EUR", „Betrag in Höhe von X EUR").
+Wichtig dabei: die Zahl muss **sprachlich an „Rechnung" oder „Betrag" gebunden** sein. Eine
+beliebige Zahl im Dokument wird nie zum Rechnungsbetrag erklärt — dafür gibt es eine eigene
+Gegenprobe unter den Prüf-Kanarien.
+
+### Die zwölf offenen Fälle sind durchgesehen
+
+| Ergebnis | Anzahl |
+|---|---:|
+| Betrag deterministisch korrigierbar (neu erkannt) | 4 |
+| **keine Rechnung** — Willkommens-Mail, Störungs-Info, Mahnungs-Hinweis, E-Mail-Verkehr | 8 |
+
+Alle acht wurden vom Prüf-Gate ohnehin blockiert — fünf davon, obwohl sie **nicht** als
+prüfbedürftig markiert waren. Genau dafür wurde das Gate diese Woche scharfgeschaltet.
+Der Befund steht jetzt in jedem dieser Belege, damit sie in Berichten sichtbar sind statt
+nur still zu scheitern.
+
+### Ein Nebenbefund
+
+Die vier korrigierten Belege sind **Benachrichtigungen**, keine Rechnungen: „liegt für Sie im
+Control-Center bereit". Betrag und Fälligkeit stimmen, aber Rechnungsnummer und Steuerausweis
+fehlen. Sie sind der Nachweis, *dass* eine Rechnung existiert — nicht die Rechnung selbst.
+Entsprechend vermerkt, die echten Belege kommen aus dem Anbieter-Portal.
+
+---
+
+## v1.159.0 — Wenn der Abbuchungstag als Rechnungsbetrag gelesen wird (2026-08-16)
+
+### Was passiert ist
+
+Auf einer Hosting-Rechnung stand:
+
+```
+SUMME: EUR 5.90
+Der Rechnungsbetrag in Höhe EUR 5,90 wird am 30.01.2025 per Lastschrift eingezogen.
+```
+
+Erfasst wurde als Betrag: **30,01** — der Abbuchungstag. Über acht Monate ergab das die Serie
+30.01 / 30.03 / 30.04 / 30.05 / 30.06 / 30.07 / 30.08 / 30.09. Jeder „Betrag" war exakt der
+Zahltag seines Monats. Statt 47,20 € standen 180,31 € in den Büchern, mit entsprechend
+überhöhter Vorsteuer.
+
+### Warum keine der bestehenden Prüfungen angeschlagen hat
+
+Das ist der interessante Teil. Die Prüfungen waren da und haben korrekt gearbeitet:
+
+- **Betrag im Dokument belegt?** Ja — 30.01 stand im Text. Als Datum.
+- **Rechnen Netto, Steuer und Brutto zusammen?** Ja, in sich stimmig.
+- **Ist das überhaupt eine Rechnung?** Ja, mit allen Pflichtangaben.
+
+Jede Prüfung fragte „steht die Zahl im Dokument?". Keine fragte **„ist diese Zahl der Betrag
+oder ein Datum?"**. Ein plausibler Wert an der falschen Stelle rutscht durch jedes Netz, das nur
+auf Vorhandensein prüft.
+
+### Die Lösung — an drei Stellen, nicht an einer
+
+| Wann | Was passiert |
+|---|---|
+| **Beim Einlesen** | Der Beleg wird sofort zur Prüfung markiert, mit dem richtigen Betrag im Klartext daneben |
+| **Vor dem Buchen** | Das Prüf-Gate blockiert — so ein Beleg kann nicht mehr gebucht werden |
+| **Im Health-Check** | Bereits gebuchte Altfälle werden weiterhin gemeldet |
+
+Der Test ist bewusst eng: Verdacht entsteht nur, wenn der Wert die Form Tag.Monat hat **und**
+dieselbe Zahl im Text als Datum vorkommt **und** das Dokument einen abweichenden Betrag als
+Summe ausweist. Ein echter Betrag von 12,05 € löst keinen Alarm aus, solange die Rechnung ihn
+als Summe nennt — geprüft.
+
+**Nichts wird automatisch überschrieben.** Der Betrag ist die zentrale Zahl einer Buchung; der
+Beleg geht zur Prüfung, mit dem belegten Gegenwert. Korrigieren tut ein Mensch — auf Wunsch mit
+einem Werkzeug, das den Ersatzwert ausschließlich aus der Summenzeile des PDFs zieht, nie aus
+einer Schätzung.
+
+### Was im Bestand gefunden wurde
+
+1.653 Belege durchsucht:
+
+- **8** hart belegte Fälle (alle derselbe Anbieter) — korrigiert, Sicherungskopie je Datei
+- **6** davon lagen bereits als Entwurf im Buchhaltungssystem — entfernt
+- **12** weitere Verdachtsfälle ohne auffindbare Summenzeile — zur Sichtprüfung markiert, **kein**
+  geratener Ersatzwert
+- **31** Treffer auf Kontobenachrichtigungen statt Rechnungen — ohne Buchungswirkung, unangetastet
+
+### Neue Prüf-Kanarien
+
+Siebzehn, darunter zwei Gegenproben: dass ein echter Betrag in Datumsform **nicht** verdächtigt
+wird, und dass derselbe Dokumenttext je nach gelesenem Betrag unterschiedlich beurteilt wird —
+sonst könnte ein Prüfer, der immer „unauffällig" sagt, alle Tests bestehen.
+
+---
+
+## v1.157.0 — Drei Schutzlücken, die beim Buchen aufgefallen sind (2026-08-16)
+
+Gefunden bei einem gewöhnlichen Buchungslauf. Alle drei sind Fälle derselben Sorte: eine Prüfung
+war vorhanden, hat aber nicht gewirkt. Das ist gefährlicher als eine fehlende Prüfung, weil der
+Bericht trotzdem „geprüft" sagt.
+
+### 1. Das Prüf-Gate rechnete, ohne die Buchung stoppen zu können
+
+Vor jeder Buchung laufen fünf Grundregeln: Richtung, Lieferanten-Eindeutigkeit, Steuer-Stimmigkeit,
+Pflichtfelder, Beträge. Ausgewertet wurde davon nur **eine** — die Betragsprüfung. Die anderen vier
+liefen mit, ihr Ergebnis las niemand.
+
+In der Praxis hat das nichts kaputtgemacht, weil davor schon andere Filter greifen. Aber die
+Schranke selbst war offen. Jetzt stoppt **jede** verletzte Regel die Buchung, mit ihrer eigenen
+Begründung im Protokoll.
+
+### 2. Die Vorschau war milder als der Ernstfall
+
+Der Probelauf brach ab, bevor das Prüf-Gate lief — er zeigte deshalb Belege als buchbar, die im
+scharfen Lauf blockiert worden wären. Eine Vorschau, die strenger ist als die Wirklichkeit, ist
+harmlos. Eine, die milder ist, verleitet zur Freigabe. Beide Läufe prüfen jetzt identisch.
+
+### 3. „Nicht gelesen" galt als „0 Prozent"
+
+Bei Rechnungen aus dem Ausland ohne deutsche Umsatzsteuer (Reverse Charge) muss die Rechnung
+0 % ausweisen. Konnte die Texterkennung das Steuerfeld gar nicht lesen, wurde daraus intern eine
+Null — und der Beleg sah aus wie ein sauber ausgewiesener Reverse-Charge-Fall.
+
+Aufgefallen an einer Rechnung, auf der nur „Total $15.00" stand: keine Rechnungsnummer, keine
+Steuerangabe, kein Pflichtbestandteil. Sie wäre als Vorsteuer-Fall durchgelaufen. Ein fehlender
+Wert ist jetzt ein Grund zur Prüfung, kein Nachweis.
+
+### Was du davon hast
+
+Diese drei Lücken betreffen den Kern: **was überhaupt gebucht werden darf.** Sie zu schließen
+heißt, dass die Prüfungen, die es ohnehin gibt, jetzt auch wirken.
+
+---
+
+## v1.156.0 — Doppelbuchung durch einen veralteten Zwischenspeicher (2026-08-16)
+
+### Was passiert ist
+
+Bei einem Buchungslauf wurden vier Belege ein zweites Mal angelegt. Einer der Zwillinge war
+bereits gebucht und mit der Kontobewegung verknüpft.
+
+### Warum
+
+Damit ein Lauf nicht jedes Mal den gesamten Bestand neu lädt, merkt Bruno sich die bereits
+gebuchten Rechnungsnummern für eine Stunde. Am selben Tag kam eine Erweiterung dazu: Belege
+**ohne** Rechnungsnummer (Kassenbons, Portorechnungen) werden seither über Lieferant, Datum und
+Betrag erkannt.
+
+Der gespeicherte Stand stammte aber noch von davor — er kannte nur Rechnungsnummern. Da er
+33 Minuten alt und damit „frisch genug" war, wurde er verwendet. Belege ohne Nummer liefen an der
+Dublettenprüfung vorbei.
+
+Die Stundenfrist schützt gegen **veraltete Daten**. Sie schützt nicht gegen einen **veralteten
+Aufbau** der Daten. Genau diese Lücke hat zugeschlagen.
+
+### Behoben
+
+Der Zwischenspeicher trägt jetzt eine Versionsnummer. Passt sie nicht zum Programm, wird er
+verworfen und der Bestand frisch geladen — sichtbar im Protokoll, nicht stillschweigend.
+Der Unterschied ist messbar: statt 510 gemerkter Belege kennt der Lauf jetzt 996.
+
+### Aufgeräumt
+
+Die vier Doppelbuchungen wurden entfernt (alle noch im Entwurfsstadium, also spurlos löschbar).
+Die Originale blieben unangetastet — geprüft und bestätigt, auch die bereits verknüpften.
+
+### Neue Prüf-Kanarien
+
+Neun Stück, darunter eine, die den Vorfall exakt nachstellt: frischer Zeitstempel, alter Aufbau.
+Wäre der Schutz nicht wirksam, würde sie sofort rot.
+
+---
+
+## v1.155.0 — Die Kontobewegung entscheidet, ob es eine Ausgabe war (2026-08-16)
+
+### Das Problem
+
+Ob ein Beleg eine Ausgabe ist, stand bisher in einem Feld, das die Texterkennung gefüllt hat.
+Konnte sie es nicht sicher lesen, schrieb sie „unklar" hinein — und „unklar" wurde beim Buchen
+wie „Ausgabe" behandelt. Eine stille Annahme an der teuersten Stelle: bei der Richtung.
+
+Im aktuellen Bestand trägt jeder dritte offene Beleg genau diesen Wert.
+
+Drei Fälle, in denen die Annahme falsch ist: ein Anwaltsschreiben mit Betrag, bei dem Geld
+**herein**kam. Eine eigene Ausgangsrechnung, die nach Eingangsrechnung aussieht. Ein Werbebrief,
+dessen „Betrag" in Wahrheit ein Datum war — dazu gibt es gar keine Zahlung.
+
+### Die Lösung
+
+Vor jeder Buchung fragt Bruno jetzt das Konto. Ob Geld abgeflossen oder zugeflossen ist, steht
+im Vorzeichen der Kontobewegung — da gibt es keinen Ermessensspielraum, keine Layout-Falle und
+keine Sprachvariante.
+
+Vier Ergebnisse, vier Konsequenzen:
+
+| Was die Bank zeigt | Was Bruno tut |
+|---|---|
+| Geld abgeflossen | Ausgabe belegt — wird gebucht |
+| Geld zugeflossen | **gestoppt** — das ist keine Ausgabe, egal was im Beleg steht |
+| Ab- und Zufluss gleicher Höhe | **gestoppt** — nicht eindeutig, du siehst es dir an |
+| gar keine Bewegung, Beleg unklar | **gestoppt** — kein einziges Signal, das die Richtung belegt |
+
+Ein Beleg, dessen Feld schon eindeutig „Eingangsrechnung" sagt, läuft wie bisher — die Bank
+bestätigt ihn dann zusätzlich, sichtbar im Prüfprotokoll.
+
+### Was du davon hast
+
+Eine falsche Richtung ist der teuerste Buchungsfehler: Vorsteuer, die dir nicht zusteht, oder
+eine Einnahme, die als Kosten verschwindet. Beides fällt oft erst beim Steuerberater auf.
+Dieser Prüfschritt fängt es davor ab — ohne dass du etwas tun musst.
+
+### Unter der Haube
+
+- Der Bank-Anker sitzt in der Regel HR#1 des Prüf-Gates, das vor **jedem** scharfen Buchen läuft.
+- Fehlen die Kontobewegungen, sagt Bruno das laut, statt still auf die alte Annahme zurückzufallen.
+- Neun neue Prüf-Kanarien, darunter eine, die absichtlich prüft, ob der Schutz überhaupt
+  aufgerufen wird — genau das war vorher das Problem: das Modul existierte seit einem Tag,
+  aber kein Buchungsweg fragte es.
+
+### Zwei reparierte Wächter
+
+- Eine Schutzprüfung (Modus-Nummern) stürzte seit gestern an einer toten Verknüpfung im
+  Browser-Profil ab und bewachte ihre Regel damit gar nicht mehr. Ein abgestürzter Wächter
+  meldet nichts — das sieht aus wie „alles in Ordnung".
+- Dieselbe Prüfung hielt drei korrekte Code-Stellen für Fehler, weil sie Unterwege wie „3b"
+  nicht kannte. Sie liest die gültigen Kennungen jetzt vollständig aus der Modus-Beschreibung.
+
+---
+
+## v1.154.0 — Der Name auf dem Kontoauszug ist nicht der auf der Rechnung (2026-08-16)
+
+### Das Problem
+
+Bei 11 offenen Belegen passten **Betrag und Datum** exakt zu genau einer Kontobewegung.
+Zugeordnet wurde trotzdem nichts — allein weil Bank und Rechnung verschiedene Namen für
+denselben Anbieter führen.
+
+Die Rechnung nennt den Rechtsträger, der Kontoauszug die Marke oder den Zahlungsabwickler.
+Ein irisches Unternehmen erscheint auf dem Konto unter seinem Produktnamen. Eine Holding
+aus Singapur unter ihrer Domain. Ein Konzern unter einem Kürzel plus Referenznummer.
+
+Kein Textvergleich findet das. Es ist Wissen, kein Muster.
+
+### Die Lösung
+
+Bruno kennt jetzt die Bank-Schreibweisen bekannter Anbieter. Jeder Eintrag stammt aus einem
+tatsächlich beobachteten Paar aus Rechnung und Kontobewegung — nicht aus einer Vermutung.
+
+Wichtig: Der Namensabgleich wird großzügiger, die Zuordnung nicht. Betrag, Datum, Richtung
+und Eindeutigkeit gelten unverändert. Passen mehrere Kontobewegungen gleich gut, geht der
+Fall weiterhin zur Sichtprüfung statt in eine Buchung.
+
+### Was du davon hast
+
+Belege, die vorher unzuordenbar liegenblieben, verknüpfen sich von selbst — ohne dass die
+Prüfung lockerer wird.
+
+### Zweiter Fund: der Abgleich lief gegen das falsche Konto
+
+Der Zuordnungslauf meldete **null** Treffer. Ursache war kein Fehler in der Logik: Er lief
+gegen ein Nebenkonto mit 79 offenen Umsätzen. Das Hauptkonto mit **261** offenen Umsätzen
+war nie im Blick.
+
+Daraus die Regel: Bei null Treffern zuerst prüfen, ob überhaupt die richtigen Daten geladen
+sind — nicht die Zuordnungsregel lockern. Ein zu enger Ausschnitt sieht genauso aus wie ein
+zu strenges Kriterium.
+
+### Unter der Haube
+
+- `system/_lib/bank-alias.mjs` mit 17 Kanarien, alle grün
+- Der eigene Test fand dabei einen Fehler: ein kurzer Alias traf in einem fremden
+  Firmennamen. Behoben durch Vergleich auf Wortebene.
+- Eingebaut als Fallback in `match-vouchers.mjs` — der bewährte Pfad bleibt unberührt
+
+## v1.153.0 — Die Bank entscheidet, ob Geld kam oder ging (2026-08-16)
+
+### Was neu ist
+
+Bruno prüft ab jetzt **vor** jeder Buchung die Kontobewegung, um die Richtung zu bestimmen:
+Ist Geld abgeflossen oder zugeflossen? Das steht im Vorzeichen des Kontoumsatzes — da gibt
+es keinen Auslegungsspielraum.
+
+Vorher hat Bruno die Richtung aus dem Beleg selbst geschlossen. Das geht in den meisten
+Fällen gut und in den gefährlichen Fällen schief.
+
+### Der Fall, der das ausgelöst hat
+
+Ein Schreiben einer Anwaltskanzlei, vierstelliger Betrag, Aktenzeichen, seriöser Absender.
+Sah aus wie eine Rechnung. War aber die Mitteilung über eine **Auszahlung** — das Geld kam
+herein, nicht heraus.
+
+Als Ausgabe gebucht wäre das doppelt falsch gewesen: falsches Vorzeichen im Gewinn **und**
+Vorsteuer auf einen Geldeingang gezogen.
+
+Die Kontobewegung hat es sofort geklärt: der Umsatz stand mit **Plus** im Konto.
+
+### Zwei weitere Fälle aus demselben Lauf
+
+- **Eine eigene Rechnung** an einen Auslandskunden lag im Eingangsordner. Als Ausgabe gebucht
+  hätte der Umsatz in der Umsatzsteuervoranmeldung gefehlt.
+- **Ein Werbe-Newsletter** trug einen vierstelligen Betrag — die Texterkennung hatte eine Zahl
+  aus einer Werbegrafik gelesen. Es gab keinen einzigen passenden Kontoumsatz.
+
+### Was du davon hast
+
+Ein Beleg wandert erst dann in die Buchung, wenn die Kontobewegung die Richtung bestätigt.
+Wo Bruno sich nicht sicher ist — etwa wenn Ab- und Zufluss denselben Betrag haben — sagt er
+das, statt zu raten.
+
+### Ausserdem
+
+- **Rechnungsprüfung für den Altbestand:** Die Prüfung, ob ein Dokument überhaupt eine Rechnung
+  ist, gab es bisher nur für neu eingehende Belege. Jetzt lässt sie sich über den gesamten
+  Bestand nachziehen — 504 Belege haben ein Urteil bekommen.
+- **Fehler-Museum:** Alle bisherigen Fehlerklassen sind an einer Stelle nachlesbar
+  (`system/FEHLER-MUSEUM.md`) — was schiefging, was es gekostet hätte, welche Regel daraus wurde.
+
+### Unter der Haube
+
+- `system/_lib/bank-richtung.mjs` mit 9 Kanarien, alle grün
+- `system/_bin/natur-nachtrag.mjs` — Rechnungsprüfung für Altbestände
+- `system/_bin/vision-review.mjs` — Sichtprüfung für Belege ohne lesbare Textebene
+
+## v1.152.0 — Nachschlagewerk sagte „kenne ich nicht", obwohl der Eintrag da war (2026-08-16)
+
+### Der Fehler
+
+Bruno hat ein Nachschlagewerk für Lieferanten: Wer sitzt wo, wie wird die Steuer behandelt.
+Fragt man dort nach einem **Kurznamen** — „openai", „kie", „hsp" — kam die Antwort
+**„kenne ich nicht, bitte prüfen lassen"**. Obwohl alle drei längst eingetragen waren.
+
+Der Grund: Das Nachschlagewerk suchte nur in eine Richtung. Es fand „openai" im vollständigen
+Namen „OpenAI, LLC", aber nicht umgekehrt. Beim Buchen selbst hat es funktioniert — nur beim
+Nachschlagen nicht.
+
+### Warum das nicht harmlos war
+
+Zwei Antworten auf dieselbe Frage. Bruno schlägt in **jeder** Sitzung dort nach — bei jeder
+Steuerfrage, vor jeder Rückfrage an dich, bei jedem Prüfbefund. Das falsche „kenne ich nicht"
+führte dazu, dass Belege zur Handprüfung gelegt wurden, die längst geklärt waren.
+
+Es ist heute selbst passiert: Bruno meldete „vier Lieferanten fehlen im Nachschlagewerk,
+deshalb hängen rund 196 Belege" — **alle vier waren drin.**
+
+### Behoben
+
+Das Nachschlagewerk sucht jetzt in **beide** Richtungen und sagt dazu, wenn du einen Kurznamen
+getippt hast:
+
+```
+⚠️  Teiltreffer: "openai" ist ein Kurzname, der Registry-Key lautet vollständig:
+    (weitere Keys mit "openai": openai opco, llc · openai ireland limited)
+Treffer: openai, llc
+```
+
+So siehst du sofort, ob es mehrere Firmen mit ähnlichem Namen gibt — bei OpenAI und Google
+ist das der Fall, und sie werden **steuerlich unterschiedlich behandelt**.
+
+### Zwei weitere Funde beim Nachprüfen
+
+**Ein Newsletter galt als Lieferant.** Absender „KIE AI Team" wurde wegen der Namensähnlichkeit
+dem Anbieter „kie.ai" zugeordnet — ein Werbe-Newsletter hätte als Betriebsausgabe gebucht werden
+können. Steht jetzt als „niemals buchen" drin.
+
+**Ein „bitte prüfen" wurde stillschweigend übergangen.** Beim Google Chrome Web Store ist auf dem
+Beleg nicht eindeutig, welche Google-Firma abrechnet. Genau dafür gibt es die Markierung „bitte
+prüfen" — sie wurde jedoch übersprungen, und der Beleg lief über den allgemeinen Google-Eintrag
+durch. Jetzt greift sie: Der Beleg wird dir vorgelegt statt automatisch gebucht.
+
+### Neu im Nachschlagewerk
+
+**Google Cloud EMEA Limited** (Dublin, Irland — §13b Reverse-Charge, mit USt-ID vom Beleg belegt)
+und **Google Chrome Web Store** (bewusst zur Prüfung markiert).
+
+### Für dich heißt das
+
+Weniger Belege landen unnötig auf deinem Tisch — und die, die dort landen, gehören auch hin.
+
+---
+
+## v1.151.0 — Stripe: geklärt, was per Schnittstelle geht und was nicht (2026-08-16)
+
+### Die Frage
+
+Bei vier Zahlungseingängen von Stripe stand „Beleg fehlt". Naheliegender Verdacht: eine Rechnung
+fehlt. **Stimmt nicht.**
+
+### Die Antwort
+
+Das sind **Auszahlungen an dich**, keine Einkäufe. Dafür stellt niemand eine Rechnung aus — ein
+Zahlungsdienstleister überweist dir dein eigenes Geld. Alle vier ließen sich per Schnittstelle
+**taggenau** deiner Bank zuordnen (398,34 / 200,00 / 492,83 / 923,62 €).
+
+Deine **Ausgangsrechnungen** sind ebenfalls vollständig da: 15 Stück, alle mit Nummer und
+PDF-Link — und alle bereits in deiner Buchhaltung erfasst.
+
+### Eine Sache geht wirklich nicht — und warum
+
+Welche Einzelzahlungen in einer Auszahlung stecken, verrät Stripe nur bei **automatischen**
+Auszahlungen. Deine sind auf „manuell" eingestellt. Stripe sagt das im Fehlertext selbst:
+*„Balance transaction history can only be filtered on automatic transfers, not manual."*
+
+Drei Wege geprüft, alle drei bestätigen dasselbe — auch der Umweg über die Auswertungs-Schnittstelle,
+deren Verknüpfungsspalte schlicht `automatic_payout_id` heißt.
+
+**Der Fix ist eine Einstellung, kein Werkzeug:** Stellst du in Stripe auf automatische Auszahlung um,
+löst sich jede künftige Auszahlung von selbst auf. Rückwirkend geht das nicht — die bisherigen
+bleiben auf der Klärliste, wo sie korrekt einsortiert sind.
+
+### Warum das wichtig ist
+
+Ein „geht nicht" ist nur dann etwas wert, wenn der Grund bekannt ist. Sonst baut man beim nächsten
+Mal einen Browser-Umweg für ein Problem, das keiner ist. Deshalb steht der Befund jetzt samt
+Fehlertext und Gegenprobe in der Anbieter-Doku — inklusive der ausdrücklichen Notiz, **keinen**
+Browser-Umweg dafür zu bauen.
+
+### Unter der Haube
+
+- `postReportRun()` im Stripe-Client: die **einzige** erlaubte Schreib-Operation, hart auf die
+  Auswertungs-Adresse begrenzt. Ein Bericht erzeugt nur eine Auswertung — er bewegt kein Geld.
+  Die Read-only-Zusage des Bausteins bleibt wörtlich gültig.
+- Anbieter-Doku ergänzt: was geht (Auszahlungsliste, Beträge, Gebühren, Kundenrechnungen mit PDF),
+  was nicht (Ketten-Auflösung bei manuellen Auszahlungen) — jeweils mit gemessenem Beleg.
+
+## v1.150.0 — Der Rechnungscheck sitzt jetzt am Eingang (2026-08-16)
+
+### Das Wichtigste in einem Satz
+
+Ab sofort prüft Bruno bei **jedem** Dokument, ob es überhaupt eine Rechnung ist — **bevor** es in
+deiner Buchungs-Queue landet, nicht erst Wochen später beim Gesundheits-Check.
+
+### Warum das nötig war
+
+Der Prüfer für „ist das wirklich eine Rechnung?" existierte schon. Er lief nur an der falschen
+Stelle: **nach** dem Ablegen. Das Ergebnis konnte man messen — **129 Dokumente lagen als „Belege"
+in deinem Ordner 2, die gar keine Rechnungen sind**: Support-Briefe, Newsletter, Werbe-Mails,
+Statistik-Berichte, sogar eine Benachrichtigung über einen neuen Kontoauszug.
+
+Allein von einem einzigen Anbieter waren es 47 Stück. Die haben deine Liste aufgebläht und bei
+jeder Durchsicht Arbeit gemacht, die niemand brauchte.
+
+### Was jetzt passiert
+
+Jedes eingehende PDF wird auf Rechnungsmerkmale geprüft — Rechnungswort, Steuerangabe, Betragszeile,
+Rechnungsnummer. Was nachweislich keins hat, landet direkt in `_kein-buchungsbeleg/<Jahr>/` statt in
+deiner Buchungs-Queue. **Gelöscht wird nie etwas**, alles bleibt nachvollziehbar liegen.
+
+Zwei Fälle werden bewusst **nicht** aussortiert, weil sie ein menschliches Urteil brauchen:
+
+- **Rechnung ohne Nummer** — bei Auslandsleistungen mit Steuerschuldumkehr ist das korrekt.
+  Der Vorsteuerabzug verlangt dort keinen Rechnungsbesitz (§ 15 Abs. 1 S. 1 Nr. 4 UStG).
+- **Scan ohne Textebene** — nicht maschinell prüfbar, also auch nicht maschinell verurteilt.
+
+Und: Ein Beleg mit erkanntem Betrag wird **nie** aussortiert. Der Betrag belegt die Rechnungsnatur.
+
+### Zoom-Rechnungen kommen jetzt automatisch
+
+Der Weg zu den Zoom-Rechnungs-PDFs war bisher offen — die Liste war lesbar, der Download nicht.
+Jetzt läuft beides. 14 Rechnungen gefunden, 9 lagen schon bei dir, **5 fehlende wurden geholt**.
+
+Der Umweg, der das gelöst hat, ist auch für andere Portale nützlich und steht dokumentiert:
+Ein Einblende-Fenster („Quick Tour") lag über der Tabelle und schluckte jeden Klick — es sah aus
+wie ein kaputter Knopf, war aber nur verdeckt.
+
+### Aufgeräumt
+
+- 129 Nicht-Belege aus der Buchungs-Queue nach `_kein-buchungsbeleg/` sortiert, mit Protokollzeile
+  pro Dokument (was, wann, warum).
+- Bei den betroffenen Google-Dokumenten vorher stichprobenartig ins PDF geschaut — vier von vier
+  bestätigt: Support-Umfrage, Profil-Statistik, Glückwunsch-Mail, Konto-Löschbrief. Keine Rechnung.
+
+### Unter der Haube
+
+- Neues Eingangs-Gate in `sort.mjs` (`writeBeleg`), damit **alle** Wege es passieren — E-Mail,
+  Drop-Ordner, Portal. Ein Prüfer an einer einzigen Stelle statt drei halbe.
+- Canonical-JSON trägt zwei neue Felder: `beleg_natur` + `beleg_natur_grund`. Damit ist im Nachhinein
+  belegbar, dass geprüft wurde — nicht nur, dass etwas nicht auffiel.
+- 16 Regressionstests (`sort-natur-gate.test.mjs`), inklusive eines Tests gegen genau den Fehler,
+  der beim ersten Live-Lauf auftrat: das Gate übersprang Belege mit Betrag komplett und trug deshalb
+  gar kein Urteil ein — es lief unsichtbar. Jetzt wird immer geprüft, nur das Aussortieren ist an
+  den Betrag gekoppelt.
+- Zoom-Klickweg + PDF-Adresse in `portal-registry.json`, inklusive der Stolperfalle mit dem Overlay.
+
+## v1.149.0 — 84 Belege gebucht, und zwei Fallen weniger (2026-08-15)
+
+### Was passiert ist
+
+In einem durchgehenden Lauf habe ich **84 Belege gebucht** und **17 davon direkt mit deinen
+Kontobewegungen verknüpft** — ohne einen einzigen Fehler, jede Buchung nach dem Schreiben noch einmal
+gegengelesen (Richtung, Steuersatz, Betrag).
+
+Die offenen Bankbuchungen ohne Beleg sind dadurch gesunken: 2025 von 160 auf 149, 2026 von 89 auf 83.
+
+### Zwei Fallen, die ich gefunden und geschlossen habe
+
+**1. Eine Rechnung, die im richtigen Ordner liegt, ist noch nicht im System.**
+Zehn Rechnungen aus einem Anbieter-Portal hatte ich direkt in den Quartalsordner gelegt — richtiger
+Name, richtiger Platz, sauberes PDF. Beim Buchen tauchten sie trotzdem nicht auf, weil die *gelesene
+Fassung* fehlte (die Datei mit Betrag, Datum, Steuersatz). Ohne die ist eine Rechnung für die
+Buchhaltung unsichtbar — und es gibt keine Fehlermeldung, sie fehlt einfach.
+
+Aufgefallen ist es nur durch einen Quervergleich. Für dich heißt das: Belege gehören immer durch den
+Einlese-Schritt, auch wenn die Datei schon perfekt benannt am richtigen Platz liegt.
+
+**2. Ein Anbieter muss an zwei Stellen bekannt sein, nicht an einer.**
+Ich hatte den Werbe-Anbieter sauber als „irisches Unternehmen, Steuerschuld geht auf dich über"
+eingetragen, und die Prüfung bestätigte das. Der Buchungslauf verweigerte trotzdem weiter mit
+„Sitzland unklar". Grund: Es gibt zwei Nachschlagewerke — eines für die steuerliche Behandlung, eines
+für das Buchungskonto. Der Buchungslauf fragt das zweite. Erst der Eintrag in **beiden** schaltete die
+zehn Rechnungen frei.
+
+Beides ist jetzt als Regel hinterlegt, damit es bei dir nicht passiert.
+
+### Dubletten — die Prüfung, nach der du gefragt hast
+
+- Beim Einlesen wurden mehrere Doppel automatisch abgefangen (2 von 25 bei der Bank, 2 von 11 beim
+  Paketdienst) — erkannt am Datei-Fingerabdruck, also auch bei anderem Dateinamen.
+- Beim Werbe-Anbieter gibt es **kein** Doppel-Risiko, obwohl derselbe Vorgang zweimal vorliegt: Die
+  E-Mail trägt eine Transaktions-Nummer, die Rechnung eine Rechnungsnummer. Gebucht wird nur die
+  Rechnung. 14 Vorgänge geprüft, 0 Doppelablagen.
+- Der Gesundheits-Check meldet mehrere Kontoumsätze, die mehrfach im selben Konto stehen. Das kann
+  eine echte Mehrfachzahlung sein oder ein Import-Doppel — das ist ohne Kontoauszug nicht
+  entscheidbar, deshalb melde ich es als Hinweis statt es stillschweigend zu bereinigen.
+
+### Sicherheit
+
+Der Gesundheits-Check zeigt nach den 84 Buchungen **exakt dieselben Werte wie vorher** — meine
+Buchungen haben also keinen einzigen neuen Mangel erzeugt. Die sieben kritischen Punkte stammen alle
+aus dem Altbestand (Werbe-Mails und Hinweis-Mails, die früher als Rechnung erfasst wurden, zusammen
+67,75 €). **Keiner davon ist gebucht** — die Prüfungen haben sie zuverlässig gestoppt.
+
+### Wissensstand
+
+2026-08-15
+## v1.148.0 — Ich finde jetzt deutlich mehr Rechnungen in deinem Postfach (2026-08-15)
+
+### Neue Funktionen
+
+**Postfach-Suche findet Rechnungen, die vorher unsichtbar waren.**
+Bisher habe ich in deinen E-Mails nur die **Betreffzeile** durchsucht. Das klingt harmlos, war aber eine
+echte Lücke: Viele Anbieter schreiben gar kein Wort wie „Rechnung" oder „Invoice" in den Betreff, sondern
+nur in den Text darunter. Deren Rechnungen habe ich schlicht nie gesehen — ohne jede Fehlermeldung.
+
+Gemessen an einem echten Postfach, gleiches Jahr:
+
+| Suche | gefundene Mails |
+|---|---|
+| nur Betreff (bisher) | 69 |
+| Volltext (jetzt) | **88** |
+
+Das sind **28 % mehr**. Ein Anbieter war komplett unsichtbar: 0 Treffer über den Betreff, obwohl 8 Mails
+mit Rechnungsanhang vorlagen.
+
+Falls dein Postfach dadurch zu viele Treffer liefert, kannst du mit `--nur-betreff` jederzeit auf die
+alte, engere Suche zurückschalten.
+
+**Neue Prüfung: Ist das überhaupt eine Rechnung?**
+Ich schaue jetzt in jedes Dokument hinein, bevor es in deine Buchungsliste wandert — egal ob es aus dem
+Postfach, aus einem Anbieter-Portal oder aus deinem Posteingangs-Ordner kommt.
+
+Der Anlass war unangenehm konkret: Ein Stapel von 14 Dokumenten lag als „Belege" im Archiv. Auf **jedem
+einzelnen** stand wörtlich „Das ist keine Rechnung" — es waren Zahlungs-Benachrichtigungen. Die echten
+Rechnungen desselben Anbieters lagen unangetastet im Portal.
+
+Ich prüfe deshalb ab sofort auf:
+- Sagt das Dokument selbst, dass es **keine** Rechnung ist?
+- Fehlen alle Rechnungsmerkmale (kein Rechnungswort, keine Steuerangabe, kein Betrag)? → wahrscheinlich
+  Werbung oder eine Benachrichtigung
+- Fehlt die Rechnungsnummer?
+- Ist das Dokument nur ein Bild ohne lesbaren Text? → dann sage ich das ehrlich, statt es durchzuwinken
+
+Findet die Stichprobe einen „ist keine Rechnung"-Hinweis, prüfe ich **den ganzen Stapel** statt nur eines
+Dokuments — solche Sätze stehen fast immer in allen Dokumenten desselben Anbieters.
+
+**Wichtig für deinen Vorsteuerabzug:** Ich bewerte nicht stur nach Checkliste. Bei Anbietern außerhalb der
+EU (Reverse-Charge, § 13b UStG) verlangt das Gesetz gar keine klassische Rechnung — dort ist eine fehlende
+Umsatzsteuer sogar korrekt. Ein solcher Beleg wird deshalb nicht mehr fälschlich als Mangel gemeldet. Die
+abschließende Bewertung trifft weiterhin dein Steuerberater.
+
+### Verbesserungen
+
+**Vier Anbieter-Portale neu erschlossen** — die Klickwege sind gespeichert, künftige Abrufe gehen direkt:
+- Ein Werbe-Anbieter: Die Rechnungen fand ich nur über die **Konto-Nummer, die auf dem Beleg selbst steht**
+  — nicht durch Herumsuchen in den Konten-Umschaltern. Dazu ein direkter PDF-Link je Zahlung.
+- Ein Domain-Anbieter: 23 Dokumente über einen direkten PDF-Link.
+- Ein KI-Dienst: Hier gab es **gar keine Rechnungen**, weil im Konto das Rechnungs-Profil leer war. Ich
+  habe es gefüllt (Firmenname, USt-IdNr., Anschrift) — seitdem stellt der Anbieter Rechnungen aus, und die
+  bestehenden 7 kamen als Sammel-Download.
+- Deine Bank: Auch bei einem **geschlossenen** Konto bleiben die Gebühren-Rechnungen abrufbar. Ich hatte
+  das zuerst falsch eingeschätzt („Konto zu, also keine Belege") — tatsächlich lagen 37 Rechnungen bereit,
+  nur hinter einem zweiten Reiter, den ich übersehen hatte.
+
+**Doppelte Belege werden weiterhin zuverlässig abgefangen.** Beim Einlesen der Bank-Rechnungen waren 2 von
+25 bereits im Archiv — sie wurden erkannt und nicht erneut abgelegt. Der Abgleich läuft über den
+Datei-Fingerabdruck, also auch dann, wenn eine Datei anders heißt.
+
+### Unter der Haube
+
+- Neues Prüf-Modul für die Beleg-Natur, mit 20 automatischen Tests (darunter Sabotage-Fälle, die
+  absichtlich versuchen, die Prüfung auszutricksen)
+- Die Portal-Klickwege liegen maschinenlesbar in der Portal-Liste: URL, Selektor, PDF-Link-Muster,
+  Stolperfallen und wann sie zuletzt geprüft wurden
+- Neue harte Regel: Ein Stapel geholter Dokumente gilt erst dann als Belege, wenn mindestens eines
+  inhaltlich gelesen wurde
+
+### Wissensstand
+
+2026-08-15
+
+---
+## v1.147.0 — Bruno holt Rechnungen aus Anbieter-Portalen und prüft, ob es überhaupt Rechnungen sind
+
+**Neue Funktionen**
+
+- **Beleg-Prüfung nach dem Download.** Bruno schaut jetzt in jedes aus einem Portal geholte PDF hinein, statt nur zu prüfen, ob eine Datei entstanden ist. Konkreter Fall: Ein Anbieter lieferte 23 saubere PDFs — alle trugen aber die Kopfzeile „Transactions", keine Umsatzsteuer-Angabe, keine Rechnungsnummer. Solche Dokumente landen nicht mehr in der Buchungs-Queue, sondern in einem eigenen Ordner mit Erklärung, was ihnen fehlt und was zu tun ist.
+- **Die Einordnung richtet sich nach dem Steuerfall, nicht nach dem Aussehen.** Bei einem Anbieter aus den USA ist ein fehlender Umsatzsteuer-Ausweis korrekt — dort schuldest du die Steuer selbst (Reverse-Charge), und das Gesetz verlangt für den Vorsteuerabzug in diesem Fall keine förmliche Rechnung. Bruno unterscheidet das jetzt, statt jeden Beleg an derselben Checkliste zu messen. Die letzte Entscheidung bleibt beim Steuerberater.
+- **Eine Fehlerseite wird nicht mehr als Rechnung gespeichert.** Ist die Anmeldung beim Anbieter abgelaufen, liefert das Portal statt der Rechnung eine Fehlermeldung. Die landete bisher als PDF im Posteingang — mit Erfolgsmeldung. Jetzt bricht Bruno ab, speichert nichts und sagt, dass die Anmeldung erneuert werden muss.
+
+**Verbesserungen**
+
+- **Bruno erkennt wieder, zu welchem Anbieter eine Abbuchung gehört.** Die Bank schreibt `GOOGLE*CLOUD 693C3W`, hinterlegt war `google*cloud` — ein Sternchen statt Leerzeichen genügte, und der Treffer blieb aus. Von 47 Abbuchungen ohne Rechnung wurden nur 23 zugeordnet, jetzt 33.
+- **Es wird nur noch geholt, was wirklich fehlt.** Bruno liest die Rechnungsnummern im Portal, vergleicht sie mit deinem Ordner und lädt ausschließlich die Lücken. Am echten Beispiel: 51 Rechnungen im Portal, 50 lagen vor — genau eine war zu holen.
+- **Zeitfilter werden beachtet.** Mehrere Portale zeigen von sich aus nur den letzten Monat. Eine leere Liste heißt dort nicht „keine Rechnungen" — Bruno zieht den Zeitraum jetzt selbst auf.
+- **Keine Kontodaten mehr im Verlauf.** Eine Auswertung gab Anbieter, Beträge und Verwendungszwecke im Klartext aus, obwohl der Schutzschalter gesetzt war. Statt 89 solcher Zeilen erscheinen jetzt 6 reine Zählwerte; die Details bleiben lokal.
+
+**Unter der Haube**
+
+- Neue Bewertung `system/PORTAL-FETCH-BEWERTUNG.md`: was am Portal-Weg zuverlässig ist, was nicht, und wie er sich zu fertigen Rechnungs-Sammeldiensten verhält — mit den gemessenen Zahlen eines vollen Testtags.
+- Klickwege, Selektoren, PDF-Link-Muster und Stolperfallen von vier Portalen sind maschinenlesbar hinterlegt, damit der nächste Lauf sie nicht neu suchen muss.
+- 25 automatische Tests für die Anbieter-Zuordnung, darunter Fälle, die absichtlich **nicht** treffen dürfen. Zwei davon schlugen beim Bauen fehl und hatten recht.
+
+**Warum das wichtig ist**
+
+Ein Beleg, der nur so aussieht wie eine Rechnung, fällt erst bei der Betriebsprüfung auf. Und ein Anbieter, den die Zuordnung nicht findet, landet stillschweigend in der Kategorie „kein Portal bekannt" — die Rechnung holt dann niemand.
+
+## v1.146.0 — Bruno zaehlt keine Mangel mehr, die keine sind
+
+**Verbesserungen**
+
+- **Bevor Bruno eine Fehlerquote nennt, prueft er, ob der Mangel ueberhaupt moeglich war.** Bei einer Nachkontrolle deiner Zahlungslinks stand im Befund „18 von 20 erzeugen keine Rechnung". Vier davon waren Abo-Links — und bei Abos erzeugt der Zahlungsanbieter die Rechnung ohnehin automatisch, ein Einschalten ist dort technisch gar nicht vorgesehen. Sie als Mangel zu zaehlen war schlicht falsch. Bruno prueft jetzt zuerst, ob das bemaengelte Merkmal fuer den jeweiligen Fall gilt, bevor eine Zahl in einen Bericht wandert.
+- **Eine Ursache gilt nur fuer den Weg, auf dem gemessen wurde.** Im selben Vorgang war „die Zahlungslinks sind schuld" die Diagnose — die vier betroffenen Kundenzahlungen liefen aber gar nicht ueber einen Link. Alle Links umzustellen haette an den echten Faellen nichts geaendert. Bruno prueft jetzt gegen: Haette die geplante Massnahme die konkreten Faelle verhindert, die den Anlass gaben? Wenn nein, sucht er weiter, statt die Quote zu melden.
+- **Ein leeres Datenfeld ist kein fehlender Beleg.** Fuenf aeltere Rechnungen galten als „ohne Steuer-ID des Ausstellers", weil das Feld in der Schnittstelle leer war. Im tatsaechlichen PDF steht die Nummer bei vier davon drin — der Anbieter zieht sie aus den Stammdaten. Nur eine einzige Rechnung ist wirklich betroffen. Bruno schaut bei solchen Aussagen jetzt ins Dokument, nicht nur in die Datenbank.
+
+**Warum das wichtig ist**
+
+Falsche Mangel-Zahlen sind teurer als sie aussehen: Sie erzeugen Arbeit, die niemand braucht, und lenken von der echten Ursache ab. In diesem Fall haetten vier Links umgestellt werden sollen, an denen nichts kaputt war — waehrend der Weg, ueber den die beanstandeten Zahlungen tatsaechlich liefen, unbeachtet geblieben waere.
+
+## v1.145.0 — Bruno lädt keine Rechnung mehr herunter, die er schon hat
+
+**Verbesserungen**
+
+- **Beim Abgleich zählt die Rechnungsnummer, nicht der Anbietername.** Beim ersten scharfen Portal-Lauf holte Bruno eine Rechnung, die längst im Ordner lag — er hatte im Archiv nach „Skool" gesucht, abgelegt war sie aber unter dem Namen der Community („Claude Code Academy"). Bei Marktplätzen steht auf dem Beleg oft der Händler, nicht der Rechnungssteller. Jetzt vergleicht Bruno nur noch Rechnungsnummern, und die sind ohnehin eindeutig. Ergebnis am selben Bestand: vorher „1 fehlt" (falsch), jetzt „0 fehlt" (richtig).
+- **Eine Fehlerseite wird nicht mehr als Rechnung gespeichert.** Wenn die Anmeldung beim Anbieter abgelaufen ist, liefert das Portal statt der Rechnung eine Fehlermeldung. Bisher landete die als PDF im Posteingang — mit Erfolgsmeldung. Jetzt prüft Bruno vor dem Speichern, ob überhaupt eine Rechnung auf der Seite steht, bricht sonst ab und sagt dir, dass die Anmeldung erneuert werden muss. Es wird nichts geschrieben.
+
+**Warum das wichtig ist**
+
+Beide Fehler wären still geblieben. Eine doppelt geholte Rechnung führt schlimmstenfalls zur Doppelbuchung, eine gespeicherte Fehlerseite zu einem Beleg ohne Inhalt in der Buchhaltung. Aufgefallen sind sie nur, weil nach dem Holen geprüft wurde, was tatsächlich in der Datei steht — nicht nur, ob eine entstanden ist.
+
+## v1.144.0 — Bruno findet die Rechnungsportale jetzt wieder und holt nur, was wirklich fehlt
+
+**Neue Funktionen**
+
+- **Bruno erkennt jetzt, zu welchem Anbieter eine Abbuchung gehört — auch wenn die Bank kreativ schreibt.** Deine Bank schreibt `GOOGLE*CLOUD 693C3W`, ein andermal `Google CLOUD 6BXB75`, bei Namecheap `NAME-CHEAP.COM* UYUWOP`. Bruno verglich das bisher Zeichen für Zeichen mit seiner Portal-Liste, in der die Anbieter schlicht `google*cloud` und `namecheap` heißen. Ein Leerzeichen statt Sternchen genügte, und der Treffer blieb aus: Von 47 Abbuchungen ohne Rechnung erkannte er nur bei 23 den Anbieter, obwohl das Portal längst hinterlegt war. Allein sechs Google-Cloud-Buchungen fielen so durch. Jetzt werden Schreibweisen vor dem Vergleich vereinheitlicht — **33 statt 23 Treffer**, ohne einen einzigen falschen.
+- **Neue Portal-Runde: Bruno holt nur noch, was wirklich fehlt.** Bisher musste jede Rechnung einzeln angefordert werden. Jetzt sieht Bruno im Portal nach, welche Rechnungsnummern es gibt, vergleicht sie mit deinem Beleg-Ordner und lädt ausschließlich die Lücken. Am echten Beispiel: 51 Rechnungen im Skool-Portal, 50 lagen bereits vor — **genau eine war zu holen**. Das ist der Normalfall, wenn regelmäßig gebucht wird.
+
+**Verbesserungen**
+
+- **Die Rechnungsnummer wird gelesen, ohne die Seite aufzubauen.** Für den Abgleich „habe ich schon?" genügt die Nummer aus dem Seitenquelltext — das dauert Millisekunden statt Sekunden pro Rechnung. Erst der Beleg, der tatsächlich fehlt, wird vollständig als PDF erzeugt.
+- **Anbieternamen aus der Bank funktionieren direkt als Eingabe.** `P.SKOOL.COM/ZSXQF` findet jetzt den Skool-Eintrag, statt mit einer Fehlermeldung abzubrechen.
+- **Ohne bekanntes Rechnungsnummern-Format bricht die Portal-Runde ab**, statt vorsichtshalber alles herunterzuladen. Bruno sagt dann klar, was ihm fehlt.
+- **Eine doppelte Anbieter-Zeile entfernt.** Namecheap stand zweimal in der Liste, weil früher jede Schreibweise von Hand nachgetragen wurde. Das erledigt jetzt der Abgleich selbst.
+
+**Unter der Haube**
+
+- Die Zuordnung Anbieter → Portal liegt jetzt an einer einzigen Stelle. Vorher gab es sie doppelt: einmal im Bericht, einmal beim Abholen — mit unterschiedlichem Ergebnis. Der Bericht konnte „Portal unbekannt" anzeigen, obwohl eines hinterlegt war.
+- **25 automatische Tests** mit echten Bank-Schreibweisen, darunter Fälle, die absichtlich **nicht** treffen dürfen. Zwei davon schlugen beim Bauen fehl und hatten recht: „Pineapple Studios" wurde als Apple erkannt, und ein Anbietername mit Punkt fand seinen Eintrag nicht. Beides ist behoben — ohne die Tests wäre es in Betrieb gegangen.
+
+**Warum das wichtig ist**
+
+Fehlende Rechnungen kosten Vorsteuer. Wenn Bruno das Portal nicht findet, landet der Anbieter in der Liste „Portal unbekannt" — und die Rechnung holt niemand. Der Fehler war unsichtbar, weil nichts rot wurde: Es fehlte einfach ein Treffer.
+
+## v1.143.0 — Doppelte Kontobewegungen werden jetzt schon beim Import verhindert
+
+**Neue Funktionen**
+
+- **Der Import stoppt, bevor er dieselbe Zahlung ein zweites Mal anlegt.** Bisher verglich Bruno beim Einlesen eines Kontoauszugs Datum, Betrag und Empfänger. Steht dieselbe Zahlung im zweiten Export mit dem Buchungstag statt dem Wertstellungstag — bei Banken ein üblicher Unterschied von einem Tag — sah das wie eine neue Zahlung aus und wurde importiert. Genau so waren bei dir 20 doppelte Bewegungen entstanden. Jetzt prüft Bruno zusätzlich mit Datumstoleranz: gleicher Betrag, gleicher Empfänger, Datum ein paar Tage daneben → Warnung mit genauer Auflistung. Sieht es nach einem kompletten Doppel-Import aus, bricht er ab, **bevor** die erste Zeile geschrieben wird.
+- **Vorsichtig statt übereifrig:** Bruno wirft solche Zeilen nie automatisch weg. Eine echte Zahlung fälschlich zu verwerfen wäre schlimmer als eine Dublette — die findet der Buchhaltungs-Check, eine fehlende Zahlung niemand. Du entscheidest.
+
+**Verbesserungen**
+
+- **Dubletten in laufenden Abos werden jetzt gefunden.** Die Prüfung erkannte doppelte Bewegungen nur, wenn ein Betrag genau zweimal im Bestand stand. Bei einem Monatsabo gibt es aber viele Zahlungen gleicher Höhe — dort blieben fünf echte Dubletten unentdeckt. Jetzt schaut Bruno innerhalb eines engen Zeitfensters; die monatlichen Abbuchungen selbst lösen weiterhin keinen Alarm aus.
+- **Bei Unklarheit schweigt Bruno.** Liegen drei gleiche Beträge dicht beieinander, lässt sich nicht sagen, welche zwei zusammengehören. Solche Fälle meldet er nicht mehr als Dublette — falsch zeigen ist schlimmer als nicht zeigen.
+- **20 doppelte Kontobewegungen bereinigt.** Jede einzelne vorher gegen deinen Original-Kontoauszug geprüft. Gelöscht wurde immer nur die überzählige Zeile, nie die mit dem Beleg — nach jeder Löschung hat Bruno gegengeprüft, dass der Beleg noch hängt. Sechs weitere Fälle waren echte Mehrfachzahlungen und blieben unangetastet.
+- **Zwei Beträge korrigiert und wieder mit der Bank verknüpft** (Skool 115,43 → 100,85 €, Paddle 49,00 → 42,08 €). In beiden Fällen war ein Dollarbetrag als Euro gebucht.
+
+**Unter der Haube**
+
+- Neues Werkzeug, um einen einzelnen Beleg gezielt mit einer Kontobewegung zu verknüpfen — nötig nach jeder Betragskorrektur, mit sechs Sicherheitsprüfungen vorab.
+- 25 automatische Tests für die Dublettenerkennung. Einer davon schlug bei der Änderung fehl und hatte recht: Er deckte auf, dass bei drei dicht beieinanderliegenden Zahlungen kein sicheres Urteil möglich ist.
+
+## v1.142.0 — Bruno findet jetzt doppelt importierte Kontobewegungen und liegengebliebene Korrekturen
+
+**Neue Funktionen**
+
+- **Doppelte Kontobewegungen werden erkannt, auch wenn das Datum verrutscht ist.** Wird derselbe Kontoauszug zweimal eingelesen, kann dieselbe Zahlung zweimal in deiner Buchhaltung landen — einmal mit dem Wertstellungstag, einmal mit dem Buchungstag. Weil sich die Daten unterscheiden, sah der Buchhaltungs-Check das bisher nicht als Paar. Jetzt schon: Bruno vergleicht Betrag und Zahlungsempfänger unabhängig vom Datum und meldet ein Paar, wenn genau eine der beiden Zeilen mit einem Beleg verknüpft ist und die andere offen daneben liegt — das ist das typische Muster eines doppelten Imports. Bei deinem Bestand hat das **16 solcher Paare aus dem April** gefunden. Bruno sagt dir dabei immer, welche Zeile die überzählige ist und welche du auf keinen Fall löschen darfst, weil an ihr der Beleg hängt.
+- **Korrekturen, die nie in der Buchhaltung ankamen, fallen jetzt auf.** Wird ein Beleg nachträglich repariert — etwa weil die Währung falsch erkannt wurde — hilft das nur, solange er noch nicht gebucht ist. War er schon gebucht, bleibt der alte Wert in den Büchern stehen, und die Reparatur verpufft still. Genau das war bei zwei Belegen passiert und monatelang unbemerkt geblieben. Bruno prüft jetzt bei jedem Check, ob eine Beleg-Reparatur zeitlich nach der Buchung liegt, und meldet es, wenn die Buchung den alten Wert trägt.
+
+**Verbesserungen**
+
+- **Das Reparatur-Werkzeug warnt jetzt selbst.** Wenn es einen Beleg korrigiert, der bereits gebucht ist, sagt es das ausdrücklich und nennt den nächsten Schritt — statt stillschweigend weiterzulaufen und den Eindruck zu erwecken, die Arbeit sei erledigt. Es fragt dafür deine Buchhaltung direkt ab; ist sie gerade nicht erreichbar, sagt es auch das ehrlich, statt Sicherheit vorzutäuschen.
+- **Weniger Fehlalarme.** Die neue Prüfung meldete im ersten Anlauf 74 Fälle, von denen nur zwei echt waren — die übrigen waren längst korrekt umgerechnet. Ein Prüfer, der ständig grundlos ruft, wird ignoriert und ist damit wertlos. Nach der Nachschärfung bleiben **3 Meldungen**, davon 2 echte. Zusätzlich meldet Bruno denselben Beleg nur noch einmal, auch wenn er mehrfach in deinen Ordnern liegt.
+
+**Unter der Haube**
+
+- 22 neue automatische Tests für die beiden Prüfungen. Für beide wurde geprüft, dass sie auch wirklich anschlagen: Schaltet man eine Regel ab, fallen genau ihre Tests durch und keine anderen. Ein Test, der immer grün ist, beweist nichts.
+- Der Buchhaltungs-Check hat jetzt 27 Prüfdimensionen.
+
+## v1.143.0 — Dein eigener Bereich: Erweiterungen, die jedes Update überleben
+
+**Neue Funktionen**
+
+- **`system/custom/` — hier gehört alles hin, was du dir selbst dazubaust.** Eigene Skripte, eigene Auswertungen, Anbindungen an Dienste, die im Standard nicht vorgesehen sind. Der Ordner wird bei einem Update **nie** überschrieben. Eine mitgelieferte Anleitung darin erklärt, was hierher gehört und was nicht.
+- **Klare Trennung der drei Bereiche**, damit nichts verloren geht: `system/custom/` = dein Code · `system/_privat/` = deine privaten Daten und Notizen · `PROFIL.md` = deine Einstellungen. Alles andere ist Produkt und wird bei einem Update ersetzt.
+- Bisher gab es diesen Schutz nur als ungeschriebene Übung — ein Kunde hatte sich auf diesem Weg bereits eine eigene Erweiterung für American Express gebaut. Jetzt ist der Ort offiziell, dokumentiert und geprüft.
+
+**Verbesserungen**
+
+- **Die Antwortsammlung (FAQ) ist wieder auf dem aktuellen Stand.** Sie hatte drei Fähigkeiten als „fehlt noch" geführt, die längst eingebaut sind: das **Leistungsdatum** wird ausgelesen und geprüft, **Kostenstellen** sind nachweislich setzbar, und die **Belegabholung aus Anbieter-Portalen** ist allgemein nutzbar statt nur für einen einzelnen Anbieter.
+- Ehrlicher formuliert an zwei Stellen: Die hinterlegten Anbieter-Portale sind ein **Nachschlagewerk** („wo liegt die Rechnung?") — die meisten Rechnungen kommen weiterhin per Mail. Und ob eine Zusatz-Software zum Rechnungssammeln damit überflüssig wird, hängt an deinen Anbietern; das wird nicht mehr pauschal behauptet.
+- Neu erklärt: **American Express** (das Buchen ist unproblematisch, offen ist der Belegweg — die Sammelabrechnung ersetzt keine Händlerrechnung), **Skonto** und **Zahlungsziele** (beides wird nicht ausgelesen, mit der Begründung, was das praktisch bedeutet), sowie **Österreich und Schweiz** (das hinterlegte Steuerrecht ist deutsch).
+
+**Unter der Haube**
+
+- Der Update-Schutz für `system/custom/` ist **gemessen, nicht angenommen**: Ein Testlauf beweist, dass eine Produktdatei ersetzt und eine Kundendatei unangetastet bleibt. Dabei zeigte sich auch, dass die mitgelieferte Anleitung im Ordner von Updates ebenfalls nicht angefasst wird — sie kommt nur bei der Erstauslieferung mit. Das ist dokumentiert, damit es niemanden überrascht.
+- Neue interne Regel (#27c) gegen eine wiederkehrende Fehlerklasse: Ein Eintrag in einer Datei belegt noch keine Fähigkeit, und eine nicht gefundene Datei belegt keine Abwesenheit. Beides hatte dazu geführt, dass Bruno seine eigenen Fähigkeiten teils zu vorsichtig, teils zu großzügig beschrieb.
+
+**Wissensstand:** 2026-08-15
+
+---
+
 ## v1.142.0 — Bruno prüft seine eigene Anleitung, bevor du sie bekommst
 
 **Verbesserungen**

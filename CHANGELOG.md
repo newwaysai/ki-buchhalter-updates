@@ -1,3 +1,556 @@
+## v1.233.0 — Sammelabbuchungen zuordnen + der Export sagt jetzt, was er getan hat (2026-08-18)
+
+### Neue Funktionen
+
+- **Sammelabbuchungen werden erkannt.** Manche Anbieter ziehen viele kleine Rechnungen in
+  einem Betrag ein (typisch bei Werbeplattformen mit Tagesabrechnung). Bisher blieben solche
+  Rechnungen offen, weil zu jeder einzelnen keine passende Abbuchung existierte. Jetzt rechnet
+  Bruno nach, ob mehrere Rechnungen zusammen genau den abgebuchten Betrag ergeben.
+  **Bewusst streng:** die Summe muss auf den Cent stimmen, und passt mehr als eine Kombination,
+  wird nichts zugeordnet, sondern zur Prüfung gemeldet. Eine geratene Zuordnung wäre schlimmer
+  als eine offene Rechnung.
+
+### Verbesserungen
+
+- **Der lokale Export sagt jetzt, wie viele Zahlungen er zugeordnet hat** ("davon mit
+  Zahlungszeile: 7"). Vorher blieb das unsichtbar — man konnte nicht erkennen, ob die
+  Zahlungszuordnung überhaupt gegriffen hat. Wurden Zahlungsdaten übergeben und es entsteht
+  trotzdem keine Zuordnung, weist Bruno ausdrücklich darauf hin, statt stillschweigend nur
+  gegen das Bankkonto zu buchen.
+- **Rechts- und Beratungskosten landen auf dem richtigen Konto** statt auf dem Sammelkonto.
+- **Neues Prüfwerkzeug für den Steuerberater-Export:** vergleicht zwei Buchungsstapel und
+  zählt dabei Zahlungszeilen unabhängig von der Buchungsrichtung — beide gängigen Schreibweisen
+  bedeuten dieselbe Buchung. Aufruf: `node system/_bin/datev-vergleich.mjs <a.csv> <b.csv>`.
+
+### Unter der Haube
+
+- Vergleichstest lokaler Export gegen Buchhaltungssystem, Februar 2025: der lokale Weg wurde
+  zuerst erzeugt und eingefroren, erst danach der System-Export gezogen — sonst hätte die
+  Referenz das Ergebnis beeinflusst. Ergebnis in `system/connectors/DATEV-EXPORT-WEGE.md`.
+  Beide Wege buchen Rechnung und Zahlung als Paar; der Unterschied liegt in der Datenbasis,
+  nicht in der Technik.
+- 27 + 32 automatische Prüfungen laufen über die beiden betroffenen Bausteine, alle grün.
+
+## v1.232.0 — Steuer-Prüfung nachjustiert: streng bei Fehlern, gelassen bei Rundung (2026-08-18)
+
+### Verbesserungen
+
+- **Die neue Steuer-Prüfung (v1.231) meldet keine Rundungs-Rechnungen mehr.** Nachprüfung am
+  eigenen Bestand ergab: Rechnungen dürfen die Umsatzsteuer **pro Zeile** runden — mehrzeilige
+  Rechnungen weichen dann in der Summe legitim um ein paar Cent ab. Drei solcher vermutlich
+  korrekten Rechnungen hätte die erste Fassung unnötig zur Prüfung gelegt.
+  Jetzt wächst die erlaubte Abweichung mit dem Rechnungsbetrag mit (mindestens 2 Cent,
+  höchstens 0,5 % vom Brutto) — **bewusst so gewählt, dass ein falsch gelesener Steuersatz
+  (19 % statt 20 %, Abweichung ≈ 0,7 %) weiterhin sicher auffällt.** Das ist der Fall, der
+  die Buchung wirklich verändert. Ergebnis am Bestand: 19 statt 22 Meldungen, alle 19 echt.
+- **Die Formel lebt jetzt an genau EINER Stelle** (`system/_lib/steuer-plausi.mjs`) — Einlese-
+  Prüfung, Altbestand-Werkzeug und Wächter-Test nutzen dieselbe. Vorher lag sie dreifach
+  kopiert vor; eine Korrektur hätte zwei Kopien verpasst.
+- **Die neuen Werkzeuge stehen jetzt in den Modi:** Das Onboarding (Modus 13) nennt den
+  Umgebungs-Check und die geführte Postfach-Einrichtung, der Health-Check (Modus 2) die
+  einmalige Altbestand-Prüfung. Und die Modi-Übersicht kennt jetzt auch Modus 16
+  (Alt-Buchhaltungs-Audit) — der fehlte dort schlicht.
+- **Aufgeräumt:** Zwei Angebote, die fälschlich in der Buchungs-Ablage lagen, sind in den
+  Angebots-Ordner umgezogen (ein Angebot ist kein Buchungsbeleg). Eines davon war unter den
+  Steuer-Meldungen — solche Scheintreffer entstehen so gar nicht erst.
+
+## v1.231.0 — Falsche Steuerbeträge fallen jetzt auf (2026-08-18)
+
+### Verbesserungen
+
+- **Bruno prüft ab sofort nach, ob der Steuerbetrag zum Steuersatz passt.** Aus Betrag und
+  Satz ergibt sich die Steuer zwingend — weicht der gelesene Wert ab, wandert der Beleg zur
+  Prüfung, statt still in die Vorsteuer zu laufen.
+  Der Anlass kam von einer Kundin: Bei einem mehrseitigen Sammelbeleg hatte die Texterkennung
+  den Steuerbetrag aus einer **Nachbarzeile** übernommen — 8,15 € Rechnung mit 0,57 € Steuer,
+  und eine zweite über 105,84 € mit **demselben** Wert. Beides rechnerisch unmöglich, beides
+  lief unbemerkt durch.
+- **Der Hinweis nennt die Zahlen**, nicht nur „Fehler": *„Steuerbetrag passt nicht zum
+  Steuersatz (0,57 statt 1,36 bei 20 %)"* — damit ist ohne Öffnen des Belegs klar, worum es geht.
+- **Neu: `node system/_bin/steuer-widersprueche.mjs`** zeigt dir alle betroffenen Belege auf
+  einen Blick: welcher Beleg, wie groß die Abweichung, wo die Datei liegt. Wo ein anderer
+  gängiger Steuersatz besser passen würde (etwa 20 % statt 19 %), sagt Bruno das dazu — dann
+  wurde meist der Satz falsch gelesen, nicht der Betrag. Mit `--oeffnen` gehen die Belege
+  gleich im Betrachter auf.
+
+### Was bewusst NICHT gemeldet wird
+
+Damit keine Fehlalarm-Flut entsteht, wurde an **1.797 echten Belegen** gemessen. Ausgenommen
+bleiben: Reverse-Charge und steuerfreie Belege (0 %, da ist nichts zu rechnen) · Rechnungen
+ohne ausgewiesenen Steuerbetrag (bis 250 € nach § 33 UStDV erlaubt) · Belege mit gemischten
+Steuersätzen (die prüft der Gesundheits-Check bereits positionsweise). Toleranz: 2 Cent,
+wie überall sonst.
+
+**Ergebnis der Messung:** 22 von 1.797 Belegen fallen auf — 1,2 %. Darunter acht mit
+negativem Steuerbetrag bei positiver Rechnung, was kein Beleg so ausweisen kann.
+In Summe stehen dort rund 657 € Vorsteuer in Frage.
+
+## v1.230.0 — Postfach einrichten: ein Befehl führt dich durch (2026-08-18)
+
+### Neue Funktionen
+
+- **Neu: `node tools/email-invoice-scraper/src/postfach-einrichten.mjs`** — richtet dein
+  Postfach Schritt für Schritt ein, statt dich mit einer Anleitung allein zu lassen.
+  Der Assistent **prüft zuerst, ob das Google-Programm (gws) schon einsatzbereit ist.**
+  Wenn ja, sagt er dir das und ist fertig — du musst nichts einrichten. Wenn nicht, zeigt
+  er beide Wege mit ihrem tatsächlichen Aufwand und führt dich durch den gewählten:
+  Klickweg zum App-Passwort, Prüfung deiner Eingabe, Eintrag in die Einstellungen,
+  sofortiger Verbindungstest. Das Passwort wird verdeckt eingegeben und nirgends angezeigt.
+- **Ein zweites Postfach überschreibt nie das erste** — der Assistent erkennt belegte
+  Plätze und legt das neue Konto daneben.
+
+### Welchen Weg empfiehlt Bruno?
+
+**Wenn das Google-Programm schon läuft: dieses.** Es erreicht mehr als nur E-Mail (auch
+Drive und weitere Google-Dienste) und kann erfasste Rechnungen in Gmail mit einem Label
+markieren — das kann der reine Postfach-Weg nicht.
+
+**Sonst: das Postfach direkt (IMAP).** Kein Zusatzprogramm, ein App-Passwort genügt, und es
+funktioniert auf Mac, Windows und Linux identisch — auch mit GMX, WEB.DE, iCloud und neun
+weiteren Anbietern. Auf Windows schlägt der Assistent diesen Weg zuerst vor.
+
+> Nachgemessen und ehrlich gesagt: Das Google-Programm braucht beim **ersten** Mal
+> Zugangsdaten aus der Google-Cloud (ohne die bricht die Anmeldung ab — an einem frischen
+> Rechner geprüft). Ist das einmal erledigt, ist es tatsächlich nur noch ein Freigabe-Klick.
+> Deshalb: schon eingerichtet → klar der bessere Weg. Neu anfangen → Postfach direkt ist
+> schneller am Ziel.
+
+## v1.229.0 — Gmail per IMAP am echten Postfach bewiesen (2026-08-18)
+
+### Verbesserungen
+
+- **Der Gmail-Weg über IMAP ist jetzt an einem echten Postfach getestet, nicht mehr nur
+  nach Anleitung gebaut.** Login angenommen, 5.056 Nachrichten gelesen, ein Probelauf fand
+  235 Rechnungsmails mit 292 Anhängen — ohne dass etwas verändert wurde.
+- **Dabei hat sich gezeigt, warum die sprachunabhängige Ordnersuche nötig war:** Das
+  Testkonto ist auf Deutsch, der Ordner heißt dort **„[Gmail]/Alle Nachrichten"** — nicht
+  „All Mail". Ein fest eingebauter englischer Name hätte **nichts** gefunden, und der Lauf
+  hätte trotzdem „fertig" gemeldet. Bruno fragt den Server nach dem Kennzeichen des Ordners,
+  deshalb funktioniert es in jeder Sprache.
+- **Neu dokumentiert: Firmen-Adressen brauchen eine Zusatzzeile.** Wer Gmail mit eigener
+  Domain nutzt (`name@deine-firma.de`, Google Workspace), muss `IMAP_PRESET=gmail` setzen —
+  an der Adresse allein ist nicht erkennbar, dass dahinter Gmail steckt. Der Hinweistext
+  sagt das jetzt, statt den Nutzer mit einer Fehlermeldung stehen zu lassen.
+
+### Welchen Weg soll ich nehmen?
+
+| | **IMAP** (empfohlen) | **Google-CLI** (`--source=gmail`) |
+|---|---|---|
+| Zusatzprogramm | keins | zwei: Google-CLI **und** gcloud |
+| Einrichtung | App-Passwort erzeugen (2 Minuten) | Cloud-Projekt anlegen, APIs freischalten, Anmeldung (Entwickler-Setup) |
+| Anbieter | Gmail + 11 weitere + eigener Server | nur Gmail |
+| Windows | läuft | erst seit v1.225.0 überhaupt lauffähig |
+| Kann Mails markieren | nein (liest ausschließlich) | ja (Label „KI-Buchhalter") |
+
+**Kurz:** IMAP ist der Standardweg — nichts zu installieren, überall gleich. Der Google-Weg
+lohnt nur, wenn du willst, dass erfasste Rechnungen in Gmail ein Label bekommen; seine
+Einrichtung ist deutlich aufwendiger, als sie klingt.
+
+## v1.228.0 — Postfach-Verbindung in 10 Sekunden prüfen (2026-08-17)
+
+### Neue Funktionen
+
+- **Neu: `node tools/email-invoice-scraper/src/imap-verbindungstest.mjs`** — sagt dir sofort,
+  ob dein Postfach erreichbar ist, **bevor** du einen echten Lauf startest. Der Test holt
+  keine Mails und zeigt keine Inhalte; er beantwortet vier Fragen: Werden die Zugangsdaten
+  angenommen? Welchen Ordner liest Bruno wirklich? Wie viele Nachrichten liegen darin?
+  Welche Sonderordner meldet dein Anbieter?
+  Zweites Postfach prüfen: die Zahl anhängen (`… imap-verbindungstest.mjs 2`).
+  Schlägt der Login fehl, nennt der Test den Grund für **deinen** Anbieter — bei Gmail zum
+  Beispiel den Klickweg zum App-Passwort, statt einer technischen Fehlermeldung.
+- **Die `.env.example` erklärt jetzt den IMAP-Weg vollständig** — welche Anbieter erkannt
+  werden, wo das Gmail-App-Passwort herkommt, wie ein zweites Postfach angebunden wird und
+  womit du die Verbindung prüfst. Bisher stand dazu nichts drin.
+
+> Am eigenen Postfach verifiziert: Login angenommen, Ordner über das Server-Kennzeichen
+> korrekt erkannt, Nachrichten gezählt. Der Test öffnet das Postfach ausdrücklich
+> schreibgeschützt — er kann nichts löschen, verschieben oder als gelesen markieren.
+
+## v1.227.0 — Suche findet jetzt auch Wörter IM Beleg (2026-08-17)
+
+### Neue Funktionen
+
+- **Volltextsuche über deine Belege.** Bisher fand die Beleg-Suche nur, was in den Stammdaten
+  stand: Anbieter, Rechnungsnummer, Betrag, Datum, Dateiname. Jetzt durchsucht sie zusätzlich
+  den **Inhalt** jedes Belegs — ein Produktname, eine Vertragsklausel, ein Leistungszeitraum.
+  Treffer zeigen die Fundstelle als Textausschnitt, damit du sofort siehst, wo es steht.
+- **Auch eingescannte Belege und Fotos werden durchsuchbar.** Belege ohne eingebetteten Text
+  (Kassenzettel-Fotos, Scans) liest ein **lokales** Texterkennungs-Programm — nichts verlässt
+  deinen Rechner. Wichtig: Dieser Text dient NUR der Suche. Gebucht wird weiterhin
+  ausschließlich aus der geprüften Beleg-Erkennung mit allen Schutzregeln.
+- **Der Index hält sich selbst aktuell.** Der nächtliche Durchlauf zieht neue Belege
+  automatisch nach (nur Veränderte werden gelesen — dauert Sekunden). Einmalig von Hand:
+  `node system/_bin/volltext-indexieren.mjs`.
+- **Ehrliche Auskunft statt stiller Lücke:** Kann ein Beleg auch per Texterkennung nicht
+  gelesen werden, sagt die Suche das dazu („N Belege ohne lesbaren Text") — damit du aus
+  „kein Treffer" nie fälschlich „existiert nicht" schließt.
+
+### Verbesserungen
+
+- **„Gebühr" findet jetzt auch „Gebuehr"** (und umgekehrt) — Umlaut-Schreibweisen werden
+  gleich behandelt, in der ganzen Beleg-Suche.
+
+### Unter der Haube
+
+- Der Suchindex liegt als kleine Datei neben deinen Belegen — **keine Datenbank, kein
+  Server, kein Zusatzprogramm.** Er enthält Belegtexte und bleibt deshalb wie die Belege
+  selbst rein lokal (reist nie in Updates oder Exporte).
+- Am eigenen Bestand gemessen: 2.048 Belege eingelesen in unter 2 Minuten, davon 105 per
+  lokaler Texterkennung — nur 4 blieben unlesbar. Jeder weitere Lauf: Sekunden.
+
+## v1.226.0 — Gmail geht jetzt auch ohne Google-Zusatzprogramm (2026-08-17)
+
+### Neue Funktionen
+
+- **Gmail per IMAP — der zweite, einfachere Weg zu deinem Postfach.** Bisher brauchte Gmail
+  ein zusätzliches Google-Programm auf deinem Rechner. Jetzt reicht ein App-Passwort, und
+  Bruno liest dein Postfach genauso wie GMX, WEB.DE oder iCloud. Der bisherige Weg
+  (`--source=gmail`) bleibt bestehen — du hast die Wahl.
+  Einrichtung: `IMAP_USER` und `IMAP_PASSWORD` in die `.env`, fertig. Die Serverdaten
+  erkennt Bruno an deiner Adresse selbst.
+- **Wichtig dabei: Bruno liest bei Gmail ALLE Nachrichten, nicht nur den Posteingang.**
+  Gmail arbeitet mit Labels statt Ordnern — wenn du eine Rechnungsmail archivierst,
+  verschwindet sie aus dem Posteingang. Ein Programm, das nur dort schaut, findet sie nie
+  und meldet trotzdem „fertig". Genau diese stille Lücke ist vermieden.
+  Willst du wirklich nur den Posteingang: `IMAP_FOLDER=INBOX` setzen.
+
+### Unter der Haube
+
+- **Der Ordner wird beim Server erfragt, nicht geraten.** Gmail übersetzt seine Ordnernamen:
+  bei deutscher Kontosprache heißt „All Mail" schlicht „Alle Nachrichten". Ein fest
+  eingebauter englischer Name hätte bei jedem deutschen Konto ins Leere gegriffen — und ein
+  leerer Ordner sieht aus wie „keine neuen Rechnungen". Bruno fragt deshalb den Server nach
+  dem Kennzeichen des Ordners, das unabhängig von der Sprache gesetzt ist.
+
+> **Was geprüft ist:** Die Serverdaten sind gegen Googles Server verifiziert (er antwortet
+> und spricht IMAP), die Ordner- und Erkennungslogik ist durch 15 Tests abgesichert.
+> **Was noch aussteht:** ein echter Abruf mit einem Konto — dafür braucht es ein
+> App-Passwort. Das Preset ist deshalb als „nach Dokumentation" markiert, nicht als
+> „live getestet".
+
+## v1.225.0 — Auch der Gmail-Weg startet jetzt auf Windows (2026-08-17)
+
+### Verbesserungen
+
+- **Der Gmail-Abruf war auf Windows aus demselben Grund kaputt wie das Belege-Lesen — jetzt
+  behoben und dort geprüft.** Bruno rief das Google-Programm so auf, wie es nur auf Mac und
+  Linux funktioniert; auf Windows brach es sofort ab. Gemessen auf einem echten Windows-Rechner:
+  vorher Fehlermeldung, jetzt startet es sauber.
+  **Du brauchst dafür kein anderes Programm** — es ist dasselbe, es wurde nur falsch gestartet.
+- **Beide Programme (Belege-Lesen und Gmail) nutzen jetzt dieselbe Such-Logik.** Vorher gab es
+  sie zweimal, und der zweite Ort hat den Fix des ersten nie mitbekommen — genau deshalb war
+  der Gmail-Weg noch kaputt, als das Belege-Lesen längst lief. Ein Fix wirkt jetzt für beide.
+- **Die Fehlermeldung auf Windows hilft jetzt wirklich weiter.** Sie empfahl bisher `brew` —
+  ein Mac-Werkzeug, das es auf Windows gar nicht gibt. Jetzt nennt sie den npm-Weg **und** den
+  einfacheren Ausweg: `--source=imap` liest dein Gmail genauso, ganz ohne Zusatzprogramm.
+
+> Auf Windows getestet, nicht angenommen: Der Test prüft zuerst, dass der **alte** Weg dort
+> wirklich scheitert — sonst würde ein grüner Haken nichts beweisen.
+
+## v1.224.0 — Eine Anleitung für die Übergabe an den Steuerberater (2026-08-17)
+
+### Verbesserungen
+
+- **Alles zum Steuerberater-Export steht jetzt an einer Stelle.** Bisher war das Wissen dazu
+  über mehrere technische Dateien verstreut — teils veraltet, teils nur als Notiz im
+  Programmcode. Neu: eine zusammenhängende Anleitung, die erklärt, welche Wege es gibt, welcher
+  wann der richtige ist, und welche Fallen es gibt.
+  Nachzulesen unter `system/connectors/DATEV-EXPORT-WEGE.md`; die bisherigen Dateien verweisen
+  jetzt darauf, damit man nicht mehr an der falschen Stelle sucht.
+- **Zwei Stolperfallen sind darin ausdrücklich festgehalten:**
+  Eine Rechnung vom Monatsende wird oft erst im Folgemonat bezahlt — sie sieht im Export des
+  eigenen Monats „offen" aus, ist es aber nicht. Und: eine fertige Export-Datei wird **nie**
+  nachträglich von Hand ergänzt. Fehlt ein Beleg, gehört er vorher ins Buchhaltungssystem,
+  sonst gibt es zwei Fassungen derselben Buchung.
+
+### Unter der Haube
+
+- Eine ältere Notiz behauptete, das Buchhaltungssystem könne die Belege über die Schnittstelle
+  gar nicht mitliefern. Das war nur für die frühere Voreinstellung richtig und ist korrigiert —
+  belegt durch einen echten Export.
+
+## v1.223.0 — Modus 4 ist jetzt deine Übersichts-Seite (2026-08-17)
+
+### Neue Funktionen
+
+- **Aus „Report" wird „Übersicht".** Modus 4 zeigt dir ab sofort **eine Seite zum Anklicken**
+  statt eines Berichts zum Lesen. Links eine Navigation, vier Bereiche:
+  **Übersicht** (Ampel + nur das, wo du etwas tun musst) · **Belege** · **Bank** ·
+  **Auswertung** (Zahlen). Die Nummer bleibt die 4 — du musst dir nichts Neues merken.
+- **Ganz oben eine Ampel:** „Keine Auffälligkeiten" oder „3 kritische Funde — bitte zuerst
+  ansehen", mit Datum der letzten Prüfung. War lange keine Prüfung, sagt sie das offen, statt
+  beruhigend grün zu leuchten.
+- **Umsatzsteuer: zahlen oder zurückbekommen?** Die Auswertung zeigt jetzt beide Seiten —
+  eingenommene Umsatzsteuer, gezahlte Vorsteuer und daraus **die eine Zahl, die zählt**.
+  Rot, wenn du zahlen musst, grün, wenn du etwas zurückbekommst. (Vorschau aus deinen
+  Buchungen — verbindlich wird es mit der Voranmeldung.)
+- **Zeitraum frei wählbar:** Dieser Monat · Letzter Monat · Letzte 3 · Letzte 6 Monate ·
+  Dieses Jahr · Vorjahr · oder ein eigenes Von-Bis. Alles ohne Neuladen.
+- **Tabellen wie du sie erwartest:** jede Spalte sortierbar, Suche über alles **und** je Spalte,
+  Filter-Knöpfe mit Zähler. Bei aktivem Filter steht die Summe der angezeigten Zeilen daneben.
+- **Bank-Ansicht beantwortet die richtige Frage.** Statt technischer Status-Wörter steht dort
+  jetzt: **Beleg fehlt · Beleg da · Fertig · Kein Beleg nötig · Privat.** Wichtig dabei:
+  Umbuchungen zwischen deinen eigenen Konten, Privatentnahmen und Darlehen zeigen
+  „Kein Beleg nötig" — dafür gibt es keine Rechnung, das ist kein Mangel.
+- **Erklärungen dort, wo die Frage entsteht:** Fahr mit der Maus über eine farbige Status-Pille
+  und du siehst, was sie bedeutet. Über der Tabelle lässt sich zusätzlich eine kurze Legende
+  aufklappen (für Handy und Tablet, wo es kein „Drüberfahren" gibt).
+
+### Unter der Haube
+
+- Die Seite **rechnet keine Zahl selbst** — sie zeigt an, was der Rechenkern liefert. So kann
+  sie den Zahlen an anderer Stelle nie widersprechen. Fehlen die Zahlen für ein Jahr, sagt sie
+  das offen und nennt den Befehl, statt etwas zu erfinden.
+- Der Seitenbau **prüft sich selbst**: Ist das erzeugte Skript fehlerhaft, bricht er ab und
+  schreibt die Datei gar nicht erst. Vorher konnte eine beschädigte Seite entstehen, die
+  vollständig aussah, aber auf keinen Klick reagierte.
+
+## v1.222.0 — Ein Befehl zeigt, was auf deinem Rechner fehlt (2026-08-17)
+
+### Neue Funktionen
+
+- **Neu: `node system/_bin/umgebung-check.mjs`** — sagt dir in Sekunden, welche Hilfsprogramme
+  Bruno auf DEINEM Rechner vorfindet und welche fehlen. Wichtig ist dabei die mittlere Kategorie:
+  **Programme, deren Fehlen man sonst nicht merkt.**
+  Beispiel: Ohne das PDF-Werkzeug `pdftotext` bucht Bruno ganz normal weiter — nur die Kontrolle
+  „stimmt der gelesene Betrag mit dem Betrag im PDF überein?" fällt lautlos weg. Im Protokoll
+  sieht das aus wie Normalbetrieb. Der Check macht genau das sichtbar und nennt zu jedem Programm
+  die konkrete Folge plus den Installationsweg für dein System.
+
+### Verbesserungen
+
+- **Windows-Antwort in den FAQ ist jetzt konkret statt vage.** Neu darin: Nutze auf Windows den
+  IMAP-Weg für dein Postfach — der braucht **kein** Zusatzprogramm und liest Gmail genauso wie
+  GMX, WEB.DE, T-Online, iCloud und weitere. Der reine Gmail-Weg hängt an einem Google-Programm,
+  das auf Windows nicht geprüft ist. Ebenfalls beschrieben: welche PDF-Werkzeuge du dort
+  nachinstallieren solltest und was ohne sie passiert.
+
+## v1.221.0 — Neuer Wächter: „Die Rechnungen kommen, aber es zahlt niemand mehr" (2026-08-18)
+
+### Neue Funktionen
+
+- **Zahlungsweg-Wächter (Prüfung 33).** Er meldet Anbieter, bei denen die Rechnungen
+  weiterlaufen, die Zahlungen aber aufgehört haben — der typische Fall einer abgelaufenen
+  oder abgelehnten Karte. Der Anbieter stellt weiter in Rechnung, zieht aber nicht mehr ein.
+  Das läuft sonst still auf: Entweder sammeln sich offene Forderungen an, oder betriebliche
+  Kosten werden privat gezahlt und fehlen dauerhaft in deiner Gewinnermittlung. Beides merkt
+  man normalerweise erst beim Jahresabschluss.
+  **Realer Anlass:** Bei einem Anbieter liefen drei Monate lang Rechnungen auf, ohne dass
+  eine einzige Zahlung ankam — auf den Belegen stand sogar „payment unsuccessful". Gemerkt
+  hat es niemand, weil bisher nur die Gegenrichtung geprüft wurde (Kontobewegung ohne Beleg).
+- Der Wächter meldet **eine Zeile pro Anbieter**, nicht pro Rechnung, und nennt die offene
+  Summe. Er behauptet nie, dass etwas falsch ist — er sagt, wo du nachsehen solltest.
+
+### Verbesserungen
+
+- **Der Anbieter-Namensabgleich erkennt vier weitere Schreibweisen.** Deine Bank schreibt
+  Anbieter oft ganz anders als deren Rechnung (z.B. „ZOOM.COM 888-799-9666" statt „Zoom
+  Communications, Inc."). Vier solcher Paare sind ergänzt — das hilft auch beim normalen
+  Zuordnen von Zahlungen, nicht nur dem neuen Wächter.
+
+### Unter der Haube
+
+- Neue Prüfung mit 22 Testfällen. Besonders wichtig darin: **drei Anbieter, die auf keinen
+  Fall gemeldet werden dürfen** (sie zahlen durchgehend, die Bank schreibt sie nur anders).
+  Eine erste Fassung des Wächters hätte sie fälschlich gemeldet — drei Fehlalarme bei fünf
+  Meldungen. Solche Fälle sind jetzt dauerhaft als Test eingefroren.
+- Zwei Fehltreffer, die beim Bau auffielen, sind ebenfalls als Test gesichert: „Deutsche
+  Post" darf nie mit „Deutsche Bank" verwechselt werden, „OpenAI" nie mit „OPEN AIR FESTIVAL".
+- Prüf-Sammellauf: 65 Prüfungen, alle grün.
+
+## v1.220.0 — Gebuchte Belege landen jetzt zuverlaessig im Belegarchiv (2026-08-17)
+
+### Neue Funktionen
+
+- **Neuer Befehl `archiv-nachziehen`: holt gebuchte Belege ins Archiv, die dort fehlen.**
+  Bisher gab es eine Luecke: der bestehende Abgleich arbeitet ueber die Jahres-Indexdatei
+  (`manifest.json`). Belege, die in einem Sonderordner liegen (z.B. `_duplicates`), sind dort
+  gar nicht verzeichnet — sie waren fuer den Abgleich unsichtbar und blieben liegen, obwohl sie
+  laengst gebucht und bezahlt waren. Der neue Befehl prueft stattdessen die DATEIEN selbst.
+  Gemessen im ersten Lauf: **170 gebuchte Belege lagen ausserhalb des Archivs**, jetzt sind es 0.
+  Warum das wichtig ist: nach §147 AO musst DU die Belege vorlegen koennen, nicht dein Anbieter.
+  Ein gebuchter Beleg gehoert deshalb ins Archiv, nicht in ein Zwischenlager.
+
+### Verbesserungen
+
+- **Zwei echte Buchungsfehler gefunden und korrigiert** (beide bei Marcel live):
+  - Ein Post-Filialbon mischte steuerfreies Porto (§4 UStG) mit einem Artikel zu 19 %. Gebucht
+    war pauschal 19 % — **0,88 € Vorsteuer zu viel gezogen**. Ursache war ein Anbieter-Eintrag,
+    der "Deutsche Post = immer 19 %" behauptete, obwohl Porto steuerfrei ist. Der Eintrag ist
+    deaktiviert; Post-Belege gehen jetzt in die Pruefung statt pauschal durchzulaufen.
+  - Ein Werbe-Zahlungsbeleg war mit 5,02 € gebucht, das Dokument nennt 2,00 €. Gegenprobe:
+    ueber alle Konten existiert keine einzige Abbuchung ueber 5,02 €. Korrigiert.
+- **Die Pruefung meldet keine Fehlalarme mehr bei Rueckerstattungen.** Eine Gutschrift auf eine
+  eigene Ausgangsrechnung wurde faelschlich als "zu Unrecht gezogene Vorsteuer" gemeldet. Sie ist
+  aber das Gegenteil: eine Stornierung. Zwei neue Dauertests halten die Grenze — echte
+  Fehlbuchungen werden weiterhin gemeldet.
+
+### Unter der Haube
+
+- Beim Aendern eines Belegs wird der Steuerschluessel jetzt aus dem Bestand uebernommen statt neu
+  gesetzt. Wer bei einer Betrags-Korrektur nebenbei die Steuerart ueberschreibt, macht aus einem
+  kleinen Lesefehler eine echte Fehlbuchung.
+- Der Weg "gebuchten Beleg wieder aenderbar machen" laeuft ueber zwei Stufen; das war vorher nur
+  fuer einen Teil der Faelle richtig umgesetzt.
+- 19 Datei-Kopien, die nachweislich (Pruefsumme) identisch mit einer archivierten Datei sind,
+  wanderten aus den Arbeitsordnern ins Duplikat-Lager. **Geloescht wurde nichts** — bei 64
+  gleichnamigen Dateien hatten 18 einen ANDEREN Inhalt; wer nach Dateinamen loescht, vernichtet
+  Belege.
+
+## v1.219.0 — Windows-Fix jetzt auf echtem Windows bewiesen (2026-08-17)
+
+### Verbesserungen
+
+- **Der Windows-Fix aus v1.216.0 war noch nicht vollstaendig — jetzt ist er es, und zwar
+  nachweislich.** Bruno suchte beim Start des Lese-Programms nach einer bestimmten Datei
+  (`cli.js`). Die gab es in aelteren Claude-Code-Versionen; in den aktuellen heisst der
+  Einstiegspunkt anders und ist ein Programm statt einer Textdatei. Der Fix haette also
+  nach dem naechsten Update erneut versagt.
+  **Jetzt liest Bruno den Einstiegspunkt dort aus, wo der Hersteller ihn selbst
+  hinterlegt** — damit ueberlebt der Fix kuenftige Umbauten.
+- **Zweiter Fund derselben Ursache:** Bruno haette das Lese-Programm auf Windows auch dann
+  als "nicht verfuegbar" gemeldet, wenn es laengst funktioniert — und es dann still
+  uebersprungen. Behoben.
+- **Neu: eine echte Windows-Testumgebung.** Vor jeder Auslieferung laeuft der komplette
+  Ablauf automatisch auf einem echten Windows-Rechner: Wird der alte Fehler wirklich
+  reproduziert? Startet das Programm? Wird eine Testrechnung korrekt ausgelesen?
+  Bisher liess sich das auf einem Mac gar nicht pruefen.
+
+> Diese Version ist die erste, deren Windows-Tauglichkeit **gemessen** ist statt
+> angenommen: echtes Windows, echter Start, echte Rechnung, alle Felder korrekt.
+
+## v1.218.0 — Monatsweise an den Steuerberater übergeben, mit Belegen im Paket (2026-08-17)
+
+### Neue Funktionen
+
+- **Du kannst jetzt einzelne Monate an deinen Steuerberater übergeben, nicht nur ganze Jahre.**
+  Ein Befehl, ein fertiges Paket:
+  `node tools/sevdesk-connector/datev-export.mjs --monat 2025-03 --live`
+  Der Monat wird korrekt abgegrenzt — auch im Februar und im Schaltjahr. Statt einmal im Jahr
+  einen Berg bekommt dein Steuerberater jeden Monat ein überschaubares Paket.
+- **Die Belege liegen jetzt automatisch bei.** Vorher enthielt das Paket nur die Buchungsliste,
+  die Rechnungen musste dein Steuerberater sich selbst suchen. Jetzt sind die PDF-Rechnungen
+  mit im Paket, samt der Datei, mit der DATEV jeden Buchungssatz automatisch der richtigen
+  Rechnung zuordnet. Dein Steuerberater sieht also nicht nur „500 Euro auf Konto X", sondern
+  kann die Rechnung direkt daneben aufmachen. Willst du nur die Liste: `--ohne-belege`.
+
+### Verbesserungen
+
+- **Ein Zähl-Fehler an der Monatsgrenze ist behoben.** Wer bisher „bis 31. März" angab, bekam
+  zusätzlich Belege vom 1. April mitgeliefert (im Test 3 Stück). Bei zwölf Monatsexporten
+  hintereinander wären diese Belege doppelt beim Steuerberater gelandet. Jetzt heißt „bis
+  31. März" auch wirklich bis 31. März.
+- **Klarere Ansage beim Export:** Bruno schreibt jetzt hin, welchen Zeitraum er tatsächlich
+  abfragt und ob die Belege mit im Paket sind — du musst nicht mehr ins ZIP schauen, um es
+  zu wissen.
+
+### Unter der Haube
+
+- Der Buchhaltungssystem-Export liefert Rechnung und Zahlung als verknüpftes Paar (Kreditoren-
+  Modell). Im Vergleichstest März 2025: 49 Zahlungszeilen über die Schnittstelle, null beim
+  rein lokalen Weg. Deshalb bleibt die Schnittstelle der empfohlene Weg für die Übergabe.
+- Eine Rechnung vom Monatsende wird oft erst im Folgemonat bezahlt. Bruno wertet eine fehlende
+  Zahlung im selben Monat deshalb nicht mehr als Auffälligkeit, sondern schaut über die
+  Monatsgrenze — im Test blieb von 6 vermeintlich offenen Posten genau 1 echt offen.
+
+## v1.217.0 — Eine Übersichtsseite zum Anschauen + neue Prüfung „liegt jeder Beleg bei dir?" (2026-08-17)
+
+### Neue Funktionen
+
+- **Eine Übersichtsseite, die du einfach anklickst.** Bisher hat Bruno zwar alles geprüft, die
+  Ergebnisse lagen aber verteilt über viele einzelne Berichte. Jetzt gibt es **eine Seite**:
+  links eine Navigation (Übersicht · Belege · Bank · Status erklärt), oben Kennzahlen, darunter
+  deine Belege und Kontobewegungen als durchsuchbare Liste mit Statusfarbe.
+  Sie ist eine einzige Datei — Doppelklick, fertig. Kein Programm läuft im Hintergrund, es wird
+  nichts installiert und **nichts verändert**: reine Ansicht.
+  Aufruf: `node tools/sevdesk-connector/uebersicht.mjs` (optional `--jahr 2026`).
+- **Die Status kommen unverändert aus deinem Buchhaltungssystem** — Entwurf, Offen, Zugeordnet,
+  Teilweise bezahlt, Gebucht & bezahlt, Festgeschrieben. Bruno erfindet keine eigenen
+  Bezeichnungen, damit du hier und dort dasselbe siehst. Eine eigene Seite erklärt, was jeder
+  Status bedeutet und wann du etwas tun musst.
+- **Menüpunkt „Auswertung": die wichtigsten Zahlen aus dem Buchhaltungs-Report** direkt in der
+  Übersicht — Ausgaben, Vorsteuer, Reverse Charge, Geldfluss, Kontostände, größte Anbieter,
+  Ausgaben pro Monat. **Neben jeder Zahl steht in einem Satz, was sie bedeutet** — auch für
+  Begriffe wie „Vorsteuer" oder „Reverse Charge", die im Alltag niemand benutzt.
+  Die Zahlen werden dabei *nicht* neu berechnet, sondern aus dem Report übernommen: so steht
+  in beiden Ansichten garantiert dasselbe. Ist für ein Jahr noch kein Report erzeugt, sagt die
+  Seite das offen und nennt den Befehl — statt eigene Zahlen zu erfinden.
+
+- **Neue Prüfung: liegt zu jeder Buchung der Beleg auch bei dir?** Dein Buchhaltungssystem kennt
+  den Status jeder Buchung — es garantiert aber nicht, dass die Datei bei *dir* liegt. Genau das
+  prüft Bruno jetzt im Gesundheits-Check mit. Wichtig ist das, weil im Prüfungsfall **du**
+  die Belege vorlegen musst, nicht dein Anbieter (§147 AO).
+  Findet die Prüfung etwas, sagt sie klar: die Buchung ist richtig, nur die Ablage ist
+  unvollständig — und nennt den Suchbefehl, mit dem du zuerst lokal nachsiehst, bevor du beim
+  Anbieter nachforderst.
+
+### Verbesserungen
+
+- **Einrichtung ohne Copy-Paste.** In der Anleitung stand ein Textblock, den man in Claude Code
+  einfügen sollte. Das war nur ein Notnagel — nötig war er nie. Jetzt steht dort der echte Weg:
+  Ordner öffnen, **`/ki-buchhalter`** tippen, fertig. Bruno merkt selbst, dass er dich noch nicht
+  kennt, und führt dich durch die Einrichtung. (Danke an einen Kunden für den Hinweis, dass die
+  Anleitung technischer wirkte, als die Einrichtung tatsächlich ist.)
+- **Der Bericht „Kontobewegungen ohne Beleg" kann seine Zahlen jetzt weitergeben** (`--json`) —
+  Grundlage dafür, dass die Übersichtsseite dieselben Zahlen zeigt, statt sie ein zweites Mal
+  auszurechnen.
+
+### Unter der Haube
+
+- Die neue Beleg-Prüfung war als Baustein bereits vorhanden, wurde aber **von keiner Stelle
+  aufgerufen** — sie lief also nie. Das ist jetzt behoben und durch Wächter-Tests abgesichert.
+- Beim Anschließen ist genau dieser Fehler ein zweites Mal aufgetreten: die Prüfung las die
+  Belegnummer an einer Stelle, die es gar nicht gibt, und meldete daraufhin **502 statt 45**
+  fehlende Belege. Aufgefallen ist es, weil „0 von 503 vorhanden" unmöglich sein kann.
+  Sieben neue Wächter-Tests — darunter absichtliche Sabotage-Proben — sorgen dafür, dass so
+  etwas nicht unbemerkt zurückkommt.
+
+## v1.216.0 — Auf Windows werden Belege wieder gelesen (2026-08-17)
+
+### Verbesserungen
+
+- **Windows: das Auslesen deiner Belege startet jetzt zuverlässig.** Bisher konnte es dort
+  passieren, dass Rechnungen zwar aus dem Postfach ankamen, aber **keine einzige ausgelesen
+  wurde** — es entstand also kein einziger buchbarer Datensatz. Bei einer Kundin traf das
+  18 von 18 Belegen. Ursache: Windows startet das Lese-Programm anders als Mac und Linux;
+  Bruno hat den Windows-Weg schlicht nicht gekannt. Auf Mac und Linux ändert sich nichts.
+- **Drei weitere Stellen, die auf Windows aus demselben Grund nicht liefen, sind mitgefixt:**
+  der Datenschutz-Modus (Belege lokal lesen, nur maskierten Text weitergeben), der
+  Zweitblick beim Gesundheits-Check, und die automatische Wahl des Lese-Verfahrens.
+  Der letzte Punkt war besonders tückisch: das Lese-Verfahren wurde auf Windows still
+  übersprungen, auch wenn es längst funktioniert hätte — ohne Fehlermeldung.
+- **Neue Wächter-Tests** halten den Windows-Weg dauerhaft offen: sie prüfen die Programmsuche
+  für Windows, Mac und Linux getrennt und schlagen Alarm, wenn jemand versehentlich wieder
+  einen Mac-only-Pfad einbaut. Alle Tests wurden absichtlich sabotiert, um zu beweisen,
+  dass sie wirklich anschlagen.
+
+> Mit Dank an Marlis für den präzisen Fehlerbericht inklusive eigener Messung — der Fehler
+> wäre sonst weiter unbemerkt jeden Windows-Nutzer getroffen.
+
+## v1.215.0 — 59 liegengebliebene Belege freigeschaltet, neuer Ein-Klick-Abgleich für Anbieter (2026-08-17)
+
+### Neue Funktionen
+
+- **Neu: `sync-registry-to-map.mjs`** überträgt geprüfte Anbieter automatisch von der
+  Wissens-Datei in die Buchungs-Datei. Vorher brauchte jeder Anbieter ZWEI Einträge von Hand —
+  einer davon wurde regelmäßig vergessen, und die Belege blieben liegen, obwohl das Wissen da war.
+  Bewusst vorsichtig: übertragen wird nur, wenn die Steuerfolge eindeutig ist UND es in deiner
+  bisherigen Praxis mindestens drei gleichartige Vorbilder gibt. Alles andere bleibt Handarbeit.
+  8 Wächter-Tests, Vorschau-Modus ist Standard.
+
+### Verbesserungen
+
+- **Alle 59 Belege aus 2025/26, die als „nicht maschinell prüfbar" feststeckten, sind abgearbeitet**
+  (Scans und Fotos ohne lesbaren Text). Jeder wurde angesehen und mit Begründung eingeordnet:
+  Kassenbons, Restaurantrechnungen, handschriftliche Quittungen, Screenshots von Online-Rechnungen.
+  Fünf entpuppten sich als Werbe- und Service-Mails und wurden aussortiert statt gebucht.
+  Wichtige Einzelfunde: Postbelege sind nach §4 UStG **steuerfrei** (0 %, nicht 19 %), und eine
+  Media-Markt-Zeile war eine **Auszahlung**, keine Ausgabe.
+- **31 Anbieter neu ins Verzeichnis aufgenommen**, jeder mit belegtem Sitzland — bei
+  Widersprüchen zwischen Internet-Recherche und Rechnung gewinnt die Rechnung (ein Anbieter
+  wirkte online amerikanisch, die Rechnung wies ihn als französisch mit 20 % Steuer aus).
+  Wo der Sitz nicht sicher belegbar war, bleibt der Anbieter bewusst als „prüfen" markiert.
+
 ## v1.214.0 — „Fehlt ein Kontoauszug?" wird jetzt gemessen statt geschätzt (2026-08-18)
 
 ### Verbesserungen

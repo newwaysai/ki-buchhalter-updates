@@ -1,3 +1,639 @@
+## v1.210.0 — Versions-Wächter erkennt Rücksetzungen + Posteingang-Kontrolle (2026-08-17)
+
+### Verbesserungen
+
+- **Der Versions-Wächter erkennt jetzt auch Rücksetzungen.** Bisher prüfte er nur, ob eine
+  Versionsnummer einen Changelog-Eintrag hat — wurde die Nummer versehentlich auf einen älteren
+  Stand zurückgesetzt, blieb das unsichtbar (real passiert bei parallel laufenden Arbeiten).
+  Jetzt schlägt er an, sobald die eingetragene Version nicht die höchste ist. Der Vergleich
+  rechnet mit echten Zahlen, damit auch Version 1.10 korrekt als neuer gilt als 1.9.
+- **Neue Posteingang-Kontrolle** (`system/_bin/posteingang-check.mjs`): prüft nach jedem
+  Beleg-Einlese-Lauf, dass der Posteingang wirklich leer ist — lose Dateien oder volle
+  Unterordner werden gemeldet (nur Meldung, verschoben oder gelöscht wird nichts).
+
+## v1.209.0 — Nachtlauf startet schlanker, jeder Prüf-Schritt bleibt nachlesbar (2026-08-17)
+
+### Verbesserungen
+
+- **Leere Beleg-Ordner werden im Komplett-Durchlauf übersprungen** (gemessen: ~25 von 32
+  Perioden-Ordnern enthalten gerade nichts Buchbares — jeder kostete trotzdem einen
+  Programmstart, zusammen rund eine Minute pro Lauf). Ordner mit Belegen laufen exakt wie
+  vorher; die Prüftiefe ändert sich nicht, nur der Leerlauf entfällt.
+- **Jeder Lauf-Abschluss wird jetzt zusätzlich als eigene Datei archiviert** (die neuesten 200).
+  Vorher überschrieb in einem Komplett-Durchlauf jeder Schritt das Prüf-Protokoll des vorigen —
+  der automatische Zweitprüfer sah am Ende nur den letzten (leeren) Schritt statt des ganzen
+  Laufs. Jetzt ist jeder Schritt einzeln nachlesbar, auch Abbrüche.
+
+## v1.208.0 — Rechnungen in Fremdwährung finden ihre Zahlung wieder (2026-08-18)
+
+### Verbesserungen
+
+- **Dollar-Rechnungen werden wieder ihrer Abbuchung zugeordnet.** Deine Bank bucht in Euro ab,
+  die Rechnung steht in Dollar — 120,00 USD wurden als 115,94 € belastet. Bruno verglich bisher
+  auf den Cent genau und fand deshalb *nie* eine passende Zahlung. Ergebnis: Belege blieben
+  liegen, obwohl die Zahlung längst auf dem Konto stand. Bruno rechnet jetzt den Kurs zurück und
+  erkennt die Abbuchung. Gemessen: **74 Belege von 24 Anbietern** haben dadurch wieder einen
+  belegten Zahlungsnachweis (Namecheap, ElevenLabs, OpenRouter, Anthropic, Replit u.a.).
+- **Anbieternamen werden robuster erkannt.** „Namecheap, Inc." auf der Rechnung und
+  „NAME-CHEAP.COM* KL4Q" auf dem Kontoauszug gelten jetzt als derselbe Anbieter. Firmierungs-
+  und Domain-Endungen (Inc., GmbH, .com) stören den Abgleich nicht mehr.
+- **Überholte Prüf-Vermerke aufgeräumt.** Zehn Belege trugen noch einen Vermerk aus einer
+  einmaligen Sonderprüfung im August und warteten seither auf eine Freigabe, die niemand mehr
+  geben musste. Sie sind wieder im normalen Ablauf.
+
+### Unter der Haube
+
+- Der Kursabgleich ist **strenger** als der normale Betragsvergleich, nicht lockerer: Er greift
+  nur bei Fremdwährung, verlangt zusätzlich einen passenden Anbieternamen, akzeptiert nur Kurse
+  im gemessenen Korridor (0,80–0,98) und urteilt **gar nicht**, wenn mehrere Zahlungen in Frage
+  kommen. Euro-Rechnungen werden unverändert auf den Cent genau geprüft.
+- Doppelt-Buchen-Schutz erweitert: Ein Beleg gilt jetzt auch dann als vorhanden, wenn er unter
+  einer *anderen* Belegnummer schon gebucht ist — erkannt über Originalbetrag und Datum. Genau
+  dieser Fall trat auf (derselbe Beleg, zwei Nummern) und wurde abgefangen.
+- 23 neue automatische Prüfungen sichern die Änderungen ab, darunter die Fälle, die
+  **nicht** durchgehen dürfen (fremder Anbieter mit ähnlichem Namen, unplausibler Kurs,
+  mehrdeutige Zuordnung, Geldeingang statt Ausgabe).
+
+## v1.207.0 — Brunos Regelwerk: schlanker Kopf, gleiche Härte (2026-08-17)
+
+### Verbesserungen
+
+- **Das zentrale Regelwerk ist übersichtlicher geworden (Stufe 1 von 2):** Acht Regel-Komplexe,
+  die längst von Code-Prüfern erzwungen werden (z.B. „liegt der Beleg schon da?",
+  Offenstand-Messung, Versions-Wächter), stehen jetzt als kompakter Kernsatz mit Verweis auf
+  den Prüfer. Die ausführlichen Herleitungen und Real-Fälle sind vollständig in die neue Datei
+  `system/VERHALTENS-REGELN.md` umgezogen (reist mit dem Produkt mit). **Keine Regel wurde
+  gelöscht oder abgeschwächt** — bewiesen per Wortlaut-Abgleich (22 Kernsätze unverändert),
+  Sektions-Zählung (26 = 26) und Kanarien-Suite.
+- **Neue Schutzregel:** Vor jedem Verschieben/Löschen einer Bruno-Datei wird geprüft, ob sie
+  mit dem Produkt reist — verhindert, dass eine Datei still aus Kunden-Updates verschwindet.
+
+### Unter der Haube
+
+- Umbau in zwei getrennten, einzeln rückrollbaren Schritten (erst wortwörtliche Kopie, dann
+  Kürzung). Stufe 2 (Verhaltens-Regeln mit Beobachtungs-Auftrag) folgt erst nach 1–2
+  beobachteten Arbeitssitzungen ohne Auffälligkeit.
+
+## v1.206.0 — Alte Belege wissen jetzt auch, ob sie Einnahme oder Ausgabe sind (2026-08-18)
+
+### Verbesserungen
+
+- **Nachträglich geklärt: 27 ältere Belege hatten keine Richtungsangabe.** Bei neuen Belegen
+  passiert das längst automatisch beim Einlesen — Belege, die vorher erfasst wurden, hatten das
+  Feld nicht. Darunter **20 eigene Ausgangsrechnungen über 7.256,70 €**, die sonst Kandidaten
+  gewesen wären, versehentlich als Ausgabe mit Vorsteuer gebucht zu werden.
+- **Nur ergänzt, nie überschrieben:** Wo bereits eine Richtung stand, blieb sie unangetastet.
+  Wo kein sicheres Signal erkennbar war (330 Belege), bleibt das Feld **bewusst leer** — dann
+  greift beim Buchen weiterhin die Sperre und fragt nach. Ein geratener Wert wäre schlechter
+  als ein leerer: Er sähe geprüft aus.
+- **Jede Änderung nachvollziehbar:** Zu jedem Beleg ist vermerkt, woher die Richtung stammt;
+  von jeder geänderten Datei liegt eine Sicherungskopie daneben.
+- **Zusätzlicher Wächter für Versionsnummern:** Wird die Versionsdatei versehentlich auf einen
+  älteren Stand zurückgesetzt (passiert, wenn zwei Arbeitssitzungen parallel laufen), schlägt
+  die Prüfung jetzt Alarm. Vorher fiel das nur zufällig auf. Sabotage-getestet.
+
+## v1.205.0 — Ein Befehl von der Mail bis ins Archiv + ehrlicher Daten-Zeitstempel (2026-08-17)
+
+### Neue Funktionen
+
+- **`nachtlauf --mit-ingest`:** Der Komplett-Durchlauf kann jetzt optional das Beleg-Holen aus
+  deinen Postfächern mit erledigen — ein Befehl von der Mail bis ins Belegarchiv. Welche
+  Postfächer, bestimmst DU in deinem Profil (`ingest_quellen`); ohne Eintrag wird nichts
+  gescannt — Bruno rät nie ein Postfach. Gemischte Postfächer landen weiterhin zuerst im
+  Trenn-Ordner, nie direkt in der Buchungs-Queue.
+- **Alters-Stempel für den Daten-Schnappschuss:** Der lokale sevDesk-Schnappschuss (der
+  Auswertungen blitzschnell macht) trägt jetzt einen sekundengenauen Zeitstempel, und ein
+  Prüfbefehl nennt sein Alter („Stand vor 12 Min"). So gilt ein alter Datenstand nie unbemerkt
+  als aktuell. Grundsatz unverändert: der Schnappschuss dient nur dem schnellen FINDEN —
+  gebucht und verknüpft wird ausschließlich gegen die Live-Daten deines Buchhaltungssystems.
+
+## v1.204.0 — Bank-Abgleich sieht jetzt IMMER alle deine Konten (2026-08-17)
+
+### Neue Funktionen
+
+- **Der Beleg-Bank-Abgleich läuft jetzt standardmäßig über ALLE Konten in deinem
+  Buchhaltungssystem** — Bankkonten, Kreditkarten, Stripe-/PayPal-Verrechnungskonten, auch
+  aufgelöste Alt-Konten. Die Konten werden bei jedem Lauf live aus sevDesk gelesen: legst du
+  (oder dein Bank-Feed) ein neues Konto an, ist es automatisch dabei — nichts zu konfigurieren.
+  Vorher prüfte der Abgleich nur ein Standardkonto; Zahlungen auf anderen Konten blieben
+  unbemerkt liegen (real: 4 Rechnungen à 500 €, deren Zahlungen auf einem aufgelösten Konto
+  lagen — der Abgleich meldete „nichts gefunden").
+- **Sicherheit unverändert:** Jede Verknüpfung wird ans Konto der jeweiligen Zahlung gebucht.
+  Finden sich auf zwei Konten gleich gute Kandidaten, wird NICHT geraten, sondern zur Prüfung
+  vorgelegt — diese Verwechslungs-Klasse war vorher unsichtbar, jetzt wird sie erkannt.
+- Der automatische Nachtlauf nutzt das direkt: ein Abgleich-Schritt statt einer Konto-Schleife —
+  schneller, gleiche Prüftiefe.
+
+## v1.203.0 — Mehrere Rechnungen in EINER Mail werden nicht mehr verwechselt (2026-08-17)
+
+### Verbesserungen
+
+- **Schickt dir ein Anbieter mehrere Rechnungen in einer einzigen Mail** (z.B. nach einer
+  Nachforderung: vier Monats-Rechnungen zum gleichen Abo-Preis), erkennt Bruno jetzt jede als
+  eigene Rechnung. Vorher konnte die Dubletten-Erkennung sie für Kopien halten und nur eine
+  behalten — real passiert: von 4 angeforderten Rechnungen à 500 € wären 3 im Dubletten-Ordner
+  gelandet. Die Schutzfunktion für den Gegenfall (US-Anbieter legen Rechnung UND Quittung
+  derselben Zahlung in eine Mail — das IST ein Paar) bleibt erhalten. 5 neue Wächter-Tests.
+- **Alte Belege ohne „Beleg-Natur"-Prüfung werden jetzt beim Buchen nachgeprüft.** Belege, die
+  vor Einführung der Natur-Prüfung eingelesen wurden, umgingen das Tor „ist das überhaupt eine
+  Rechnung?" — so wurde eine Zahlungs-ANKÜNDIGUNG (5,90 €) als Rechnung gebucht, obwohl die
+  echte Rechnung längst im System war. Jetzt beurteilt Bruno die Natur solcher Alt-Belege
+  direkt vor dem Buchen aus dem Dokumententext nach — Ankündigungen und fehlgeschlagene
+  Zahlungen gehen in die Prüfliste statt ins Buchungssystem.
+
+## v1.202.0 — 59 längst gebuchte Belege lagen im Eingangsordner fest (2026-08-18)
+
+### Verbesserungen
+
+- **Belege, die schon gebucht und mit deinem Konto verknüpft waren, blieben im Eingangsordner
+  liegen** — sie sahen dort wie offene Arbeit aus. Ursache: drei getrennte Lücken, alle gefunden
+  und geschlossen. Ergebnis heute: **59 Belege korrekt ins Belegarchiv verschoben**, jeder mit
+  Eintrag im Prüfprotokoll.
+- **Lücke 1 — abweichende Nummern:** Manche Systeme führen einen Vorgang unter der
+  Bestellnummer, während auf der Rechnung die Rechnungsnummer steht (beide stehen auf demselben
+  Beleg). Bruno gleicht jetzt zusätzlich über die Bestellnummer ab — aber nur, wenn auch der
+  **Betrag auf den Cent passt**. Zwei Signale, nie eins allein.
+- **Lücke 2 — die Raute:** Steht die Nummer auf dem Beleg als „Rechnung #R91PW23", wurde die
+  Raute mitgespeichert und der Beleg galt als unbekannt. **27 Belege** waren betroffen, einer lag
+  nachweislich gebucht im Eingang. Wichtiger noch: derselbe Beleg hätte ein **zweites Mal**
+  hochgeladen werden können — die Raute war eine stille Doppel-Buchungs-Lücke.
+- **Lücke 3 — fehlende Verzeichnis-Einträge:** Einige Belege lagen als Datei da, ohne im
+  Jahresverzeichnis zu stehen; für jede Abfrage waren sie unsichtbar. Neues Werkzeug trägt solche
+  Einträge aus den vorhandenen Beleg-Daten nach — **nur ergänzend**, es ändert nie einen
+  bestehenden Eintrag und behauptet nie selbst, etwas sei gebucht (das entscheidet allein der
+  Abgleich mit deinem Buchhaltungssystem).
+- **Nebenbuchungen werden auseinandergehalten:** Zu einem Verkauf gehören oft zwei Buchungen
+  (Erlös + Zahlungsgebühr) mit derselben Nummer. Bruno ordnet Belege nie einer Gebührenbuchung
+  zu; bleibt es mehrdeutig, ordnet er **gar nicht** zu.
+- **21 neue Kontrollen** sichern das ab, darunter die Probe, dass ein Nachtrag niemals eine
+  Dublette erzeugt.
+
+## v1.201.0 — Brunos Schutzprüfungen kontrollieren sich jetzt gegenseitig (2026-08-18)
+
+### Verbesserungen
+
+- **Neue Kontrolle prüft, ob Brunos Sicherungen überhaupt angeschlossen sind.** Hintergrund: An
+  einem Tag kamen drei Fälle zusammen, in denen eine Prüfung zwar existierte, aber nie ansprang —
+  einmal, weil sie nur bei bereits auffälligen Belegen lief (**272 von 275 wurden nie geprüft**),
+  einmal, weil sie ein Feld auslas, das gar nichts füllt.
+- **Der Kern des Problems war nicht die einzelne Lücke, sondern das Muster:** Es gab längst eine
+  Regel dagegen — geschriebene Regeln greifen aber nur, wenn jemand daran denkt. Diese Kontrolle
+  ist deshalb kein Merksatz mehr, sondern läuft bei jedem Prüflauf automatisch mit und schlägt
+  Alarm, sobald eine Sicherung ihren Anschluss verliert.
+- **Selbst überprüft:** Die Kontrolle wurde bewusst sabotiert (ein Aufruf entfernt) — sie wurde
+  sofort rot und danach wieder grün. Zusätzlich prüft sie sich selbst gegen beide Fehlerrichtungen,
+  damit sie weder zu streng meckert noch alles stillschweigend durchwinkt.
+- **Ausdrücklich keine neue Automatik beim Buchen:** Diese Kontrolle liest nur, sie entscheidet
+  nichts und verschiebt oder verwirft keinen Beleg. Wo ein fachliches Urteil nötig ist (Ist dieser
+  Beleg relevant? Passt dieses Konto?), bleibt es bei einer sichtbaren Rückfrage — Automatik würde
+  dort Fehler unsichtbar machen statt verhindern.
+
+## v1.200.0 — Zwei neue Wächter: Versionsnummern und Anleitungs-Stand (2026-08-17)
+
+### Verbesserungen
+
+- **Keine doppelten Versionsnummern mehr.** Ein neuer Prüfer stellt sicher, dass jede
+  Bruno-Version genau EINEN Changelog-Eintrag hat und keine Nummer doppelt vergeben wird
+  (das war diese Woche zweimal passiert, wenn zwei Arbeitssitzungen parallel liefen).
+  Er meldet auch, wenn eine Version ohne Changelog-Eintrag existiert.
+- **Die Anleitung kann nicht mehr heimlich veralten.** Ein zweiter Prüfer vergleicht die
+  Setup-Anleitung in allen drei Formaten (Text, PDF, Vorschau-Seite) — sagen sie nicht
+  dasselbe, schlägt er Alarm. Genau so war das „14 statt 16 Modi"-PDF wochenlang
+  unbemerkt geblieben.
+
+### Unter der Haube
+
+- Beide Wächter laufen im Kanarien-Testlauf mit (jetzt 56 Prüfungen) und testen sich
+  vor jedem Lauf selbst gegen bekannte Fehlerfälle.
+- Der Versions-Prüfer fand beim ersten Lauf 17 historische Doppel-Nummern aus der
+  Vergangenheit. Sie sind als bekannte Altfälle markiert (sichtbar, aber kein Alarm) —
+  neue Doppel-Nummern werden ab sofort sofort gemeldet.
+
+## v1.200.1 — Bruno erkennt Ankündigungen, und er schaut sich Bilder an (2026-08-18)
+
+### Verbesserungen
+
+- **„Ihre Rechnung kommt demnächst" wird nicht mehr als Rechnung gebucht.** Manche Anbieter
+  schicken vor dem Einzug eine Vorab-Info („bevorstehende Rechnungsstellung", „wir berechnen
+  demnächst"). Die sieht aus wie eine Rechnung — Betrag, Leistung, Datum — ist aber keine. Bruno
+  hat so eine Mail einmal gebucht, und weil die echte Rechnung später ebenfalls kam, stand die
+  Ausgabe doppelt in den Büchern. Erkennt er jetzt zuverlässig. Wichtig dabei: Eine echte
+  Rechnung, die nebenbei den Einzugstermin nennt, läuft weiterhin normal durch.
+
+- **Belege ohne Textebene werden zur Sichtprüfung markiert statt stillschweigend durchgewinkt.**
+  Bei eingescannten oder abfotografierten Belegen kann Bruno den Text nicht maschinell lesen —
+  damit liefen bisher alle automatischen Prüfungen (Mahnung, Vollständigkeit, Benachrichtigung)
+  bei genau diesen Dokumenten ins Leere, ohne dass das jemand gemerkt hätte. Sie werden jetzt
+  ausdrücklich als „Sichtprüfung nötig" ausgewiesen.
+
+- **Klargestellt: Ein Screenshot einer Rechnung ist ein gültiger Beleg.** Wenn alle
+  Pflichtangaben drauf sind (Aussteller, Anschriften, Steuernummern, Rechnungsnummer, Datum,
+  Leistung, Betrag, Steuersatz), ist das Dokument in Ordnung — unabhängig davon, ob Software den
+  Text auslesen kann. Bruno wertet fehlende Lesbarkeit nicht mehr als Beleg-Mangel.
+
+### Unter der Haube
+
+- Neue Grundregel #41: Bilddokumente werden gerendert und angesehen, bevor über sie geurteilt
+  wird. Ergänzend: Bevor ein Steuersatz als falsch gebucht gilt, prüft Bruno den Bestand des
+  Anbieters auf spätere Korrektur- oder Erstattungsbelege — ein Beleg kann überholt sein.
+- `beleg-natur.mjs`: neuer Erkennungszweig für Ankündigungen; greift nur ohne Rechnungsnummer.
+- Geprüft an 400 Belegen aus dem Bestand: 14 Treffer, alle korrekt, keine echte Rechnung gefangen.
+- 56 automatische Selbsttests grün.
+
+## v1.198.0 — Dein Ordner erklärt sich jetzt selbst (2026-08-17)
+
+### Verbesserungen
+
+- **Neue Orientierungs-Tabelle in der LIESMICH.** Direkt beim Einstieg siehst du jetzt in einer
+  kurzen Tabelle, welche Datei wofür da ist — und welche drei du im Alltag wirklich brauchst
+  (LIESMICH, deine Aufgaben-Liste, die nummerierten Beleg-Ordner). Der Rest ist als „Brunos
+  Maschinenraum" markiert, damit du nichts davon lesen oder verstehen musst.
+
+- **Frische Setup-Anleitung.** Die bebilderte Anleitung (PDF und Vorschau-Datei) nannte noch
+  14 Modi — Bruno kann inzwischen 16. Beide sind jetzt neu erstellt und stimmen wieder mit
+  dem überein, was Bruno wirklich kann.
+
+### Unter der Haube
+
+- Interne Arbeitsstand-Archive in den Maschinenraum (`system/archiv/`) verschoben — im
+  Hauptordner liegt weniger herum. Für dich ändert sich nichts.
+
+## v1.195.0 — Bruno nennt nichts mehr „offen", nur weil es so heißt (2026-08-18)
+
+### Verbesserungen
+
+- **Erledigte Zahlungen tauchen nicht mehr als To-do auf.** Wenn eine Monatsrechnung viele
+  einzelne Abbuchungen abdeckt (z.B. Kontogebühren: eine Rechnung, fünfzehn kleine Beträge),
+  blieben diese Bewegungen in einem Zwischen-Status stehen — obwohl die Rechnung längst
+  vollständig bezahlt war. Bruno hat sie deshalb in jedem Bericht als offene Arbeit gezählt.
+  Jetzt erkennt er den Unterschied und weist sie getrennt aus: „abgeschlossene Teilzahlung
+  (kein To-do)". Sie verschwinden nicht heimlich — du siehst weiterhin, wie viele es sind.
+
+- **Bruno prüft nach, bevor er dir Arbeit vorschlägt.** Auslöser war ein echter Fehlgriff: Er
+  hatte empfohlen, 120 Buchungen „nur noch abzuschließen" — geprüft ergab sich, dass sie bereits
+  abgeschlossen waren und jeder Versuch am System abgeprallt wäre. Neue Grundregel: Ein
+  Status-Name ist kein Beweis. Bevor Bruno etwas als offen, fehlend oder doppelt bezeichnet,
+  braucht er einen zweiten Beleg dafür — das Dokument, den Betrag oder eine Rückfrage ans System.
+
+### Unter der Haube
+
+- Neue Grundregel #40 („Ein Zustandsname ist kein Nachweis") mit vier belegten Beispielen aus
+  einem einzigen Arbeitslauf; verwandt mit den bestehenden Regeln #26/#30/#27b.
+- `offenstand.mjs`: erkennt abgeschlossene Teilzahlungen und zählt sie nicht mehr zur Restmenge.
+- Verhalten der Schnittstelle dokumentiert: Bewegungen aus Teilzahlungen bleiben dauerhaft im
+  Status „zugeordnet"; ein erneuter Buchungsversuch wird mit „bereits bezahlt" abgelehnt.
+
+## v1.197.0 — Deine eigenen Rechnungen landen nie mehr im Aufwand (2026-08-18)
+
+### Verbesserungen
+
+- **Bruno prüft jetzt bei JEDEM Beleg, ob er eine Eingangs- oder eine Ausgangsrechnung ist.**
+  Bisher passierte das nur bei Belegen, die schon aus einem anderen Grund auffällig waren —
+  bei allen übrigen wurde stillschweigend „Ausgabe" angenommen. In einer echten Buchhaltung
+  hatten **272 von 275 Rechnungen** keine Richtungsangabe.
+- **Der Fund dahinter:** Darunter lagen **44 eigene Ausgangsrechnungen** aus einem zweiten
+  Betrieb (Onlineshop). Als Eingangsrechnung gebucht wäre das doppelt falsch gewesen: Aufwand,
+  den es nicht gibt, plus Vorsteuer, die dir nicht zusteht — und der Umsatz hätte auf der
+  anderen Seite gefehlt. Gestoppt hatte sie nur ein Zufall (das Sachkonto war nicht hinterlegt).
+- **Woran Bruno es erkennt:** Steht die eigene Firma als **Absender** auf der Rechnung, ist es
+  eine Ausgangsrechnung. Steht sie als Empfänger, ist es eine Eingangsrechnung. Ist keins von
+  beidem erkennbar, wird **nicht geraten** — der Beleg bleibt zur Prüfung liegen.
+- **15 neue Kontrollen** halten das fest, inklusive der Gegenprobe, dass normale
+  Eingangsrechnungen unverändert durchlaufen.
+
+## v1.196.0 — Ein Schreibfehler kann keinen echten Buchungslauf mehr starten (2026-08-18)
+
+### Verbesserungen
+
+- **Das Buchungs-Werkzeug bucht ohne ausdrückliches „nur testen" scharf** — und ignorierte
+  bisher jede Option, die es nicht kannte. Ein Tippfehler startete damit stillschweigend einen
+  echten Lauf. Genau das ist beim Arbeiten passiert (folgenlos, weil kein Beleg im Zugriff war).
+  Ab jetzt bricht das Werkzeug bei jeder unbekannten Option ab und sagt, welche erlaubt sind.
+- **Auch der Fast-Treffer wird gefangen:** Ein einzelner Bindestrich statt zwei (`-dry` statt
+  `--dry`) rutschte in der ersten Fassung noch durch — die neue Schutzprüfung fand es beim
+  ersten Lauf, bevor es jemand anders bemerken konnte. Jetzt bricht auch das ab.
+- **11 neue Kontrollen** halten das fest, inklusive der Gegenprobe, dass richtige Optionen
+  weiterhin durchgehen. Der Beleg-Einleser hatte diesen Schutz längst — beim Buchen, also dort
+  wo Geld bewegt wird, fehlte er.
+
+## v1.195.0 — „Welche Zahlung hat keinen Beleg?" zeigt jetzt ALLE, nicht nur ein Drittel (2026-08-18)
+
+### Verbesserungen
+
+- **Der Bericht „Kontobewegungen ohne Beleg" sah bisher nur die bereits verknüpften Zahlungen
+  an.** Genau die Zahlungen, an denen noch gar nichts hängt — also der eigentliche Rückstand —
+  blieben unsichtbar. In einer echten Buchhaltung meldete er dadurch **29 Fälle, während 167
+  offen waren** (8.112 € statt 1.287 €). Ab jetzt prüft er standardmäßig jede Abbuchung, die
+  einen Beleg braucht. Rein privat markierte Zahlungen bleiben außen vor, die brauchen keinen.
+- **Jede Zahl nennt jetzt ihren Geltungsbereich.** Über dem Ergebnis steht, was geprüft wurde.
+  Eine Zahl ohne diese Angabe war der Grund, warum die Lücke so lange niemandem auffiel.
+- **Der alte, engere Blick bleibt möglich** — aber nur, wenn man ihn ausdrücklich anfordert
+  (`--nur-verknuepft`). Voreinstellung ist der vollständige.
+- **Neue Schutzprüfung mit 16 Kontrollen**, davon vier, die den alten Fehler absichtlich
+  nachstellen. Fällt der Bericht je auf den engen Blick zurück, schlägt die Prüfung an.
+
+## v1.194.0 — Bruno schickt dich nicht mehr los, um etwas zu suchen, das es nicht gibt (2026-08-18)
+
+### Verbesserungen
+
+- **Kein „hol mir bitte die fehlenden Kontoauszüge" mehr, wenn nichts fehlt.** Bruno hatte eine
+  Aufgabe vom Vortag ungeprüft übernommen und danach gefragt — die Auszüge gab es aber gar
+  nicht, weil das Konto längst geschlossen war. Neue Regel: Ein Punkt aus einer älteren
+  Aufgabenliste gilt als **Verdacht, nicht als Tatsache**. Bevor Bruno dich damit behelligt,
+  misst er neu. Eine Behauptung sieht nicht dadurch geprüft aus, dass sie irgendwo steht.
+- **Bei Konten zählt jetzt der Kontostand, nicht die Anzahl der Dateien.** „Für März liegt kein
+  Auszug vor" sagt nichts aus — ein geschlossenes Konto erzeugt keine Auszüge, und ein einziges
+  PDF kann vier Monate abdecken. Bruno prüft stattdessen die Saldenkette: Passt das Ende eines
+  Auszugs zum Anfang des nächsten, ist nichts verloren. Endet sie auf 0,00 €, ist das Konto zu
+  und es fehlt nichts.
+- **Zahlungshinweise auf Rechnungen werden nicht mehr für bare Münze genommen.** Auf vielen
+  Rechnungen steht „Wir buchen von Konto … ab" — oft eine veraltete Bankverbindung des
+  Anbieters. Real aufgetreten: Ein Versanddienst druckte monatelang ein Konto auf die
+  Rechnungen, das es nicht mehr gab. Bruno glaubt dafür ab jetzt nur dem Kontoauszug.
+
+## v1.193.0 — Berufsgeheimnis: die zweite Pflicht, die fast alle übersehen (2026-08-17)
+
+### Neue Funktionen
+
+- **Wenn du Steuerberater, Anwalt, Arzt oder Wirtschaftsprüfer bist, reicht der
+  Datenschutzvertrag (AVV) NICHT.** Du brauchst zusätzlich eine zweite Vereinbarung, in der sich
+  der Dienstleister zur Verschwiegenheit verpflichtet — und zwar ausdrücklich **mit Belehrung
+  über die strafrechtlichen Folgen**. Das ist keine Formalie: dahinter steht § 203
+  Strafgesetzbuch. Bruno kennt diese Pflicht jetzt und fragt bei der Einrichtung einmal nach,
+  ob sie dich betrifft.
+- **Für alle anderen ändert sich nichts.** Bist du normaler Unternehmer oder Selbstständiger,
+  gilt diese Pflicht für dich nicht — Bruno belastet dich dann auch nicht damit.
+- **Prüfliste statt Bauchgefühl:** Bruno hat jetzt sieben konkrete Fragen, mit denen sich jeder
+  KI- oder Cloud-Anbieter prüfen lässt (Vertrag schriftlich? Belehrung enthalten? Was ist mit
+  Subunternehmern? Was gilt bei Verarbeitung im Ausland?). Grundlage ist ein offizielles
+  Musterformular der Bundessteuerberaterkammer.
+
+### Verbesserungen
+
+- **Ehrlicher Anbieter-Stand, inklusive der Lücken:** Bei keinem der geprüften KI-Wege
+  (Anthropic, Amazon, Langdock) ist eine solche Berufsgeheimnis-Zusage öffentlich auffindbar.
+  Belegt ist sie nur bei Microsoft. Bruno sagt dazu klar: „nicht auffindbar" heißt **nicht**
+  „gibt es nicht" — solche Vereinbarungen stehen meist nur in Firmenkunden-Verträgen. Der
+  richtige Weg ist, sie beim Anbieter schriftlich anzufordern.
+- **Wichtig bei Auslandsanbietern:** Das Gesetz verlangt, dass der Geheimnisschutz im Ausland
+  dem deutschen „vergleichbar" ist. Das ist eine eigene Hürde zusätzlich zum Datenschutzrecht —
+  und ein starkes Argument für Anbieter mit Sitz in Deutschland oder der EU.
+- **Preisvergleich ergänzt und eine Zahl korrigiert:** Beispielrechnung für einen typischen
+  Monat, damit du siehst, was die Wege wirklich kosten. Kernaussage: Der Aufpreis für
+  EU-Verarbeitung liegt bei wenigen Euro im Monat — der eigentliche Kostenhebel ist die Wahl
+  des Modells, nicht der Zugangsweg.
+
+### Unter der Haube
+
+- Die Gesetzestexte (§ 57, § 62, § 62a Steuerberatungsgesetz) liegen jetzt **wortgetreu aus der
+  amtlichen Quelle** bei Bruno — maschinell extrahiert, mit Prüfsumme, kein KI-Modell hat den
+  Text angefasst. Zusätzlich archiviert: das Hinweispapier der Bundessteuerberaterkammer.
+- Bruno gibt hier bewusst **keine Rechtsberatung**: Er nennt die Prüfpunkte und verweist für die
+  verbindliche Freigabe an Anwalt oder Steuerberaterkammer.
+
+### Wissensstand
+
+- Berufsrecht/Verschwiegenheit: 2026-08-17
+
+## v1.192.0 — Entwurfs-Wächter: kein Beleg bleibt mehr unsichtbar im Entwurf hängen (2026-08-18)
+
+### Neue Funktionen
+
+- **Neue Prüf-Dimension „Entwurfs-Wächter":** Der Health-Check meldet jetzt jeden Beleg, der als
+  Entwurf im Buchhaltungssystem hängt. Entwürfe können technisch nie mit einer Kontobewegung
+  verknüpft werden und tauchen in keiner Auswertung auf — genau so blieben früher Dutzende
+  Belege monatelang unsichtbar liegen.
+- **Neues Werkzeug zum Anheben:** Bruno hebt vollständige Entwürfe selbst auf „Offen" an
+  (umkehrbar), damit sie beim nächsten Buchungslauf mitmachen. Unvollständige Entwürfe (ohne
+  Betrag, Position, Lieferant oder Datum) und Gutschriften fasst er bewusst nicht an, sondern
+  meldet sie. Belege aus Jahren, die dein Steuerberater schon abgeschlossen hat, sind tabu.
+- **Automatisch im Nachtlauf:** Das Anheben läuft ab sofort vor jedem nächtlichen Buchungslauf.
+
+### Verbesserungen
+
+- Beim ersten Echtlauf wurden 30 hängende Entwürfe gefunden: 28 angehoben (inkl. einer
+  Behörden-Gebühr, die falsch kontiert war und gleich richtig gebucht wurde), 1 Demo-Beleg
+  entfernt, 1 Gutschrift bewusst für ihren eigenen Buchungsweg liegen gelassen.
+
+### Unter der Haube
+
+- Neues API-Wissen: das Buchhaltungssystem prüft Konto/Steuerregel/Summen erst beim Anheben
+  eines Entwurfs, nicht beim Anlegen — die Fehlermeldung nennt dabei die erlaubten Steuerregeln
+  pro Konto. Vier neue Test-Dateien in der Prüf-Suite registriert (davon drei, die seit gestern
+  existierten, aber noch nicht automatisch mitliefen) — jetzt 50 bewachte Test-Dateien.
+
+## v1.191.0 — Klare Antworten zu Datenschutz, Vertrag und EU-Verarbeitung (2026-08-17)
+
+### Neue Funktionen
+
+- **Bruno erklärt dir jetzt genau, wie du den Datenschutz-Vertrag (AVV) bekommst.** Die gute
+  Nachricht vorweg: Du musst dafür **nichts beantragen und nichts unterschreiben**. Der Vertrag
+  ist automatisch Teil der Geschäftsbedingungen, sobald du einen geschäftlichen API-Zugang
+  nutzt. Was viele nicht wissen und was teuer werden kann: **Ein normales Claude-Abo (Pro/Max)
+  ist ein Privatvertrag und enthält diesen Vertrag NICHT.** Für eigene Belege ist das in
+  Ordnung, für Belege mit fremden Personendaten nicht.
+- **Die Frage „bleiben meine Daten in Europa?" ist jetzt eindeutig beantwortet.** Über den
+  direkten Zugang: **nein, das geht dort technisch nicht** — dort kann man die Verarbeitung nur
+  auf die USA festlegen. Wer echte EU-Verarbeitung braucht, geht über Amazon oder Google mit
+  europäischer Region. Bruno sagt dir das jetzt klar, statt es offen zu lassen.
+- **Der EU-Weg kostet etwa 10 % mehr — mehr nicht.** Diese Zahl nennt Bruno künftig aktiv bei
+  der Einrichtung (Modus 14), weil die meisten den Aufpreis für Datenschutz deutlich
+  überschätzen und deshalb aus Kostenangst den schlechteren Weg wählen.
+
+### Verbesserungen
+
+- **Ein wichtiges Detail beim EU-Weg, das leicht übersehen wird:** Es reicht nicht, eine
+  europäische Region einzustellen. Erst eine bestimmte EU-Einstellung sorgt dafür, dass deine
+  Daten die EU garantiert nie verlassen — die Standardeinstellung darf sie weltweit
+  verarbeiten und dort sogar speichern. Bruno kennt jetzt den richtigen Schalter und richtet
+  ihn mit ein.
+- **Beim EU-Weg ist dein Vertragspartner Amazon bzw. Google**, nicht der Modell-Anbieter. Das
+  klingt technisch, entscheidet aber, wessen Datenschutzvertrag für dich gilt.
+- **Veraltete Angabe korrigiert:** Bruno ging bisher von „Daten werden 30 Tage gespeichert" aus.
+  Richtig ist inzwischen: **Deine Eingaben werden standardmäßig gar nicht gespeichert.**
+- **Ehrlich benannt:** Auf dem EU-Weg über Amazon steht die Web-Suche nicht zur Verfügung. Das
+  sagt Bruno vorher, statt dass es dich später überrascht.
+
+### Unter der Haube
+
+- Alle Aussagen stammen aus den Original-Vertragstexten und Hersteller-Dokumenten (am
+  2026-08-17 direkt abgerufen, Wortlaute mitgespeichert) — nichts davon aus dem Gedächtnis.
+  Zwei seit Juli offene Prüfpunkte im Datenschutz-Leitfaden sind damit geschlossen.
+- Ebenfalls geprüft und dokumentiert: europäische Alternativen (u. a. Mistral, IONOS,
+  T-Systems, Scaleway) samt Preisen, wo öffentlich auffindbar.
+- Offen und ehrlich als offen markiert: ob die Modelle in der neuen deutschen Amazon-Cloud
+  („European Sovereign Cloud") verfügbar sind, und die genauen Zusagen einzelner
+  EU-Anbieter — beides ließ sich aus öffentlichen Quellen nicht belegen.
+
+### Wissensstand
+
+- Datenschutz-/Vertragslage: 2026-08-17
+
+## v1.190.2 — Status-Landkarte + „Entwurf ist kein Halte-Zustand" (2026-08-18)
+
+### Verbesserungen
+
+- **Eine klare Status-Übersicht für dein Buchhaltungssystem.** Was „Entwurf", „Offen",
+  „Teilweise bezahlt", „Gebucht" beim Beleg bedeuten — und was die Zustände der Kontobewegung
+  heißen — steht jetzt an EINER Stelle als Landkarte, inklusive Zielbild (Beleg gebucht +
+  Kontobewegung verbucht). Vorher war das über viele Einzelnotizen verstreut.
+- **Neue Regel: Entwürfe sind kein Halte-Zustand.** Ein Beleg-Entwurf kann technisch nie mit
+  einer Kontobewegung verknüpft werden — deshalb legt Bruno Belege beim Hochladen direkt als
+  „Offen" an und hebt liegen gebliebene Entwürfe selbst an (umkehrbar), statt sie liegen zu
+  lassen. So blockiert nie wieder ein vergessener Entwurf den Abschluss.
+
+## v1.190.1 — Wissens-Nachtrag: Verknüpfen ist Buchen (2026-08-17)
+
+### Unter der Haube
+
+- **Live-Test dokumentiert:** Ein Beleg-Entwurf kann im Buchhaltungssystem nie mit einer
+  Kontobewegung verknüpft werden (die API lehnt das hart ab) — und es gibt keinen getrennten
+  „erst verknüpfen, dann buchen"-Schritt: das Verknüpfen bucht den Beleg im selben Zug fertig.
+  Brunos Ablauf (hochladen als offener Beleg → in einem Schritt verknüpfen + buchen) ist damit
+  als der einzig mögliche und korrekte Weg bestätigt. Liegen gebliebene Entwürfe hebt Bruno
+  selbst auf „offen" an (umkehrbar), damit sie nicht den Abschluss blockieren.
+
+## v1.190.0 — Regel-Review mit Marcel: Finanzamt bucht Bruno jetzt selbst, Auto-Buchungen werden gegengeprüft (2026-08-17)
+
+### Neue Funktionen
+
+- **Finanzamts-Bewegungen bucht Bruno jetzt selbst — komplett per API.** Umsatzsteuer-Zahlungen
+  und -Erstattungen brauchen keinen fremden Beleg (die eigene Voranmeldung gilt als Festsetzung,
+  § 168 AO) — aber gebucht werden müssen sie. Bruno erkennt die Steuerart aus dem
+  Verwendungszweck (Umsatzsteuer = betrieblich, Einkommensteuer = privat, Gewerbesteuer = keine
+  Betriebsausgabe) und bucht durch. Live bewiesen: eine echte USt-Erstattung über 1.173,76 €
+  wurde vollautomatisch gebucht und mit der Kontobewegung verknüpft.
+- **Automatik-Buchungen des Buchhaltungssystems werden gegengeprüft.** sevDesk bucht eingehende
+  Kundenzahlungen teils selbst (ohne Bestätigung). Bruno prüft solche Buchungen jetzt nach wie
+  ein echter Buchhalter: Rechnungsnummer im Zahlungszweck + Betrag exakt + Datum plausibel →
+  bestätigt (still grün). Nur echte Widersprüche erreichen dich.
+- **Klare Prüf-Reihenfolge für Eingänge ohne Beleg:** erst offene Ausgangsrechnung abgleichen,
+  dann Behörde/Erstattung/Rückläufer/Einlage/Darlehen/Vorkasse unterscheiden — nie blind eine
+  Rechnung schreiben (eine Lieferanten-Erstattung braucht dessen Gutschrift, keine eigene
+  Rechnung).
+
+### Verbesserungen
+
+- **Betrags-Schwelle standardmäßig AUS** (Nutzer-Entscheid): das Sicherheitsnetz ist das
+  Mehrsignal-Matching plus die Kontrolle jeder Buchung — kein Betragslimit. Der Schalter bleibt
+  als bewusster Opt-in (`review_ab_betrag`).
+- Behörden-Zahlungen fordern keinen Bescheid mehr an — es wird nur noch die fehlende Buchung
+  gemeldet (und die erledigt Bruno selbst).
+
+### Unter der Haube
+
+- Neuer API-Buchungsweg dokumentiert: Steuer-Bewegung = Konto-Typ 84 + Steuerschlüssel 15 +
+  Verknüpfung Typ 'N' (die Ausgaben-Seite nutzt weiter Typ 'O'). Harte Produkt-Regel neu:
+  sevDesk ausschließlich per API, nie Browser-Automation. Nachprüf-Logik für Auto-Buchungen
+  mit 7 neuen Kanarien-Tests (Dim-30-Suite jetzt 29 Prüfungen).
+
+## v1.189.0 — Onboarding: sevDesk günstiger starten (2026-08-17)
+
+### Verbesserungen
+
+- **Noch kein Buchhaltungstool? Bruno sagt es dir jetzt gleich im Onboarding:** sevDesk
+  Buchhaltung Pro lässt sich 14 Tage kostenlos testen (ohne Kreditkarte), und über den
+  Empfehlungslink gibt es einen Neukundenrabatt — die genaue Höhe zeigt die Aktionsseite.
+  Bruno legt dabei offen, dass es ein Empfehlungslink ist. Kein Verkaufsdruck: der Hinweis
+  kommt genau einmal.
+
+## v1.188.0 — Neues Wissen: American Express & Kreditkarten anbinden (2026-08-17)
+
+### Neue Funktionen
+
+- **Bruno kann dir jetzt erklären, wie du American-Express-Umsätze (und andere Kreditkarten
+  ohne Bank-Schnittstelle) in deine Buchhaltung bekommst.** Amex bietet Privatkunden keine
+  offene Schnittstelle — der dokumentierte Weg läuft über die Mac-App MoneyMoney (39,99 €
+  einmalig, kostenlose Testversion, App-Store- und Direkt-Download-Link in der Anleitung):
+  Amex-Online-Zugang anlegen, in MoneyMoney „Andere" → „American Express" wählen, fertig.
+  Von dort lassen sich die Umsätze automatisiert als CSV exportieren und wie ein Kontoauszug
+  importieren (Kontoauszüge-Import). Ohne Mac bleibt der manuelle CSV-Download aus dem
+  Amex-Konto — auch der ist beschrieben.
+- Die Anleitung ist ehrlich gekennzeichnet: ein **dokumentierter, noch nicht live getesteter
+  Weg** (alle Fakten von den Hersteller-Seiten verifiziert). Ein fertiger Automatik-Connector
+  folgt erst nach einem echten Testlauf.
+
+### Wissensstand
+
+- Neue Doku: `system/connectors/moneymoney/README.md` + Eintrag im Connector-Index.
+
+## v1.187.0 — Keine Buchung ohne Beleg: zwei neue Prüfungen + Betrags-Schwelle (2026-08-17)
+
+### Neue Funktionen
+
+- **Saldo-Verprobung (neue Prüfung im Health-Check).** Bruno vergleicht jetzt je Kontoauszug
+  cent-genau: Wie viel Geld hat sich laut Bank bewegt — und wie viel laut Buchhaltung? Jede
+  Abweichung wird gemeldet. Das ist die stärkste Kontrolle der klassischen Buchhaltung: sie
+  findet doppelt importierte Umsätze UND fehlende Umsätze automatisch. Was nicht sicher lesbar
+  ist, meldet Bruno ehrlich als „nicht prüfbar" — er rät nie eine Zahl.
+- **Jede Kontobewegung braucht einen Nachweis (neue Prüfung im Health-Check).** Bruno prüft
+  jetzt jede offene Kontobewegung — Ausgänge UND Eingänge, über alle Konten: Hat sie einen
+  Beleg? Wenn nein, welche Erklärung? Geldtransit und Privateinlage/-entnahme sind belegfrei
+  (nur über deine bestätigten Konten, nie über den Verwendungszweck), Darlehen brauchen den
+  Vertrag, Behörden den Bescheid, Barabhebungen eine Kassen-Einordnung. Auch Einnahmen ohne
+  Ausgangsrechnung fallen jetzt auf — „ist ja bezahlt" ersetzt keine Rechnung (§14 UStG).
+- **Optionale Betrags-Schwelle für automatisches Buchen — standardmäßig AUS.** Wer möchte, kann
+  im Profil mit `review_ab_betrag` einen Betrag setzen (z.B. 2500): Einzelbelege darüber warten
+  dann auf ein Go statt automatisch gebucht zu werden; bekannte Anbieter im gewohnten Rahmen
+  laufen trotzdem durch. Ohne den Schalter ändert sich NICHTS — das Sicherheitsnetz bleibt das
+  Mehrsignal-Matching (Betrag, Anbieter, Datum, Beleg-Gegensignale) plus die Kontrolle jeder
+  Buchung nach dem Schreiben.
+
+### Verbesserungen
+
+- **Nichts wird stillschweigend als Ausnahme durchgewunken.** Die neuen Prüfungen arbeiten
+  nach dem Whitelist-Prinzip: Was in keine bekannte Klasse passt, wird gemeldet — eine
+  vergessene Ausnahme erzeugt höchstens eine Rückfrage, nie einen stillen Fehler.
+- Die Ausnahmen-Liste „ohne Belegpflicht" nennt jetzt ausdrücklich auch **Privateinlagen**
+  (fehlten bisher im Text) — und stellt klar: Auslage-Erstattungen sind KEINE Ausnahme, dort
+  gehört der Original-Beleg verknüpft.
+- **Nach kritischem Review nachgeschärft (ohne die Autonomie zu bremsen):** (1) Behörden-Zahlungen
+  (Finanzamt, Sozialversicherung) sind nicht mehr „grün" — der Bescheid ersetzt die Rechnung,
+  gebucht werden muss trotzdem. (2) Bei Eingängen ohne Beleg rät Bruno nicht mehr pauschal
+  „Rechnung schreiben", sondern klärt erst die Natur (Kunden-Umsatz? Lieferanten-Erstattung?
+  Privateinlage? Darlehen?). (3) **Altjahr-Schutz:** offene Bewegungen aus Jahren, die beim
+  Steuerberater abgeschlossen sind, erscheinen nie als To-do. (4) Die Betrags-Schwelle greift
+  auch im zweiten automatischen Buchungsweg (Abo-Cluster).
+
+### Unter der Haube
+
+- Neue Health-Check-Dimensionen 29 (Saldo-Verprobung, `kontoauszug-saldo.mjs`) und 30
+  (Kontobewegung ohne Beleg, `tx-nachweis.mjs`), beide mit eigenen Kanarien-Tests (26 + 22
+  Prüfungen); Betrags-Schwelle als eigenes Modul (`betrag-schwelle.mjs`, 13 Kanarien) mit Gate
+  im Bank-Abgleich (`match-vouchers.mjs`, Freigabe per `--schwelle-frei`). Alle bestehenden
+  Tests bleiben grün; die neuen Prüfungen sind rein lesend.
+- Nebenfund am echten Bestand: das Buchhaltungssystem kennt einen fünften Bewegungs-Status
+  (350 = „automatisch gebucht ohne Bestätigung"). Solche Buchungen weist der Health-Check
+  jetzt eigens aus — dort hat das System ohne Prüfpfad gebucht, das sollte man einmal gegenlesen.
+
+## v1.186.0 — Gutschriften lassen sich endlich verbuchen (2026-08-17)
+
+### Neue Funktionen
+
+- **Erhaltene Gutschriften werden jetzt korrekt gegengebucht.** Das Buchhaltungssystem kann
+  Belege mit negativem Betrag gar nicht verbuchen — deshalb lagen Gutschriften bisher liegen.
+  Bruno legt jetzt eine Gegenbuchung an: derselbe Betrag positiv, **auf dasselbe Konto, aber
+  in der Gegenrichtung**. So mindert die Gutschrift den Aufwand und berichtigt die Vorsteuer
+  (§ 17 Abs. 1 S. 2 UStG), statt als Ertrag zu erscheinen.
+- **Neue Kategorie im Offenstands-Bericht: „Gutschrift ohne Zahlungsweg".** Wird bei einem
+  Zahlungsdienstleister nur Kundenguthaben verrechnet, fließt nie Geld — es gibt also keine
+  Kontobewegung zu finden. Solche Fälle wurden bisher dauerhaft als offen geführt. Jetzt sind
+  sie sauber benannt: geklärt, offen bleibt allein das Gegenkonto (eine Frage an den Berater).
+
+### Verbesserungen
+
+- **Das Konto wird nicht mehr geraten.** Die Gegenbuchung verlangt jetzt ausdrücklich das Konto
+  der Ursprungsbuchung. Ein falsches Konto würde die Vorsteuer verschieben — deshalb bricht
+  Bruno lieber ab, als einen Standardwert zu unterstellen.
+
+### Unter der Haube
+
+- Die Klassifizierung des Offenstands liegt jetzt in einem eigenen Modul. Vorher stand sie
+  doppelt — einmal im Programm, einmal als Kopie im Test. Ein Test, der eine Kopie prüft,
+  bewacht nicht den Code, der wirklich läuft.
+- 46 automatische Tests, jeder neue Schutzmechanismus gezielt sabotiert zum Beweis, dass er
+  anschlägt.
+
 ## v1.186.0 — Steuerwissen-Aktualität läuft jetzt zentral (2026-08-17)
 
 ### Verbesserungen

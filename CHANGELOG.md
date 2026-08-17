@@ -1,3 +1,46 @@
+## v1.214.0 — „Fehlt ein Kontoauszug?" wird jetzt gemessen statt geschätzt (2026-08-18)
+
+### Verbesserungen
+
+- **Neuer Befehl `konten-reichweite.mjs`** beantwortet die Frage „fehlt mir ein Kontoauszug?"
+  mit einer Messung am Konto: Reicht der Bewegungsbestand bis heute? Fehlt dazwischen ein
+  ganzer Monat? Nur wenn dort etwas klemmt, musst du wirklich einen Auszug besorgen.
+- **Der Offenstands-Bericht sagt nicht mehr voreilig „Kontoauszug fehlt".** Bisher schloss er
+  aus „zu diesem Beleg finde ich keine passende offene Kontobewegung" auf einen fehlenden
+  Auszug. Das stimmt oft nicht — die Zahlung kann längst zugeordnet sein, in einer
+  Sammelabbuchung stecken (z.B. 18,92 € für zwei Belege à 9,46 €), in Fremdwährung gelaufen
+  oder nie erfolgt sein. Jetzt nennt der Bericht diese Gründe **und liefert die Konten-Messung
+  direkt mit**, statt dich auf eine Suche zu schicken, die es nicht braucht.
+- **Weniger Fehlalarme im Buchhaltungs-Check:** Die Prüfung „Bank-Kontinuität" schlug bisher
+  auch bei Konten an, die gar keine Auszüge haben können — Verrechnungskonten und aufgelösten
+  Konten. Bei einem geschlossenen Konto sind bewegungslose Monate der Normalfall, kein Loch.
+  Im echten Bestand verschwinden dadurch 3 Dauer-Warnungen, ohne dass eine echte Lücke
+  übersehen wird (echte Bankkonten werden unverändert streng geprüft).
+
+### Unter der Haube
+
+- Neue Prüfung mit 22 Fällen, in beide Richtungen abgesichert: Ein aufgelöstes Konto darf nicht
+  ewig mahnen — ein echtes Bankkonto mit Lücke muss aber weiterhin sofort auffallen. Mit
+  Sabotage-Probe abgenommen. Prüf-Sammellauf: 62 Prüfungen, alle grün.
+
+## v1.213.0 — Der Stau-Wächter war nie eingeschaltet, jetzt nennt er auch die Ursache (2026-08-17)
+
+### Verbesserungen
+
+- **Ein Wächter, der seit Juli nie lief, ist jetzt aktiv.** Es gibt eine Prüfung, die meldet,
+  wenn Belege zu lange ungebucht im Eingangsordner liegen. Sie war gebaut und getestet, wurde
+  aber von keinem Programmteil aufgerufen — sie hat also nie etwas gemeldet. Jetzt läuft sie bei
+  jeder Prüfung mit und fand sofort: 280 buchungsbereite Belege (ältester von Dezember 2024) und
+  47 Belege, die über 45 Tage auf eine Entscheidung warten.
+- **Neu: die Prüfung sagt jetzt auch, WORAN der Stau hängt** — nicht nur, dass etwas liegt.
+  Zwei Ursachen erkennt sie automatisch: **89 Belege sind Scans ohne lesbaren Text** (dort laufen
+  alle Textprüfungen ins Leere, sie brauchen einen Blick aufs Bild), und **47 Anbieter fehlen im
+  Anbieter-Verzeichnis** (deren Belege werden bewusst nicht automatisch kontiert — geraten wird
+  nie). Beides kann Bruno selbst abarbeiten, es steht jetzt nur nicht mehr unsichtbar im Ordner.
+- Für beide Ursachen nennt der Bericht direkt den nächsten Handgriff, inklusive des Hinweises,
+  dass Kleinbetragsbelege bis 250 Euro (Kassenbons, Parkscheine) gar keine Rechnungsnummer
+  brauchen — die werden sonst leicht als unvollständig aussortiert.
+
 ## v1.212.0 — Vorschau-Liste brach bei Belegen ohne Betrag ab, Monatsordner bekommen eigene Lauf-Namen (2026-08-18)
 
 ### Verbesserungen

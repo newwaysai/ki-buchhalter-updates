@@ -1,3 +1,49 @@
+## v1.212.0 — Vorschau-Liste brach bei Belegen ohne Betrag ab, Monatsordner bekommen eigene Lauf-Namen (2026-08-18)
+
+### Verbesserungen
+
+- **Die Beleg-Vorschau bricht nicht mehr ab.** Lag in einem Monatsordner ein Dokument ohne
+  erkennbaren Betrag (z.B. ein Anschreiben ohne Rechnungssumme), stoppte die Vorschau dort —
+  und alle weiteren Belege dieses Ordners wurden gar nicht mehr angezeigt. Der Ordner sah
+  dann leer aus, obwohl Belege drin lagen. Solche Dokumente stehen jetzt am Ende der Liste
+  unter „Ohne Betrag" beim Namen, statt die Ausgabe abzuschneiden.
+  🔴 **Buchungen waren davon nie betroffen** — der eigentliche Buchungsweg hat diese Belege
+  schon immer sauber angehalten („OCR unvollständig"). Betroffen war nur die Vorschau.
+- **Der Ordner-Schlüssel heißt jetzt, was er ist.** Seit die Belegordner monatlich geführt
+  werden, passte der alte Name `BUCHHALTUNG_QUARTAL_DIR` nicht mehr zum Inhalt. Neuer Name:
+  `BUCHHALTUNG_PERIODEN_DIR` (Monat oder Quartal).
+  🔴 **Du musst nichts ändern:** der alte Name funktioniert unverändert weiter. Wer ihn in
+  seiner Konfiguration stehen hat, merkt von der Umbenennung nichts.
+
+### Unter der Haube
+
+- **Jeder Monatslauf bekommt einen eigenen Namen.** Vorher hießen alle Läufe aus Monatsordnern
+  gleich („x-qx"), weil der Name nur für Quartale gebaut war. Folge: Buchungen mehrerer Monate
+  trugen dieselbe Kennzeichnung und ließen sich nicht mehr einzeln zurücknehmen. Jetzt heißt
+  jeder Lauf nach seinem Monat. Unbekannte Ordner bekommen einen deutlich sichtbaren Hinweis
+  statt eines Namens, der echt aussieht.
+- Neue Prüfung mit 18 Fällen, die beides absichert — besonders, dass der alte Schlüsselname
+  weiterhin greift. Prüf-Sammellauf: 61 Prüfungen, alle grün, mit Sabotage-Probe abgenommen.
+
+## v1.211.0 — „Reist die Datei mit?" ist jetzt ein Befehl, Posteingang-Kontrolle wird Pflicht-Abschluss (2026-08-17)
+
+### Verbesserungen
+
+- **Neue Export-Vorprüfung** (`system/_bin/reist-mit.mjs`): beantwortet vor jedem Verschieben,
+  Löschen oder Umbenennen einer Bruno-Datei die Frage „Reist sie mit dem Produkt?" — mit genau
+  derselben Technik, die auch der echte Export nutzt (keine zweite, abweichende Logik, die
+  auseinanderlaufen könnte). Gibt es keine Ausschlussliste (normale Kunden-Installation),
+  lautet die Antwort vorsichtshalber immer „reist mit".
+- **Der Beleg-Einlese-Ablauf (Modus 1a) endet jetzt immer mit der Posteingang-Kontrolle**
+  aus v1.210.0: Bruno meldet nie „fertig", solange noch unverarbeitete Dateien im Posteingang
+  liegen. Belege, die nicht zu deiner Firma gehören, wandern nach „5 SONSTIGE BELEGE".
+
+### Unter der Haube
+
+- Beide neuen Prüfungen laufen jetzt im automatischen Prüf-Sammellauf mit: 60 Prüfungen
+  statt 58, alle grün. Jede wurde mit einer Sabotage-Probe abgenommen (Prüfung absichtlich
+  kaputt gemacht → Test muss Alarm schlagen — hat er).
+
 ## v1.210.0 — Versions-Wächter erkennt Rücksetzungen + Posteingang-Kontrolle (2026-08-17)
 
 ### Verbesserungen

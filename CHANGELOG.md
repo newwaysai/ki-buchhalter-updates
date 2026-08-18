@@ -1,3 +1,101 @@
+## v1.236.0 — Wenn dein Steuerberater NICHT die ganze Buchhaltung will (2026-08-18)
+
+### Verbesserungen
+
+- **Der Export richtet sich danach, wer was bucht — nicht danach, was man verbergen möchte.**
+  Der Normalfall ist: alles übergeben, dein Steuerberater macht den Rest. Es gibt aber den
+  Fall, dass eine Buchhalterin den Großteil erledigt und der Steuerberater nur ein Teilstück
+  bekommt (meist nur deine Ausgangsrechnungen), weil sie die günstigere Kraft ist. **Dann ist
+  „alles schicken" falsch** — buchen beide dieselben Vorgänge, entstehen Doppelbuchungen, die
+  jemand suchen und wieder herausnehmen muss. Welcher Umfang zu welcher Aufteilung passt,
+  steht jetzt als Tabelle in der Doku. Die Frage „wer bucht die Ausgangsrechnungen?" gehört
+  geklärt, bevor der erste Export rausgeht.
+- **Trennung über ein eigenes Konto — was es kann und was nicht.** Willst du deine
+  Kundenzahlungen sichtbar getrennt haben, ist der Weg ein eigenes Zahlungskonto, kein
+  Export-Filter (den es nicht gibt). Jedes Konto trägt eine **eigene DATEV-Nummer**, damit
+  bleibt im Export jede Buchung ihrem Konto zuordenbar und dein Steuerberater filtert in
+  Sekunden danach. **Wichtig, damit du es nicht falsch erwartest:** der Export nimmt trotzdem
+  alle Konten mit, die im Zeitraum Bewegungen hatten — an einem Monat mit drei aktiven Konten
+  nachgemessen. Das eigene Konto **filtert nicht, es macht nur unterscheidbar.** Ein zweiter
+  Zugang beim Anbieter wäre die einzige echte Trennung und lohnt in aller Regel nicht.
+- **Zwei Fragen an deine Kanzlei stehen jetzt auf deiner Aufgabenliste.** Erstens: welche
+  DATEV-Kontonummer soll ein neues Konto bekommen? Ist sie dort schon anders belegt, laufen
+  Buchungen auf ein falsches Konto — und das fällt kaum auf, weil beides plausibel aussieht.
+  Zweitens: bleibt ein importierter Stapel bis zur Prüfung offen? Solange nicht
+  festgeschrieben ist, sind Korrekturen einfach; danach nur noch per Storno. Beides ist
+  vorher in zwei Minuten geklärt und nachher mühsam.
+
+### Unter der Haube
+
+- Neue Prüfung mit 30 Tests, die den Export-Vertrag gegen die offizielle Schnittstellen-Doku
+  hält: dass es die Bereiche wirklich gibt, dass es **keinen** Konto-Filter gibt, dass nie
+  festgeschrieben wird, und dass die Doku nicht auseinanderläuft. Absichtlich sabotiert und
+  geprüft, dass sie anschlägt — eine Prüfung, die immer grün ist, prüft nichts.
+- Belegt wurde außerdem: Kunden-Stammdaten und Rechnungs-PDFs liegen vollständig im Paket,
+  jede Buchungszeile findet ihr PDF. Zwei vermutete Lücken haben sich beim Nachmessen als
+  Lesefehler auf meiner Seite herausgestellt, nicht als Fehler im Export.
+
+## v1.235.0 — DATEV-Export: was du wirklich auswählen kannst (2026-08-18)
+
+### Verbesserungen
+
+- **Du kannst jetzt gezielt eine Seite deiner Buchhaltung exportieren.** Der DATEV-Export
+  kennt fünf Bereiche: deine **Ausgangsrechnungen** (was du deinen Kunden berechnest),
+  deine **Eingangsrechnungen** (was du bezahlst), die **Kontobewegungen**, die Kasse und
+  die Anlagegüter. Du kombinierst sie frei — nur Ausgangsrechnungen, oder Rechnungen plus
+  Zahlungen, oder alles. Am eigenen Bestand nachgemessen: die Ausgangsrechnungen kommen
+  vollständig, mit Kundennummer und Rechnungsnummer an jeder Zeile. Dein Steuerberater
+  muss nichts von Hand zusammensuchen.
+- **Ehrliche Grenze statt stiller Überraschung:** „Nur meine Ausgangsrechnungen und genau
+  die dazugehörigen Zahlungen, gefiltert auf ein Konto" — **das gibt es nicht.** Eine
+  Zahlung ist eine Kontobewegung, und die kommen immer alle eines Zeitraums mit. Real
+  gemessen an einem Monat: nur Rechnungen = 2 Zeilen, Rechnungen plus Zahlungen = 16
+  Zeilen, davon 12 fremde (Lieferantenzahlungen, durchlaufende Posten, Privatentnahmen).
+  Einen Konto-Filter gibt es auf **keinem** Weg. Steht jetzt so in der Doku, statt dass du
+  es beim ersten Export selbst herausfindest.
+
+### Unter der Haube
+
+- Die beiden Aussagen oben sind gegen die offizielle Schnittstellen-Beschreibung **und**
+  den eigenen Code festgezurrt (24 automatische Prüfungen). Besonders die Nein-Aussage
+  („es gibt keinen Konto-Filter") braucht das: solche Sätze veralten still, wenn jemand
+  später doch einen Filter einbaut und die Doku weiter das Gegenteil behauptet. Jetzt
+  schlägt die Prüfung an, statt dass der Widerspruch jahrelang unbemerkt bleibt.
+- Nachgezogen: Die Prüfung war gebaut, lief aber in keinem Gesamtlauf mit — sie stand
+  nicht in der Prüf-Liste. Ein Wächter, den niemand aufstellt, bewacht nichts. Jetzt
+  registriert (74 Prüfungen, alle grün).
+
+---
+
+## v1.234.0 — Kontoauszüge ordnerweise einlesen + Raumkosten aufs richtige Konto (2026-08-18)
+
+### Verbesserungen
+
+- **Ein ganzer Ordner Kontoauszüge lässt sich jetzt in einem Rutsch einlesen.** Bisher brach
+  der Lauf ab, sobald eine Datei dabei war, die kein Kontoauszug ist — typischerweise ein
+  Kontoabschluss, also die Gebührenabrechnung der Bank ohne Umsatzliste. Drei solche Dateien
+  haben gereicht, um den Ordner-Modus unbrauchbar zu machen. Jetzt werden sie übersprungen,
+  und Bruno **nennt jede einzeln beim Namen**. Falls doch ein echter Auszug darunter ist,
+  siehst du es sofort — sonst würden dir stillschweigend Zahlungen fehlen.
+  Ergebnis am eigenen Bestand: 573 Buchungen aus 20 Auszügen statt eines Abbruchs bei null.
+- **Raumkosten landen auf dem richtigen Konto** (6305) statt im Sammeltopf. Ebenso Rechts-
+  und Beratungskosten (6825).
+- **Der Steuerberater-Nummernkreis steht jetzt auf deiner Aufgabenliste.** Wenn wir ohne
+  Buchhaltungssystem exportieren, braucht jeder Lieferant eine Nummer — wir vergeben ab 79001.
+  Sind bei deinem Steuerberater unter diesen Nummern schon andere Lieferanten angelegt,
+  würden Buchungen auf den falschen laufen. Eine Zahl von ihm genügt, dann ist es dauerhaft
+  erledigt.
+
+### Unter der Haube
+
+- Die interne Regelsammlung hatte vier doppelt vergebene Nummern — zwei völlig verschiedene
+  Regeln hießen zum Beispiel beide „#40". Da Regeln über ihre Nummer zitiert werden, war
+  nicht mehr entscheidbar, welche gemeint ist. Bereinigt; eine neue automatische Prüfung
+  meldet solche Dubletten künftig sofort und prüft zusätzlich, dass kein Verweis ins Leere zeigt.
+- Neue automatische Prüfung für das Einlesen ganzer Ordner (6 Fälle), inklusive der Zusicherung,
+  dass Übersprungenes immer benannt wird und eine Einzeldatei weiterhin hart meldet.
+- Insgesamt 68 automatische Prüfungen über die betroffenen Bausteine, alle grün.
+
 ## v1.233.0 — Sammelabbuchungen zuordnen + der Export sagt jetzt, was er getan hat (2026-08-18)
 
 ### Neue Funktionen

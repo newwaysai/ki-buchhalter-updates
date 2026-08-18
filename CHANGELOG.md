@@ -1,3 +1,54 @@
+## v1.237.1 — Kontokennung aus einer Doku-Zeile entfernt (2026-08-18)
+
+### Unter der Haube
+
+- In der Stripe-Referenz („was läuft per Schnittstelle, was musst du klicken") stand in der
+  Quellenangabe die Kontokennung des Kontos, an dem gemessen wurde. Die Kennung ist kein
+  Passwort und war ohnehin gekürzt — aber sie gehört nicht in ein Handbuch, das an Kunden
+  geht. Die Zeile nennt jetzt nur noch, dass an einem echten Konto gemessen wurde. Inhaltlich
+  ändert sich nichts, alle Aussagen der Referenz bleiben gleich.
+
+## v1.237.0 — Amex und andere Kreditkarten: wie sie in deine Buchhaltung kommen (2026-08-18)
+
+### Verbesserungen
+
+- **Kreditkarten kommen über dieselbe Bankanbindung wie dein Girokonto — aber sie sind nicht
+  automatisch dabei.** Karten liegen bei den Banken meist auf einer eigenen Schnittstelle.
+  Deshalb passiert oft Folgendes: du verbindest dein Konto, alles sieht gut aus, und die
+  Kreditkarte fehlt trotzdem. Der Grund ist keine Fehlfunktion — sie muss extra geholt werden,
+  über den Button **„weitere Konten abrufen"** nach dem ersten Login. Das steht jetzt in der
+  Doku, damit niemand danach sucht.
+- **American Express: bei BuchhaltungsButler nachweislich anbindbar, bei sevDesk noch offen.**
+  Amex bietet selbst keine offene Schnittstelle — das führt oft zu der Annahme, man käme nur
+  mit einem Extra-Programm an die Umsätze. Das stimmt so nicht: die Anbindung läuft über einen
+  zugelassenen Finanzdienstleister, und der ist bei beiden Systemen eingebaut. Für
+  BuchhaltungsButler ist Amex belegt (der Anbieter führt die Karte in seiner öffentlichen
+  Statusliste). Für sevDesk haben wir **keinen** Beleg gefunden — und schreiben das ehrlich
+  hin, statt es zu vermuten. **Der Test dauert zwei Minuten** und steht in der Doku: Konto
+  anlegen, im Suchfeld „American Express" eingeben, schauen ob sie erscheint. Vor dem
+  Bank-Login abbrechen ist folgenlos.
+- **Wenn Kartenumsätze fehlen, ist das meist kein Fehler in deiner Buchhaltung.**
+  Kreditkartendaten sind störungsanfälliger als Girokonto-Umsätze — beim Datenlieferanten, nicht
+  bei dir. Es gibt dafür einen dokumentierten Ausweichweg: die Umsätze als CSV-Datei aus dem
+  Portal deiner Karte holen und importieren. Gut zu wissen, bevor man den Fehler bei sich sucht.
+- **Ein Extra-Programm brauchst du nur, wenn du gar kein Buchhaltungssystem mit Bankanbindung
+  nutzt.** In der Doku stand bisher nur der Weg über eine zusätzliche Mac-App (kostenpflichtig).
+  Der ist weiterhin gültig — aber wer sevDesk oder BuchhaltungsButler einsetzt, braucht ihn
+  nicht und kann sich die Anschaffung sparen. Diese Klarstellung fehlte.
+
+### Unter der Haube
+
+- Warum dein Buchhalter die Bankanbindung nicht selbst aufbauen kann, ist jetzt begründet
+  dokumentiert: diese Anbindung besteht zwischen deiner Bank und deinem Buchhaltungssystem —
+  sie ist kein Kanal, den ein Drittprogramm mitbenutzen kann. Eine eigene Anbindung wäre zwar
+  möglich, würde aber jeden Umsatz doppelt einlesen. Deshalb bleibt es beim bewährten Weg:
+  dein System holt die Umsätze, dein Buchhalter liest sie von dort.
+
+### Wissensstand
+
+- Alle Aussagen quellen-belegt an der Hersteller-Doku (abgerufen 2026-08-18). Die offene Hälfte
+  ist als offen gekennzeichnet, nicht als erledigt.
+
 ## v1.236.0 — Wenn dein Steuerberater NICHT die ganze Buchhaltung will (2026-08-18)
 
 ### Verbesserungen

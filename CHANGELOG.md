@@ -1,3 +1,172 @@
+## v1.241.0 — Vereins-Steuerwissen komplett + Grenzwerte im Blick (2026-08-19)
+
+### Neue Funktionen
+
+- **Bruno hat jetzt ein vollständiges Kapitel zur Vereins-Buchhaltung.** 25 Gesetzesstellen im
+  Wortlaut, alle direkt aus dem amtlichen Gesetzestext des Bundes. Damit beantwortet er Fragen
+  zu Vereinen mit Beleg statt aus dem Bauch: Wann ist ein Verein gemeinnützig, was ist
+  steuerpflichtig, welche Steuer entfällt, was gilt bei Spenden.
+- **Die vier Bereiche eines Vereins** sind erklärt: der ideelle Bereich, die Vermögens-
+  verwaltung, der Zweckbetrieb und der wirtschaftliche Geschäftsbetrieb. Nur der letzte ist
+  voll steuerpflichtig — Bruno sagt zu jedem Bereich, worauf er sich stützt.
+- **Ehrenamtspauschale und Übungsleiterpauschale** sind hinterlegt (960 € und 3.300 € je Person
+  und Jahr). Beide Grenzen gelten pro Person über alle Tätigkeiten zusammen — wer sie reißt,
+  muss den übersteigenden Teil versteuern.
+- **Neue Grenzwert-Prüfung (Baustein, noch nicht im Health-Check aktiv).** Sie rechnet
+  Jahreswerte gegen die Grenze, ab der sich etwas ändert: Kleinunternehmer (25.000 / 100.000 €),
+  Bilanzpflicht (800.000 / 80.000 €), Vereins-Geschäftsbetrieb (50.000 €), Sportveranstaltungen
+  (50.000 €) und die beiden Ehrenamts-Freibeträge. Warnung ab 80 Prozent der Grenze.
+
+### Verbesserungen
+
+- **Suche nach Vereins-Themen funktioniert jetzt.** Begriffe wie „Verein", „gemeinnützig",
+  „Zweckbetrieb", „Spende" oder „Mitgliedsbeitrag" führen direkt zur richtigen Gesetzesstelle.
+  Vorher lieferte „Verein" nur unbrauchbare Treffer, weil das Wort in ganz anderen Paragraphen
+  vorkommt (etwa „vereinnahmte Entgelte").
+- **Zwei kursierende Falschangaben korrigiert:** Die Grenze für den wirtschaftlichen
+  Geschäftsbetrieb liegt bei 50.000 €, nicht 45.000 €. Und die Ehrenamtspauschalen betragen
+  960 € und 3.300 €, nicht 840 € und 3.000 €. Beide Werte stammen jetzt aus dem Gesetzestext.
+
+### Unter der Haube
+
+- 24 Selbsttests sichern die neuen Teile ab. Acht davon prüfen, dass jeder Grenzbetrag
+  wörtlich im Gesetzestext steht — genau die Prüfung, die die beiden Falschangaben gefunden hat.
+- Die Grenzwert-Prüfung schweigt bewusst, wenn ein Wert nicht gemessen wurde oder die
+  Rechtsform unklar ist. Lieber keine Aussage als eine auf geratener Grundlage.
+- Vereins-Grenzen können bei anderen Mandanten nicht auslösen; das ist per Test abgesichert.
+- **Ehrlicher Hinweis:** Die Grenzwert-Prüfung ist gebaut und getestet, aber noch nicht in den
+  Gesundheits-Check eingehängt. Sie meldet also noch nichts von allein — das kommt im
+  nächsten Schritt.
+
+### Wissensstand
+
+- Abgabenordnung, Körperschaftsteuer-, Gewerbesteuer-, Einkommensteuergesetz und die
+  Einkommensteuer-Durchführungsverordnung: Stand 19.08.2026, direkt von der amtlichen
+  Gesetzes-Seite des Bundes.
+
+## v1.240.0 — Vereins-Steuerwissen + Überblick über alle Rechtsquellen (2026-08-19)
+
+### Neue Funktionen
+
+- **Bruno kennt jetzt die Steuerregeln für Vereine (e.V.).** Damit kann er Fragen zu
+  Mitgliedsbeiträgen, Spenden und der Steuerpflicht eines Vereins beantworten — und zwar mit
+  Gesetzeswortlaut statt aus dem Bauch. Neu eingelesen: die Gemeinnützigkeits-Vorschriften der
+  Abgabenordnung, die Steuerbefreiungen bei Körperschaft- und Gewerbesteuer, der Spendenabzug
+  und die Regeln zur Zuwendungsbestätigung (Spendenquittung).
+- **Die vier Bereiche eines Vereins.** Ein Verein wird steuerlich in vier Teile zerlegt:
+  ideeller Bereich, Vermögensverwaltung, Zweckbetrieb und wirtschaftlicher Geschäftsbetrieb.
+  Nur der letzte ist voll steuerpflichtig. Bruno kann jeden Beleg einem dieser Bereiche
+  zuordnen und sagt dazu, worauf er sich stützt.
+- **Neuer Überblick: woher stammt welches Gesetz?** Ein Befehl zeigt für jede Rechtsquelle,
+  welcher Gesetzesstand hinterlegt ist, wann er zuletzt geholt wurde, wie viele Paragraphen
+  daran hängen und wie verlässlich die Quelle ist. So ist auf einen Blick erkennbar, ob etwas
+  aufgefrischt werden sollte, statt das mühsam von Hand zu prüfen.
+
+### Verbesserungen
+
+- **Klarer getrennt: „Gesetz geändert" heißt nicht „dein Wissen ist veraltet".** Wenn sich
+  irgendwo in einem Gesetz etwas ändert, betrifft das meist Paragraphen, die für die
+  Buchhaltung keine Rolle spielen. Bruno prüft jetzt gezielt nach, ob wirklich einer der
+  genutzten Paragraphen betroffen ist — und meldet nur dann Handlungsbedarf.
+- **Vollständige Prüfung durchgeführt:** alle 51 hinterlegten Paragraphen aus sechs Gesetzen
+  wurden Wort für Wort gegen die amtliche Fassung abgeglichen. Ergebnis: alle aktuell, kein
+  Nachladen nötig.
+
+### Unter der Haube
+
+- Jede Rechtsquelle führt jetzt zusätzlich den lesbaren Gesetzesstand mit (z. B. „zuletzt
+  geändert durch Art. 2 V v. 19.12.2025"), nicht nur eine technische Prüfsumme.
+- Neun Selbsttests sichern den neuen Quellen-Überblick ab; jeder prüft durch gezielte
+  Sabotage, dass eine Lücke auch wirklich gemeldet wird.
+- Ein Fehlalarm wurde behoben: Quellen, die aus mehreren Dokumenten bestehen, galten
+  fälschlich als „unvollständig dokumentiert".
+
+### Wissensstand
+
+- Abgabenordnung, Körperschaftsteuer-, Gewerbesteuer-, Einkommensteuergesetz und
+  Einkommensteuer-Durchführungsverordnung: Stand 19.08.2026, direkt von der amtlichen
+  Gesetzes-Seite des Bundes (Herausgeber: Bundesministerium der Justiz).
+
+## v1.239.0 — Prüfungen finden mehr und melden weniger Falsches (2026-08-19)
+
+### Fehlerbehebung (wichtig)
+
+- **Ein Datum wurde als Geldbetrag gelesen.** Stand auf einer Rechnung „Der Rechnungsbetrag wird
+  am 03.10.2023 abgebucht", las die Beleg-Prüfung daraus 3,10 € und meldete eine Abweichung von
+  über 578 € — auf einer völlig korrekten Buchung. Behoben: Datumsangaben werden vor der
+  Betragssuche entfernt. Neun Selbsttests sichern das ab, vier davon prüfen ausdrücklich, dass
+  echte Beträge weiterhin erkannt werden.
+- **„Beleg fehlt" trotz vorhandenem Beleg.** Zwei Prüfungen beantworteten dieselbe Frage
+  („liegt die Datei lokal?") mit unterschiedlichem Ergebnis. Sie sind jetzt zusammengelegt und
+  kennen sechs Nachweiswege statt zwei — unter anderem das Archiv-Verzeichnis und den Dateinamen.
+- **Steuer-Erstattungen vom Finanzamt** gelten nicht mehr als Richtungsfehler. Ein Geldeingang
+  vom Finanzamt ist eine Einnahme, das ist korrekt so.
+- **Dubletten-Prüfung genauer:** gleiche Belegnummer bei verschiedenen Beträgen ist keine
+  Doppelbuchung mehr, sondern nur noch ein Hinweis zur Nummern-Hygiene.
+
+### Neue Funktionen
+
+- **Stichprobe am Dokument:** ein neuer Befehl lädt hinterlegte Rechnungen und stellt den
+  gedruckten Betrag gegen den gebuchten. Findet er auf dem Beleg keinen eindeutigen Betrag,
+  sagt er „keine Aussage" statt zu raten.
+- **Umsatzsteuer-Prüfung meldet jetzt wirklich:** Vorsteuer, die rechnerisch über 19 % des
+  Aufwands liegt, fällt auf. Zahlungen an das Finanzamt werden nach ihrem Zweck getrennt —
+  eine Geldbuße darf nie in die Umsatzsteuer-Zahllast geraten.
+- **Marktplatz-Abrechnungen werden gegen die Buchung geprüft.** Einbehaltenes Guthaben
+  (Reserve) wird dabei ausgeklammert: es ist geliehenes Geld auf Zeit, weder Aufwand noch
+  Ertrag. Bleibt am Jahresende etwas offen, erscheint es als Bilanzposition für den
+  Steuerberater, nicht als Fehler.
+- **Namens-Schutz:** Namen natürlicher Personen werden in Anzeigen zu Initialen verkürzt,
+  Firmen bleiben lesbar.
+- **Sicherer Weg ins Belegarchiv:** Datei-Kopie und Verzeichnis-Eintrag entstehen in einem
+  Schritt; ein Wächter prüft beide Richtungen.
+
+### Verbesserungen
+
+- **Die Beleg-Suche warnt jetzt, wenn ihr Suchverzeichnis älter ist als der Bestand.** Vorher
+  konnte sie „nicht gefunden" sagen, obwohl der Beleg längst da war — und damit eine unnötige
+  Anforderung beim Anbieter auslösen.
+
+### Unter der Haube
+
+- Neue Regeln festgehalten: eine Messung ohne Zeitstempel ist ein Schnappschuss · zugeordnet
+  wird am Inhalt, nie am Namen · ein Prüfer ohne Gegenprobe ist keiner · zwei Zahlen aus
+  demselben Haus sind eine Zahl · durchlaufende Posten sind weder Aufwand noch Ertrag · ein
+  Werkzeug-Treffer ist ein Verdacht, erst der Beleg macht ihn zum Befund.
+- Neues Fachdokument zur Verprobung mit zwölf unabhängigen Prüf-Ankern.
+- Sechs geteilte Erfahrungswerte ergänzt (Marktplatz-Sonderfälle, Zahlungswege von Shops,
+  Versicherungs-Positionen auf Logistiker-Rechnungen, Fremdwährung auf Kreditkarten).
+
+## v1.238.0 — Kontobewegungen aus BuchhaltungsButler als CSV herausholen (2026-08-18)
+
+### Neue Funktionen
+
+- **Du kannst deine Kontobewegungen jetzt aus BuchhaltungsButler herausziehen — als CSV, eine
+  Datei je Konto.** BuchhaltungsButler hat dafür keinen eigenen Knopf und keine Schnittstelle;
+  ich lese die Bewegungen aus und schreibe die Datei selbst. Nützlich, wenn du deine Zahlen
+  außerhalb des Programms brauchst — für den Steuerberater, für eine eigene Auswertung, oder
+  einfach damit deine Daten dir gehören und nicht nur beim Anbieter liegen.
+  Befehl: `node tools/bhb-connector/fetch-transactions.mjs` (nur lesen, ändert in
+  BuchhaltungsButler nichts). Wahlweise nur ein Konto (`--konto 1201`) oder nur ein Jahr
+  (`--jahr 2025`).
+
+### Verbesserungen
+
+- **Der Export prüft sich selbst, dreifach.** Stimmt die Zeilenzahl nicht, weicht die
+  Betragssumme auch nur einen Cent ab, oder fehlt eine Bewegung — dann bricht er ab und
+  schreibt gar nichts, statt eine Datei zu liefern, der du nicht trauen kannst.
+- **Bewegungen ohne Konto gehen nicht mehr verloren.** Beim Testen kamen bei mir zwei
+  Bewegungen zum Vorschein, die zu keinem der angelegten Konten gehören. Wer nur Konto für
+  Konto exportiert, verliert sie, ohne es zu merken. Sie landen jetzt in einer eigenen Datei
+  („OHNE-KONTO").
+
+### Unter der Haube
+
+- Zwei Stellen in meiner internen Doku behaupteten, BuchhaltungsButler könne Bewegungen nicht
+  nach Konto getrennt liefern. Das habe ich gemessen — es stimmt nicht, der Filter funktioniert.
+  Beide Stellen sind korrigiert. Für dich heißt das: die Trennung nach Konto ist verlässlich.
+- Belege und Kontobewegungen sind zwei getrennte Dinge, die man auch getrennt herausziehen kann.
+
 ## v1.237.1 — Kontokennung aus einer Doku-Zeile entfernt (2026-08-18)
 
 ### Unter der Haube

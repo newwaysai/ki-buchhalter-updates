@@ -1,3 +1,40 @@
+## v1.242.0 — Vereins-Prüfungen sind jetzt aktiv (2026-08-19)
+
+### Neue Funktionen
+
+- **Grenzwerte werden jetzt wirklich überwacht.** Im letzten Update war die Prüfung gebaut, aber
+  noch nicht eingehängt — sie meldete nichts von allein. Das ist behoben: der Gesundheits-Check
+  warnt ab 80 Prozent einer Grenze und meldet die Überschreitung. Überwacht werden
+  Kleinunternehmer (25.000 / 100.000 €), Bilanzpflicht (800.000 / 80.000 €), der wirtschaftliche
+  Geschäftsbetrieb eines Vereins (50.000 €), sportliche Veranstaltungen (50.000 €) und die beiden
+  Ehrenamts-Freibeträge (960 € und 3.300 € je Person).
+- **Neue Rücklagen-Uhr für gemeinnützige Vereine.** Ein Verein muss seine Mittel zeitnah
+  verwenden — spätestens in den zwei Jahren nach dem Zufluss. Bruno rechnet nach und weist auf
+  Beträge hin, die weder verwendet noch als Rücklage erfasst sind. Bei jährlichen Einnahmen bis
+  100.000 € gilt die Pflicht nicht; das berücksichtigt die Prüfung.
+
+### Verbesserungen
+
+- **Die Rücklagen-Prüfung urteilt bewusst nicht.** Ob eine Rücklage wirksam gebildet wurde, ist
+  ein Beschluss des Vereins und lässt sich aus Kontobewegungen nicht ablesen. Bruno meldet
+  deshalb immer nur „bitte klären", nie „unzulässig" — die Entscheidung bleibt beim
+  Steuerberater.
+- **Beide Prüfungen können bei anderen Mandanten nicht auslösen.** Wer kein Verein ist, sieht
+  keine Vereins-Grenzen; ohne gemessene Zahlen schweigen sie ganz, statt auf einer Datenlücke
+  zu urteilen.
+
+### Unter der Haube
+
+- 49 zusätzliche Selbsttests: 24 für die Grenzwerte, 16 für die Rücklagen-Uhr, 9 die beweisen,
+  dass die Prüfungen im echten Durchlauf tatsächlich ankommen.
+- Der letzte Punkt ist der wichtige: genau daran hat es zuvor gefehlt. Eine fertige Prüfung,
+  die niemand aufruft, wirkt nicht — dafür gibt es jetzt eigene Tests.
+- Der Gesundheits-Check hat damit 36 Prüf-Dimensionen.
+
+### Wissensstand
+
+- unverändert gegenüber v1.241.0 (Stand 19.08.2026).
+
 ## v1.241.0 — Vereins-Steuerwissen komplett + Grenzwerte im Blick (2026-08-19)
 
 ### Neue Funktionen

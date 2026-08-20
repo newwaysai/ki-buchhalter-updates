@@ -1,3 +1,45 @@
+## v1.243.0 — Bruno merkt selbst, wenn seine Beleg-Suche veraltet ist (2026-08-19)
+
+### Neue Funktionen
+
+- **Die Beleg-Suche warnt jetzt, wenn ihr Suchverzeichnis veraltet ist.** Bruno führt intern ein
+  Verzeichnis über alle abgelegten Belege, damit er in Sekunden nachsehen kann, ob ein Beleg
+  schon da ist. Dieses Verzeichnis wurde bisher nur beim großen Nachtlauf erneuert. Wer
+  zwischendurch Belege ablegte, hatte danach ein Verzeichnis, das den neuen Beleg noch nicht
+  kannte — die Suche meldete dann „nicht gefunden", obwohl der Beleg längst im Haus war. Im
+  schlimmsten Fall bekamst du eine Aufgabe „Beleg beim Anbieter nachfordern" für etwas, das du
+  schon hattest. Ab jetzt vergleicht die Suche das Alter des Verzeichnisses mit dem Alter der
+  Belege und sagt dir vorher Bescheid, samt Befehl zum Nachziehen (dauert Sekunden).
+
+### Verbesserungen
+
+- **Die Warnung nervt nicht.** Verglichen wird pro Ordner, nicht pauschal über alle Jahre. Sonst
+  hätte ein Ordner von 2022, in dem sich nichts geändert hat, mitgemeckert, nur weil in 2026 ein
+  Beleg dazukam. Eine Dauerwarnung wird ignoriert und schützt dann gar nichts mehr.
+- **Belege werden beim Ablegen immer mitverzeichnet.** Kopieren und Eintragen passieren jetzt in
+  einem Schritt, damit kein Beleg mehr ohne Eintrag im Archiv landet.
+- **Namen von Personen werden in Zwischenausgaben maskiert.** Wenn Bruno dir Kontobewegungen oder
+  Journal-Zeilen anzeigt, erscheinen Namen natürlicher Personen nur noch abgekürzt. Firmennamen
+  bleiben lesbar.
+- **Drei neue Prüfregeln für Brunos eigenes Urteil:** Eine Bestandszahl gilt nur mit
+  Messzeitpunkt (sonst wird neu gemessen statt zitiert). Eine Zahlung wird über ihren Inhalt
+  zugeordnet, nie allein über den Namen des Empfängers — bei einer Zahlung ans Finanzamt stand
+  im Zweck nur „Finanzamt", tatsächlich war es eine Mahngebühr ganz ohne Umsatzsteuer. Und was
+  Bruno selbst aus deinen Daten klären kann, klärt er, statt es auf die Steuerberater-Liste zu
+  schieben.
+
+### Unter der Haube
+
+- Brunos Selbstkontrolle nach jedem Lauf hat jetzt fünf statt vier Fragen; die neue prüft, ob
+  versehentlich ein Personenname unmaskiert angezeigt wurde.
+- Ein Baustein zum seitenweisen Auslesen der Buchhaltungsschnittstelle wurde zusammengefasst,
+  statt ihn ein fünftes Mal zu kopieren.
+- Selbsttests: 214 bestanden, dazu 12 Wächter-Prüfungen — alle grün.
+
+### Wissensstand
+
+- unverändert gegenüber v1.242.0 (Stand 19.08.2026).
+
 ## v1.242.0 — Vereins-Prüfungen sind jetzt aktiv (2026-08-19)
 
 ### Neue Funktionen
